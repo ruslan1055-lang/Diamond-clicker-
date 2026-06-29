@@ -5670,11 +5670,109 @@ function renderSettings() {
       <span class="btn-cost">→</span>
     </button>
 
+    <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(0,200,255,0.4),transparent);margin:16px 0 14px;"></div>
+    <div style="font-size:11px;font-weight:800;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">📦 Перенос прогресса</div>
+
+    <button class="duo-btn" onclick="exportSaveCopy()" style="background:linear-gradient(160deg,#004466,#002233);border-color:rgba(0,200,255,0.3);box-shadow:0 4px 0 #001122,0 6px 18px rgba(0,150,200,0.25);margin-bottom:8px;">
+      <div class="btn-left"><span class="btn-icon">📋</span><div class="btn-label"><span class="btn-title">Скопировать сохранение</span><span class="btn-sub">Скопировать код прогресса в буфер</span></div></div>
+      <span class="btn-cost">→</span>
+    </button>
+    <button class="duo-btn" onclick="exportSaveFile()" style="background:linear-gradient(160deg,#004466,#002233);border-color:rgba(0,200,255,0.3);box-shadow:0 4px 0 #001122,0 6px 18px rgba(0,150,200,0.25);margin-bottom:8px;">
+      <div class="btn-left"><span class="btn-icon">💾</span><div class="btn-label"><span class="btn-title">Скачать файл сохранения</span><span class="btn-sub">Скачать save.json с прогрессом</span></div></div>
+      <span class="btn-cost">→</span>
+    </button>
+    <button class="duo-btn" onclick="importSavePrompt()" style="background:linear-gradient(160deg,#004400,#002200);border-color:rgba(0,230,100,0.3);box-shadow:0 4px 0 #001100,0 6px 18px rgba(0,180,80,0.25);margin-bottom:8px;">
+      <div class="btn-left"><span class="btn-icon">📥</span><div class="btn-label"><span class="btn-title">Вставить сохранение</span><span class="btn-sub">Вставить код из буфера обмена</span></div></div>
+      <span class="btn-cost">→</span>
+    </button>
+    <button class="duo-btn" onclick="importSaveFile()" style="background:linear-gradient(160deg,#004400,#002200);border-color:rgba(0,230,100,0.3);box-shadow:0 4px 0 #001100,0 6px 18px rgba(0,180,80,0.25);">
+      <div class="btn-left"><span class="btn-icon">📂</span><div class="btn-label"><span class="btn-title">Загрузить файл сохранения</span><span class="btn-sub">Выбрать save.json с устройства</span></div></div>
+      <span class="btn-cost">→</span>
+    </button>
+    <input type="file" id="importFileInput" accept=".json" style="display:none" onchange="handleImportFile(event)">
+
     <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(255,50,50,0.5),transparent);margin:16px 0 14px;"></div>
     <button class="duo-btn red" onclick="openFullReset()" style="background:linear-gradient(160deg,#cc0000,#800000);border-color:rgba(255,0,0,0.35);box-shadow:0 4px 0 #400000,0 6px 18px rgba(200,0,0,0.35);">
       <div class="btn-left"><span class="btn-icon">💣</span><div class="btn-label"><span class="btn-title">Сброс всех данных</span><span class="btn-sub">Удалить весь прогресс и настройки навсегда</span></div></div>
       <span class="btn-cost">→</span>
     </button>`;
+}
+
+// ============================================================
+//  EXPORT / IMPORT SAVE
+// ============================================================
+function exportSaveCopy() {
+  try {
+    const data = JSON.stringify(dcStripStateForCloud(state));
+    const encoded = btoa(unescape(encodeURIComponent(data)));
+    navigator.clipboard.writeText(encoded).then(() => {
+      toast('Сохранение скопировано! 📋', 'success');
+    }).catch(() => {
+      // fallback
+      const ta = document.createElement('textarea');
+      ta.value = encoded;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      toast('Сохранение скопировано! 📋', 'success');
+    });
+  } catch(e) { toast('Ошибка экспорта', 'error'); }
+}
+
+function exportSaveFile() {
+  try {
+    const data = JSON.stringify(dcStripStateForCloud(state), null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'diamond-clicker-save.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast('Файл сохранения скачан! 💾', 'success');
+  } catch(e) { toast('Ошибка экспорта', 'error'); }
+}
+
+function importSavePrompt() {
+  const encoded = prompt('Вставьте код сохранения:');
+  if (!encoded) return;
+  try {
+    const data = JSON.parse(decodeURIComponent(escape(atob(encoded.trim()))));
+    _applyImportedSave(data);
+  } catch(e) { toast('Неверный код сохранения ❌', 'error'); }
+}
+
+function importSaveFile() {
+  document.getElementById('importFileInput').click();
+}
+
+function handleImportFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const data = JSON.parse(ev.target.result);
+      _applyImportedSave(data);
+    } catch(err) { toast('Ошибка чтения файла ❌', 'error'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+function _applyImportedSave(data) {
+  if (!data || typeof data !== 'object') { toast('Неверный формат сохранения ❌', 'error'); return; }
+  const account = state.account; // сохраняем текущий аккаунт
+  state = sanitizeState(Object.assign(defaultState(), data), data);
+  state.account = account; // привязываем к текущему аккаунту
+  saveState();
+  if (account && account.uid) pushStateToCloud();
+  updateUI();
+  closeModal('settings');
+  toast('Прогресс восстановлен! 🎉', 'success');
 }
 
 // ============================================================
