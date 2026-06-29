@@ -6431,7 +6431,6 @@ function claimAdReward() {
 
   state.gems += AD_REWARD_GEMS;
   state.xp   += AD_REWARD_XP;
-  state.leagueScore = parseFloat(((state.leagueScore || 0) + AD_REWARD_XP).toFixed(4));
   _setAdLastTime(Date.now());
   updateAdDot();
   updateUI();
@@ -10672,146 +10671,90 @@ function claimCashbackChest() {
 
 <script>
 // ============================================================
-//  LEAGUE SYSTEM (simplified - no composite indexes needed)
+//  LEAGUE SYSTEM
 // ============================================================
 const LEAGUES = [
-  { id: 'bronze',   name: 'Бронзовая лига',  emoji: '🥉', gradient: 'linear-gradient(135deg,#cd7f32,#e8a855)', glow: 'rgba(205,127,50,0.6)',  color: '#cd7f32' },
-  { id: 'silver',   name: 'Серебряная лига', emoji: '🥈', gradient: 'linear-gradient(135deg,#aaa,#e0e0e0)',    glow: 'rgba(180,180,180,0.6)', color: '#bbbbbb' },
-  { id: 'gold',     name: 'Золотая лига',    emoji: '🥇', gradient: 'linear-gradient(135deg,#f5c518,#ffec6e)', glow: 'rgba(245,197,24,0.6)',  color: '#f5c518' },
-  { id: 'platinum', name: 'Платиновая лига', emoji: '💎', gradient: 'linear-gradient(135deg,#00e5ff,#80ffea)', glow: 'rgba(0,229,255,0.6)',   color: '#00e5ff' },
-  { id: 'diamond',  name: 'Алмазная лига',   emoji: '💠', gradient: 'linear-gradient(135deg,#a855f7,#e879f9)', glow: 'rgba(168,85,247,0.6)',  color: '#a855f7' },
+  { id:'bronze',   name:'Бронзовая',  emoji:'🥉', color:'#cd7f32', glow:'rgba(205,127,50,0.7)',  grad:'linear-gradient(135deg,#cd7f32,#f0c060)', dark:'#7a3d00' },
+  { id:'silver',   name:'Серебряная', emoji:'🥈', color:'#c0c0c0', glow:'rgba(200,200,200,0.7)',  grad:'linear-gradient(135deg,#aaa,#e8e8e8)',    dark:'#555' },
+  { id:'gold',     name:'Золотая',    emoji:'🥇', color:'#f5c518', glow:'rgba(245,197,24,0.8)',   grad:'linear-gradient(135deg,#f5c518,#ffe566)', dark:'#7a5e00' },
+  { id:'platinum', name:'Платиновая', emoji:'💎', color:'#00e5ff', glow:'rgba(0,229,255,0.8)',    grad:'linear-gradient(135deg,#00c8ff,#80ffea)', dark:'#004a55' },
+  { id:'diamond',  name:'Алмазная',   emoji:'💠', color:'#d070ff', glow:'rgba(180,80,255,0.8)',   grad:'linear-gradient(135deg,#a855f7,#f0a0ff)', dark:'#4a0080' },
 ];
-
-const LEAGUE_SEASON_MS = 2 * 24 * 60 * 60 * 1000;
+const LEAGUE_SEASON_MS = 2*24*60*60*1000;
 const LEAGUE_SIZE = 30;
 const PROMOTE_COUNT = 3;
 const RELEGATE_COUNT = 3;
-
 let _leagueTimer = null;
 
-function getCurrentSeason() {
-  return Math.floor(Date.now() / LEAGUE_SEASON_MS);
-}
-
-function getMyLeagueIndex() {
-  return Math.max(0, Math.min(4, state.leagueIndex || 0));
-}
-
-function getLeagueSeasonEnd() {
-  return (getCurrentSeason() + 1) * LEAGUE_SEASON_MS;
-}
-
+function getCurrentSeason() { return Math.floor(Date.now()/LEAGUE_SEASON_MS); }
+function getMyLeagueIndex() { return Math.max(0,Math.min(4,state.leagueIndex||0)); }
+function getLeagueSeasonEnd() { return (getCurrentSeason()+1)*LEAGUE_SEASON_MS; }
 function formatCountdown(ms) {
-  if (ms <= 0) return '0ч 00м 00с';
-  const h = Math.floor(ms / 3600000);
-  const m = Math.floor((ms % 3600000) / 60000);
-  const s = Math.floor((ms % 60000) / 1000);
-  return h + 'ч ' + String(m).padStart(2,'0') + 'м ' + String(s).padStart(2,'0') + 'с';
+  if(ms<=0) return '0ч 00м 00с';
+  const h=Math.floor(ms/3600000), m=Math.floor((ms%3600000)/60000), s=Math.floor((ms%60000)/1000);
+  return h+'ч '+String(m).padStart(2,'0')+'м '+String(s).padStart(2,'0')+'с';
 }
 
-// Группа — просто строка: leagueId_season_groupNumber
-// Игрок записывается в документ: league_scores/{leagueId}_{season}_{groupId}_{uid}
-// Один документ на игрока — никаких subcollections, никаких составных запросов
-
-function _getMyDocId() {
+function _getGroupDocId() {
   const season = getCurrentSeason();
   const leagueIdx = getMyLeagueIndex();
   const leagueId = LEAGUES[leagueIdx].id;
-  // Если нет группы или сезон другой — назначить группу
   if (!state.leagueGroupId || state.leagueGroupSeason !== season) {
-    // Группа = хэш от uid чтобы распределить по группам детерминировано
     const uid = state.account ? state.account.uid : 'guest';
-    const hash = [...uid].reduce((a, c) => a + c.charCodeAt(0), 0);
-    state.leagueGroupId = String(Math.floor(hash % 999) + 1);
+    const hash = [...uid].reduce((a,c)=>a+c.charCodeAt(0),0);
+    state.leagueGroupId = String(Math.floor(hash%999)+1);
     state.leagueGroupSeason = season;
     state.leagueScore = 0;
     saveState();
   }
-  return leagueId + '_' + season + '_g' + state.leagueGroupId;
+  return leagueId+'_'+season+'_g'+state.leagueGroupId;
 }
 
 function pushLeagueScore() {
-  if (!state.account || !state.account.uid) return;
-  const season = getCurrentSeason();
-  const leagueIdx = getMyLeagueIndex();
-  const groupDocId = _getMyDocId();
+  if (!state.account||!state.account.uid) return;
+  const groupDocId = _getGroupDocId();
   const uid = state.account.uid;
-
-  dcDb.collection('league_scores').doc(groupDocId + '_' + uid).set({
-    uid,
-    name: state.account.displayName || state.account.login || 'Игрок',
-    score: Math.floor(state.leagueScore || 0),
-    leagueIdx,
-    season,
-    groupDocId,
-    updatedAt: Date.now(),
-  }, { merge: true }).catch(e => console.warn('League push error', e));
+  const leagueIdx = getMyLeagueIndex();
+  dcDb.collection('league_scores').doc(groupDocId+'_'+uid).set({
+    uid, name: state.account.displayName||state.account.login||'Игрок',
+    score: Math.floor(state.leagueScore||0),
+    leagueIdx, season: getCurrentSeason(), groupDocId, updatedAt: Date.now(),
+  },{merge:true}).catch(e=>console.warn('League push',e));
 }
 
 async function loadLeagueData() {
-  if (!state.account || !state.account.uid) return null;
+  if (!state.account||!state.account.uid) return null;
   const season = getCurrentSeason();
-  const leagueIdx = getMyLeagueIndex();
-
-  // Проверить новый сезон
-  if (state.leagueGroupSeason && state.leagueGroupSeason !== season) {
-    await _processSeasonEnd();
-  }
-
-  const groupDocId = _getMyDocId();
-
+  if (state.leagueGroupSeason && state.leagueGroupSeason!==season) await _processSeasonEnd();
+  const groupDocId = _getGroupDocId();
   try {
-    // Простой запрос — только по одному полю, без orderBy → не нужен индекс
-    const snap = await dcDb.collection('league_scores')
-      .where('groupDocId', '==', groupDocId)
-      .limit(LEAGUE_SIZE)
-      .get();
-
-    let players = snap.docs.map(d => d.data());
-    // Сортировка на клиенте
-    players.sort((a, b) => (b.score || 0) - (a.score || 0));
-    // Ограничить до 30
-    players = players.slice(0, LEAGUE_SIZE);
-
-    return { players, leagueIdx, season };
-  } catch(e) {
-    console.warn('League load error', e);
-    return null;
-  }
+    const snap = await dcDb.collection('league_scores').where('groupDocId','==',groupDocId).limit(LEAGUE_SIZE).get();
+    let players = snap.docs.map(d=>d.data());
+    players.sort((a,b)=>(b.score||0)-(a.score||0));
+    return { players: players.slice(0,LEAGUE_SIZE), leagueIdx: getMyLeagueIndex(), season };
+  } catch(e) { console.warn('League load',e); return null; }
 }
 
 async function _processSeasonEnd() {
-  if (!state.account || !state.account.uid) return;
+  if (!state.account||!state.account.uid) return;
   const oldSeason = state.leagueGroupSeason;
   const oldLeagueIdx = getMyLeagueIndex();
-  const oldGroupDocId = LEAGUES[oldLeagueIdx].id + '_' + oldSeason + '_g' + state.leagueGroupId;
-
+  const oldDocId = LEAGUES[oldLeagueIdx].id+'_'+oldSeason+'_g'+state.leagueGroupId;
   try {
-    const snap = await dcDb.collection('league_scores')
-      .where('groupDocId', '==', oldGroupDocId)
-      .limit(LEAGUE_SIZE)
-      .get();
-
-    let players = snap.docs.map(d => d.data());
-    players.sort((a, b) => (b.score || 0) - (a.score || 0));
-    const myRank = players.findIndex(p => p.uid === state.account.uid) + 1;
+    const snap = await dcDb.collection('league_scores').where('groupDocId','==',oldDocId).limit(LEAGUE_SIZE).get();
+    let players = snap.docs.map(d=>d.data());
+    players.sort((a,b)=>(b.score||0)-(a.score||0));
+    const myRank = players.findIndex(p=>p.uid===state.account.uid)+1;
     const total = players.length;
-
-    let newLeagueIdx = oldLeagueIdx;
-    if (myRank > 0 && myRank <= PROMOTE_COUNT && oldLeagueIdx < 4) newLeagueIdx = oldLeagueIdx + 1;
-    else if (myRank > total - RELEGATE_COUNT && myRank > 0 && oldLeagueIdx > 0) newLeagueIdx = oldLeagueIdx - 1;
-
-    state.leagueIndex = newLeagueIdx;
-    state.leagueGroupId = null;
-    state.leagueGroupSeason = null;
-    state.leagueScore = 0;
-    saveState();
-    pushStateToCloud();
-
-    if (newLeagueIdx > oldLeagueIdx) toast('🎉 Повышение в ' + LEAGUES[newLeagueIdx].name + '!', 'success');
-    else if (newLeagueIdx < oldLeagueIdx) toast('⬇️ Вылет в ' + LEAGUES[newLeagueIdx].name, '');
-    else toast('🏆 Новый сезон лиги начался!', '');
-  } catch(e) { console.warn('Season end error', e); }
+    let newIdx = oldLeagueIdx;
+    if (myRank>0&&myRank<=PROMOTE_COUNT&&oldLeagueIdx<4) newIdx=oldLeagueIdx+1;
+    else if (myRank>0&&myRank>total-RELEGATE_COUNT&&oldLeagueIdx>0) newIdx=oldLeagueIdx-1;
+    state.leagueIndex=newIdx; state.leagueGroupId=null; state.leagueGroupSeason=null; state.leagueScore=0;
+    saveState(); pushStateToCloud();
+    if (newIdx>oldLeagueIdx) toast('🎉 Повышение в '+LEAGUES[newIdx].name+' лигу!','success');
+    else if (newIdx<oldLeagueIdx) toast('⬇️ Вылет в '+LEAGUES[newIdx].name+' лигу','');
+    else toast('🏆 Новый сезон начался!','');
+  } catch(e){console.warn('Season end',e);}
 }
 
 function renderLeagueModal(data) {
@@ -10819,72 +10762,102 @@ function renderLeagueModal(data) {
   const titleEl = document.getElementById('leagueModalTitle');
   if (!body) return;
 
-  if (!state.account || !state.account.uid) {
-    body.innerHTML = '<div style="text-align:center;padding:40px 16px;color:var(--text2);">Войди в аккаунт чтобы участвовать в лигах</div>';
+  if (!state.account||!state.account.uid) {
+    body.innerHTML = `<div style="text-align:center;padding:50px 20px;">
+      <div style="font-size:48px;margin-bottom:12px;">🏆</div>
+      <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:6px;">Войди в аккаунт</div>
+      <div style="font-size:12px;color:var(--text2);">чтобы участвовать в лигах</div>
+    </div>`;
     return;
   }
 
   if (!data) {
-    body.innerHTML = '<div style="text-align:center;padding:40px 16px;color:var(--text2);">⏳ Загрузка лиги...</div>';
+    body.innerHTML = `<div style="text-align:center;padding:50px 20px;">
+      <div style="font-size:36px;margin-bottom:12px;animation:spin 1.5s linear infinite;display:inline-block;">⏳</div>
+      <div style="font-size:13px;color:var(--text2);margin-top:8px;">Загружаем лигу...</div>
+    </div>`;
     return;
   }
 
-  const league = LEAGUES[data.leagueIdx];
+  const L = LEAGUES[data.leagueIdx];
   const myUid = state.account.uid;
-  const timeLeft = getLeagueSeasonEnd() - Date.now();
+  const timeLeft = getLeagueSeasonEnd()-Date.now();
   const players = data.players;
-  const myRank = players.findIndex(p => p.uid === myUid) + 1;
+  const myRank = players.findIndex(p=>p.uid===myUid)+1;
   const total = players.length;
+  const myScore = Math.floor(state.leagueScore||0);
 
+  if (titleEl) titleEl.innerHTML = L.emoji+' '+L.name+' лига';
   const modal = document.getElementById('leagueModal');
-  if (modal) modal.style.borderTopColor = league.color + '99';
-  if (titleEl) titleEl.textContent = league.emoji + ' ' + league.name;
+  if (modal) { modal.style.borderTopColor=L.color+'cc'; modal.style.boxShadow='0 -10px 60px rgba(0,0,0,0.9), 0 -2px 0 '+L.color+'66'; }
 
+  // Build rows
   let rows = '';
-  players.forEach((p, i) => {
-    const rank = i + 1;
-    const isMe = p.uid === myUid;
-    const isPromote = rank <= PROMOTE_COUNT;
-    const isRelegate = rank > total - RELEGATE_COUNT && total >= PROMOTE_COUNT + RELEGATE_COUNT && data.leagueIdx > 0;
-    const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '';
-    let cls = 'league-row' + (isMe ? ' me' : isPromote ? ' promote' : isRelegate ? ' relegate' : '');
+  players.forEach((p,i) => {
+    const rank = i+1;
+    const isMe = p.uid===myUid;
+    const isTop = rank<=PROMOTE_COUNT;
+    const isBot = rank>total-RELEGATE_COUNT && total>=PROMOTE_COUNT+RELEGATE_COUNT && data.leagueIdx>0;
+    const medal = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'';
 
-    rows += `<div class="${cls}">
-      <span class="league-rank" style="color:${isPromote?'#00e676':isRelegate?'#ff4460':'var(--text2)'}">${rank}</span>
-      <span class="league-medal">${medal}</span>
-      <span class="league-name">${p.name||'Игрок'}${isMe?' <span style="font-size:10px;color:var(--text2);">(ты)</span>':''}</span>
-      <span class="league-score">⚡ <span>${(p.score||0).toLocaleString()}</span></span>
+    let bg = 'rgba(255,255,255,0.03)';
+    let border = 'rgba(255,255,255,0.06)';
+    if (isMe) { bg='rgba('+{bronze:'205,127,50',silver:'180,180,180',gold:'245,197,24',platinum:'0,229,255',diamond:'168,85,247'}[L.id]+',0.18)'; border=L.color+'55'; }
+    else if (isTop) { bg='rgba(0,200,80,0.08)'; border='rgba(0,230,120,0.3)'; }
+    else if (isBot) { bg='rgba(255,40,70,0.07)'; border='rgba(255,50,80,0.25)'; }
+
+    rows += `<div style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:14px;margin-bottom:6px;background:${bg};border:1.5px solid ${border};${isMe?'box-shadow:0 2px 12px '+L.color+'33;':''}">
+      <span style="font-size:14px;font-weight:900;width:22px;text-align:center;color:${isTop?'#00e676':isBot?'#ff4460':'var(--text2)'};">${medal||rank}</span>
+      <span style="flex:1;font-size:13px;font-weight:800;color:${isMe?'#fff':'rgba(255,255,255,0.85)'};">${p.name||'Игрок'}${isMe?' <span style="font-size:10px;font-weight:700;opacity:0.6;">(ты)</span>':''}</span>
+      <span style="font-size:13px;font-weight:900;color:${isTop?'#ffe566':isBot?'#ff6680':'rgba(255,255,255,0.7)'};">⚡ ${(p.score||0).toLocaleString()}</span>
     </div>`;
 
-    if (rank === PROMOTE_COUNT && total > PROMOTE_COUNT)
-      rows += `<div class="league-zone-label league-zone-mid" style="text-align:center;width:100%;">— удержание —</div>`;
-    if (data.leagueIdx > 0 && rank === total - RELEGATE_COUNT && total > PROMOTE_COUNT + RELEGATE_COUNT)
-      rows += `<div class="league-zone-label league-zone-down" style="text-align:center;width:100%;">— вылет ⬇️ —</div>`;
+    if (rank===PROMOTE_COUNT&&total>PROMOTE_COUNT)
+      rows+=`<div style="text-align:center;font-size:10px;font-weight:800;color:rgba(255,255,255,0.25);letter-spacing:1px;padding:4px 0;margin-bottom:4px;">· · · УДЕРЖАНИЕ · · ·</div>`;
+    if (data.leagueIdx>0&&rank===total-RELEGATE_COUNT&&total>PROMOTE_COUNT+RELEGATE_COUNT)
+      rows+=`<div style="text-align:center;font-size:10px;font-weight:800;color:rgba(255,80,80,0.4);letter-spacing:1px;padding:4px 0;margin-bottom:4px;">· · · ОПАСНАЯ ЗОНА · · ·</div>`;
   });
 
-  const promoteLabel = `<div class="league-zone-label league-zone-up">⬆️ Топ-${PROMOTE_COUNT} → ${data.leagueIdx < 4 ? LEAGUES[data.leagueIdx+1].name : 'Топ!'}</div>`;
-  const relegateLabel = data.leagueIdx > 0 ? `<div class="league-zone-label league-zone-down">⬇️ Последние ${RELEGATE_COUNT} → ${LEAGUES[data.leagueIdx-1].name}</div>` : '';
+  const nextLeague = data.leagueIdx<4?LEAGUES[data.leagueIdx+1]:null;
+  const prevLeague = data.leagueIdx>0?LEAGUES[data.leagueIdx-1]:null;
 
   body.innerHTML = `
-    <div class="league-header">
-      <div class="league-badge">${league.emoji}</div>
-      <div class="league-title" style="background:${league.gradient};-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${league.name}</div>
-      <div class="league-timer">До конца сезона: <span id="leagueCountdown">${formatCountdown(timeLeft)}</span></div>
-      <div style="font-size:11px;color:var(--text2);margin-top:2px;">${total} / ${LEAGUE_SIZE} игроков · Место: <b style="color:#fff">${myRank || '?'}</b></div>
-      <div style="font-size:11px;color:var(--text2);">Твои ⚡ в этом сезоне: <b style="color:#ffe566">${Math.floor(state.leagueScore||0).toLocaleString()}</b></div>
+    <div style="position:relative;text-align:center;padding:20px 16px 16px;background:linear-gradient(180deg,${L.color}18 0%,transparent 100%);border-radius:16px;margin-bottom:12px;">
+      <div style="font-size:64px;filter:drop-shadow(0 0 20px ${L.glow});animation:leagueBadgePulse 2.5s ease-in-out infinite;">${L.emoji}</div>
+      <div style="font-size:20px;font-weight:900;letter-spacing:0.5px;background:${L.grad};-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin:6px 0 2px;">${L.name} лига</div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:10px;">До конца сезона: <span id="leagueCountdown" style="color:#fff;font-weight:900;">${formatCountdown(timeLeft)}</span></div>
+      <div style="display:inline-flex;gap:6px;align-items:center;background:rgba(0,0,0,0.3);border-radius:20px;padding:6px 14px;border:1px solid ${L.color}33;">
+        <span style="font-size:12px;color:var(--text2);">Твои ⚡:</span>
+        <span style="font-size:14px;font-weight:900;color:#ffe566;">${myScore.toLocaleString()}</span>
+        ${myRank>0?`<span style="font-size:11px;color:var(--text2);margin-left:4px;">· место <b style="color:#fff">${myRank}</b> из ${total}</span>`:''}
+      </div>
     </div>
-    <div style="display:flex;gap:8px;margin-bottom:10px;justify-content:center;flex-wrap:wrap;">
-      ${promoteLabel}${relegateLabel}
+
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      ${nextLeague?`<div style="flex:1;background:rgba(0,200,80,0.1);border:1px solid rgba(0,200,80,0.3);border-radius:10px;padding:8px 10px;text-align:center;">
+        <div style="font-size:9px;color:#00e676;font-weight:800;letter-spacing:1px;">⬆️ ТОП-${PROMOTE_COUNT} → </div>
+        <div style="font-size:11px;color:#fff;font-weight:800;margin-top:2px;">${nextLeague.emoji} ${nextLeague.name}</div>
+      </div>`:'<div style="flex:1;background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.3);border-radius:10px;padding:8px;text-align:center;font-size:11px;color:#ffd700;font-weight:800;">👑 Высшая лига!</div>'}
+      ${prevLeague?`<div style="flex:1;background:rgba(255,50,80,0.08);border:1px solid rgba(255,50,80,0.25);border-radius:10px;padding:8px 10px;text-align:center;">
+        <div style="font-size:9px;color:#ff4460;font-weight:800;letter-spacing:1px;">⬇️ ПОСЛЕДНИЕ ${RELEGATE_COUNT} →</div>
+        <div style="font-size:11px;color:#fff;font-weight:800;margin-top:2px;">${prevLeague.emoji} ${prevLeague.name}</div>
+      </div>`:''}
     </div>
-    <div>${rows || '<div style="text-align:center;color:var(--text2);padding:20px;">Пока только ты в этой группе!</div>'}</div>
+
+    <div style="font-size:10px;font-weight:800;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;padding-left:4px;">Таблица · ${total} / ${LEAGUE_SIZE} игроков</div>
+    ${rows||`<div style="text-align:center;padding:30px;color:var(--text2);">
+      <div style="font-size:32px;margin-bottom:8px;">🏁</div>
+      <div style="font-size:13px;">Пока только ты в этой группе!</div>
+      <div style="font-size:11px;margin-top:4px;opacity:0.6;">Другие игроки появятся скоро</div>
+    </div>`}
   `;
 
   if (_leagueTimer) clearInterval(_leagueTimer);
-  _leagueTimer = setInterval(() => {
-    const el = document.getElementById('leagueCountdown');
-    if (!el) { clearInterval(_leagueTimer); return; }
-    el.textContent = formatCountdown(getLeagueSeasonEnd() - Date.now());
-  }, 1000);
+  _leagueTimer = setInterval(()=>{
+    const el=document.getElementById('leagueCountdown');
+    if(!el){clearInterval(_leagueTimer);return;}
+    el.textContent=formatCountdown(getLeagueSeasonEnd()-Date.now());
+  },1000);
 }
 
 async function openLeagueModal() {
@@ -10897,23 +10870,12 @@ async function openLeagueModal() {
 
 const _origOpenModal = openModal;
 window.openModal = function(id) {
-  if (id === 'league') { openLeagueModal(); return; }
+  if (id==='league') { openLeagueModal(); return; }
   _origOpenModal(id);
 };
 
-// Push score every 60 seconds
-setInterval(() => {
-  if (state.account && state.account.uid) pushLeagueScore();
-}, 60000);
-
-// Init after 3s
-setTimeout(() => {
-  if (state.account && state.account.uid) {
-    if (!state.leagueIndex) state.leagueIndex = 0;
-    if (!state.leagueScore) state.leagueScore = 0;
-    pushLeagueScore();
-  }
-}, 3000);
+setInterval(()=>{ if(state.account&&state.account.uid) pushLeagueScore(); },60000);
+setTimeout(()=>{ if(state.account&&state.account.uid){ if(!state.leagueIndex)state.leagueIndex=0; if(!state.leagueScore)state.leagueScore=0; pushLeagueScore(); }},3000);
 </script>
 
 </body>
