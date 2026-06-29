@@ -3444,20 +3444,46 @@ function _setAuthBusy(busy, label) {
 
 function doRegister() {
   const login     = dcSanitizeUsername(document.getElementById('authLogin')?.value);
+  const email     = (document.getElementById('authEmail')?.value || '').trim().toLowerCase();
   const password  = document.getElementById('authPassword')?.value || '';
   const password2 = document.getElementById('authPassword2')?.value || '';
   _setAuthError('');
-  if (login.length < 3)      { _setAuthError('Логин должен быть от 3 символов (буквы/цифры)'); return; }
-  if (password.length < 6)   { _setAuthError('Пароль минимум 6 символов'); return; }
-  if (password !== password2){ _setAuthError('Пароли не совпадают'); return; }
+  if (login.length < 3)         { _setAuthError('Логин должен быть от 3 символов (буквы/цифры)'); return; }
+  if (!email || !email.includes('@')) { _setAuthError('Введи настоящий email — он нужен для восстановления пароля'); return; }
+  if (password.length < 6)      { _setAuthError('Пароль минимум 6 символов'); return; }
+  if (password !== password2)   { _setAuthError('Пароли не совпадают'); return; }
   _setAuthBusy(true, 'Создаём...');
-  dcAuth.createUserWithEmailAndPassword(dcEmailFromUsername(login), password)
-    .then(() => { _pendingNewUsername = login; })
+  dcAuth.createUserWithEmailAndPassword(email, password)
+    .then(cred => {
+      _pendingNewUsername = login;
+      // Сохраняем email для восстановления пароля
+      return cred.user.updateProfile({ displayName: login });
+    })
     .catch(err => {
       _setAuthBusy(false);
-      if (err.code === 'auth/email-already-in-use') _setAuthError('Этот логин уже занят');
+      if (err.code === 'auth/email-already-in-use') _setAuthError('Этот email уже используется');
       else if (err.code === 'auth/weak-password')    _setAuthError('Пароль слишком простой');
+      else if (err.code === 'auth/invalid-email')    _setAuthError('Неверный формат email');
       else _setAuthError('Не удалось создать аккаунт: ' + (err.message || err.code));
+    });
+}
+
+function doForgotPassword() {
+  const emailInput = prompt('Введи email который ты указал при регистрации:');
+  if (!emailInput) return;
+  const email = emailInput.trim().toLowerCase();
+  if (!email.includes('@')) { _setAuthError('Неверный формат email'); return; }
+  _setAuthBusy(true, 'Отправляем письмо...');
+  dcAuth.sendPasswordResetEmail(email)
+    .then(() => {
+      _setAuthBusy(false);
+      _setAuthError('');
+      toast('Письмо со сбросом пароля отправлено! Проверь почту 📧', 'success');
+    })
+    .catch(err => {
+      _setAuthBusy(false);
+      if (err.code === 'auth/user-not-found') _setAuthError('Аккаунт с таким email не найден');
+      else _setAuthError('Ошибка: ' + (err.message || err.code));
     });
 }
 
@@ -3475,27 +3501,6 @@ function doLogin() {
       else if (err.code === 'auth/wrong-password')   _setAuthError('Неверный пароль');
       else if (err.code === 'auth/too-many-requests')_setAuthError('Слишком много попыток — подожди немного');
       else _setAuthError('Ошибка входа: ' + (err.message || err.code));
-    });
-}
-
-function doForgotPassword() {
-  const login = dcSanitizeUsername(document.getElementById('authLogin')?.value || '');
-  if (login.length < 3) {
-    _setAuthError('Сначала введи свой логин выше');
-    return;
-  }
-  const email = dcEmailFromUsername(login);
-  _setAuthBusy(true, 'Отправляем письмо...');
-  dcAuth.sendPasswordResetEmail(email)
-    .then(() => {
-      _setAuthBusy(false);
-      _setAuthError('');
-      toast('Письмо со сбросом пароля отправлено! Проверь почту 📧', 'success');
-    })
-    .catch(err => {
-      _setAuthBusy(false);
-      if (err.code === 'auth/user-not-found') _setAuthError('Аккаунт с таким логином не найден');
-      else _setAuthError('Ошибка: ' + (err.message || err.code));
     });
 }
 
@@ -4568,15 +4573,16 @@ function renderAccount() {
       </div>
 
       <input class="duo-input" id="authLogin" type="text" placeholder="Логин (буквы, цифры, _ . -)" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="20" style="margin-bottom:10px;">
+      ${!isLogin ? '<input class="duo-input" id="authEmail" type="email" placeholder="Эл. почта (для восстановления пароля)" autocomplete="off" style="margin-bottom:10px;">' : ''}
       <input class="duo-input" id="authPassword" type="password" placeholder="Пароль (минимум 6 символов)" autocomplete="off" style="margin-bottom:${isLogin ? '4px' : '10px'};">
-      ${isLogin ? '' : '<input class="duo-input" id="authPassword2" type="password" placeholder="Повтори пароль" autocomplete="off" style="margin-bottom:4px;">'}
+      ${!isLogin ? '<input class="duo-input" id="authPassword2" type="password" placeholder="Повтори пароль" autocomplete="off" style="margin-bottom:4px;">' : ''}
       <div id="authError" style="color:var(--red);font-size:12px;font-weight:800;min-height:16px;margin:2px 2px 8px;"></div>
 
       <button class="duo-btn green" id="authSubmitBtn" style="margin-top:4px" onclick="${isLogin ? 'doLogin()' : 'doRegister()'}">
         <div class="btn-left"><span class="btn-icon">${isLogin ? '🔑' : '🦉'}</span><span class="btn-title">${isLogin ? 'Войти' : 'Создать аккаунт'}</span></div>
         <span class="btn-cost">→</span>
       </button>
-      ${isLogin ? `<button onclick="doForgotPassword()" style="width:100%;margin-top:10px;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.4);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;">🔐 Забыл пароль</button>` : ''}`;
+      ${isLogin ? '<button onclick="doForgotPassword()" style="width:100%;margin-top:10px;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.4);font-family:\'Nunito\',sans-serif;font-size:12px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;">🔐 Забыл пароль</button>' : ''}`;
     setTimeout(() => {
       const p2 = document.getElementById('authPassword2') || document.getElementById('authPassword');
       if (p2) p2.addEventListener('keydown', e => { if (e.key === 'Enter') (isLogin ? doLogin() : doRegister()); });
