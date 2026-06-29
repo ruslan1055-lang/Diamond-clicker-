@@ -4155,6 +4155,7 @@ function handleDiamondTap(e) {
     state.leagueClicks = (state.leagueClicks || 0) + 1;
     const xpGain = 1 * getXpMultiplier();
     state.xp = parseFloat((state.xp + xpGain).toFixed(4));
+    state.leagueScore = parseFloat(((state.leagueScore || 0) + xpGain).toFixed(4));
 
     incrementTaskProgress('clicks', 1);
     incrementTaskProgress('gems', power);
@@ -6430,6 +6431,7 @@ function claimAdReward() {
 
   state.gems += AD_REWARD_GEMS;
   state.xp   += AD_REWARD_XP;
+  state.leagueScore = parseFloat(((state.leagueScore || 0) + AD_REWARD_XP).toFixed(4));
   _setAdLastTime(Date.now());
   updateAdDot();
   updateUI();
@@ -10719,7 +10721,7 @@ function pushLeagueScore() {
     .set({
       uid: state.account.uid,
       name: state.account.displayName || state.account.login || 'Игрок',
-      score: Math.floor(state.totalEnergyThisSeason || 0),
+      score: Math.floor(state.leagueScore || 0),
       leagueIdx,
       updatedAt: Date.now(),
     }, { merge: true });
@@ -10819,6 +10821,7 @@ async function _processSeasonEnd(newSeason) {
     state.leagueIndex = newLeagueIdx;
     state.leagueGroupId = null;
     state.leagueGroupSeason = null;
+    state.leagueScore = 0;
     state.totalEnergyThisSeason = 0;
     saveState();
     pushStateToCloud();
@@ -10928,7 +10931,7 @@ function renderLeagueModal(data) {
 }
 
 async function openLeagueModal() {
-  openModal('league');
+  _origOpenModal('league');
   renderLeagueModal(null);
   // Push current score first
   state.totalEnergyThisSeason = (state.totalEnergyThisSeason || 0);
