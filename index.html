@@ -2740,6 +2740,10 @@ body.vip-theme-16 ::selection { background: rgba(200,150,255,0.35); }
   <button class="nav-btn summer" onclick="openModal('summer')">
     <span class="nav-icon">🌞</span>Летние Акции
   </button>
+  <button class="nav-btn league-nav-btn" onclick="openModal('league')" id="leagueNavBtn">
+    <span class="nav-icon">🏆</span>Лига
+    <span class="league-dot" id="leagueDot" style="display:none;"></span>
+  </button>
   <button class="nav-btn quest-rainbow" onclick="openQuestModal()">
     <span class="nav-icon">🗺️</span>Квесты
   </button>
@@ -2749,6 +2753,20 @@ body.vip-theme-16 ::selection { background: rgba(200,150,255,0.35); }
   <button class="nav-btn" onclick="openModal('rules')" style="background:linear-gradient(160deg,#3a4a6b,#1a2438);border-color:rgba(125,200,255,0.3);box-shadow:0 4px 0 #0a1020,0 6px 18px rgba(80,140,255,0.25);color:#cfe6ff;">
     <span class="nav-icon">📖</span>Правила
   </button>
+</div>
+
+<!-- LEAGUE MODAL -->
+<div class="modal-overlay" id="modal-league">
+  <div class="modal" id="leagueModal" style="border-top-color:rgba(205,127,50,0.6);box-shadow:0 -10px 50px rgba(0,0,0,0.8),0 -2px 0 rgba(205,127,50,0.4);">
+    <div class="modal-handle" style="background:rgba(205,127,50,0.4);"></div>
+    <div class="modal-header" style="border-bottom-color:rgba(205,127,50,0.2);">
+      <span class="modal-title" id="leagueModalTitle" style="background:linear-gradient(135deg,#cd7f32,#e8a855);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">🏆 Лига</span>
+      <button class="modal-close" onclick="closeModal('league')" style="border-color:rgba(205,127,50,0.3);color:rgba(220,160,60,0.7);">✕</button>
+    </div>
+    <div class="modal-body" id="leagueBody" style="padding-bottom:24px;">
+      <div style="text-align:center;padding:40px 0;color:var(--text2);">Загрузка лиги...</div>
+    </div>
+  </div>
 </div>
 
 <!-- PROMO MODAL -->
@@ -6453,7 +6471,69 @@ function claimAdReward() {
         font-family:'Nunito',sans-serif;font-weight:900;font-size:14px;cursor:pointer;
       ">Отлично! 🎊</button>
     </div>
-    <style>@keyframes keplerIn{from{opacity:0;transform:scale(0.88) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}</style>`;
+    <style>@keyframes keplerIn{from{opacity:0;transform:scale(0.88) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+/* ===== LEAGUE SYSTEM ===== */
+.league-header {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 16px 0 8px; gap: 6px;
+}
+.league-badge {
+  font-size: 56px; filter: drop-shadow(0 4px 16px rgba(0,0,0,0.5));
+  animation: leagueBadgePulse 2.5s ease-in-out infinite;
+}
+@keyframes leagueBadgePulse {
+  0%,100% { transform: scale(1); filter: drop-shadow(0 4px 16px rgba(0,0,0,0.5)); }
+  50% { transform: scale(1.06); filter: drop-shadow(0 6px 24px var(--league-glow, rgba(200,130,40,0.6))); }
+}
+.league-title {
+  font-size: 22px; font-weight: 900; letter-spacing: 1px;
+  background: var(--league-gradient, linear-gradient(135deg,#cd7f32,#e8a855));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.league-timer {
+  font-size: 12px; font-weight: 800; color: var(--text2);
+  background: rgba(255,255,255,0.06); padding: 4px 12px; border-radius: 20px;
+}
+.league-timer span { color: #fff; font-weight: 900; }
+.league-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+.league-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 14px; margin-bottom: 6px;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
+  transition: background 0.15s;
+}
+.league-row.me {
+  background: rgba(var(--league-rgb,205,127,50),0.15);
+  border-color: rgba(var(--league-rgb,205,127,50),0.35);
+}
+.league-row.promote { border-color: rgba(0,230,120,0.4); background: rgba(0,180,80,0.1); }
+.league-row.relegate { border-color: rgba(255,50,80,0.35); background: rgba(200,0,40,0.08); }
+.league-rank {
+  font-size: 15px; font-weight: 900; width: 26px; text-align: center; flex-shrink: 0;
+}
+.league-medal { font-size: 18px; width: 22px; text-align: center; flex-shrink: 0; }
+.league-name { flex: 1; font-size: 13px; font-weight: 800; color: #fff; }
+.league-score { font-size: 12px; font-weight: 900; color: var(--text2); white-space: nowrap; }
+.league-score span { color: #fff; }
+.league-zone-label {
+  font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px;
+  padding: 3px 8px; border-radius: 6px; margin: 4px 0 4px;
+}
+.league-zone-up { background: rgba(0,200,80,0.18); color: #00e676; }
+.league-zone-down { background: rgba(255,50,80,0.15); color: #ff4460; }
+.league-zone-mid { background: rgba(255,255,255,0.06); color: var(--text2); }
+.league-nav-btn {
+  background: linear-gradient(160deg,#cd7f32,#a05a1a);
+  border: 2px solid rgba(220,160,60,0.5);
+  box-shadow: 0 4px 0 #5a2e00, 0 6px 18px rgba(200,130,40,0.4);
+  position: relative;
+}
+.league-nav-btn .league-dot {
+  position: absolute; top: 6px; right: 8px;
+  width: 8px; height: 8px; background: #00e676; border-radius: 50%;
+  box-shadow: 0 0 6px rgba(0,230,120,0.9); animation: adDotPulse 1.2s ease-in-out infinite;
+}
+</style>`;
 
   document.body.appendChild(done);
   setTimeout(() => { if (done.parentNode) done.remove(); }, 5000);
@@ -10586,6 +10666,309 @@ function claimCashbackChest() {
   <canvas id="questOpenCanvas" width="240" height="240"></canvas>
   <div id="questOpenContent" style="margin-top:18px;display:flex;flex-direction:column;align-items:center;width:100%;max-width:320px;"></div>
 </div>
+
+
+<script>
+// ============================================================
+//  LEAGUE SYSTEM
+// ============================================================
+const LEAGUES = [
+  { id: 'bronze',   name: 'Бронзовая лига',  emoji: '🥉', gradient: 'linear-gradient(135deg,#cd7f32,#e8a855)', glow: 'rgba(205,127,50,0.6)',  rgb: '205,127,50',  color: '#cd7f32' },
+  { id: 'silver',   name: 'Серебряная лига', emoji: '🥈', gradient: 'linear-gradient(135deg,#aaa,#e0e0e0)',    glow: 'rgba(180,180,180,0.6)', rgb: '180,180,180', color: '#bbbbbb' },
+  { id: 'gold',     name: 'Золотая лига',    emoji: '🥇', gradient: 'linear-gradient(135deg,#f5c518,#ffec6e)', glow: 'rgba(245,197,24,0.6)',  rgb: '245,197,24',  color: '#f5c518' },
+  { id: 'platinum', name: 'Платиновая лига', emoji: '💎', gradient: 'linear-gradient(135deg,#00e5ff,#80ffea)', glow: 'rgba(0,229,255,0.6)',   rgb: '0,229,255',   color: '#00e5ff' },
+  { id: 'diamond',  name: 'Алмазная лига',   emoji: '💠', gradient: 'linear-gradient(135deg,#a855f7,#e879f9)', glow: 'rgba(168,85,247,0.6)',  rgb: '168,85,247',  color: '#a855f7' },
+];
+
+const LEAGUE_SEASON_MS = 2 * 24 * 60 * 60 * 1000; // 2 дня
+const LEAGUE_SIZE = 30;
+const PROMOTE_COUNT = 3;
+const RELEGATE_COUNT = 3;
+
+let _leagueData = null;
+let _leagueTimer = null;
+
+// Получить текущий сезон (номер эпохи по 2 дня)
+function getCurrentSeason() {
+  return Math.floor(Date.now() / LEAGUE_SEASON_MS);
+}
+
+// Получить league index игрока (0=bronze ... 4=diamond)
+function getMyLeagueIndex() {
+  return Math.max(0, Math.min(4, state.leagueIndex || 0));
+}
+
+// Записать очки лиги в Firestore
+function pushLeagueScore() {
+  if (!state.account || !state.account.uid) return;
+  const season = getCurrentSeason();
+  const leagueIdx = getMyLeagueIndex();
+  const leagueId = LEAGUES[leagueIdx].id;
+  const groupId = state.leagueGroupId || null;
+
+  // Найти или создать группу
+  if (!groupId) {
+    _joinLeagueGroup(season, leagueIdx);
+    return;
+  }
+
+  dcDb.collection('leagues')
+    .doc(leagueId + '_' + season + '_' + groupId)
+    .collection('players')
+    .doc(state.account.uid)
+    .set({
+      uid: state.account.uid,
+      name: state.account.displayName || state.account.login || 'Игрок',
+      score: Math.floor(state.totalEnergyThisSeason || 0),
+      leagueIdx,
+      updatedAt: Date.now(),
+    }, { merge: true });
+}
+
+async function _joinLeagueGroup(season, leagueIdx) {
+  if (!state.account || !state.account.uid) return;
+  const leagueId = LEAGUES[leagueIdx].id;
+
+  try {
+    // Найти группу с < 30 игроками
+    const snap = await dcDb.collection('leagueGroups')
+      .where('leagueId', '==', leagueId)
+      .where('season', '==', season)
+      .where('count', '<', LEAGUE_SIZE)
+      .limit(1)
+      .get();
+
+    let groupId;
+    if (!snap.empty) {
+      groupId = snap.docs[0].id;
+      await dcDb.collection('leagueGroups').doc(groupId).update({
+        count: firebase.firestore.FieldValue.increment(1)
+      });
+    } else {
+      // Создать новую группу
+      const ref = await dcDb.collection('leagueGroups').add({
+        leagueId, season, count: 1, createdAt: Date.now()
+      });
+      groupId = ref.id;
+    }
+
+    state.leagueGroupId = groupId;
+    state.leagueGroupSeason = season;
+    saveState();
+
+    // Теперь записать очки
+    pushLeagueScore();
+  } catch(e) { console.warn('League join error', e); }
+}
+
+async function loadLeagueData() {
+  if (!state.account || !state.account.uid) return null;
+  const season = getCurrentSeason();
+  const leagueIdx = getMyLeagueIndex();
+  const leagueId = LEAGUES[leagueIdx].id;
+
+  // Проверить не истёк ли сезон группы
+  if (state.leagueGroupSeason && state.leagueGroupSeason !== season) {
+    // Новый сезон — определить повышение/понижение
+    await _processSeasonEnd(season);
+  }
+
+  if (!state.leagueGroupId || state.leagueGroupSeason !== season) {
+    await _joinLeagueGroup(season, getMyLeagueIndex());
+    return null;
+  }
+
+  const groupId = state.leagueGroupId;
+  const docId = leagueId + '_' + season + '_' + groupId;
+
+  try {
+    const snap = await dcDb.collection('leagues').doc(docId)
+      .collection('players')
+      .orderBy('score', 'desc')
+      .limit(LEAGUE_SIZE)
+      .get();
+
+    const players = snap.docs.map((d, i) => ({ ...d.data(), rank: i + 1 }));
+    return { players, leagueIdx, season, groupId };
+  } catch(e) { console.warn('League load error', e); return null; }
+}
+
+async function _processSeasonEnd(newSeason) {
+  if (!state.account || !state.account.uid) return;
+  const oldSeason = state.leagueGroupSeason;
+  const oldLeagueIdx = getMyLeagueIndex();
+  const leagueId = LEAGUES[oldLeagueIdx].id;
+  const groupId = state.leagueGroupId;
+  const docId = leagueId + '_' + oldSeason + '_' + groupId;
+
+  try {
+    const snap = await dcDb.collection('leagues').doc(docId)
+      .collection('players')
+      .orderBy('score', 'desc')
+      .limit(LEAGUE_SIZE)
+      .get();
+
+    const players = snap.docs.map((d, i) => ({ ...d.data(), rank: i + 1 }));
+    const me = players.find(p => p.uid === state.account.uid);
+    if (!me) return;
+
+    let newLeagueIdx = oldLeagueIdx;
+    if (me.rank <= PROMOTE_COUNT && oldLeagueIdx < 4) newLeagueIdx = oldLeagueIdx + 1;
+    else if (me.rank > players.length - RELEGATE_COUNT && oldLeagueIdx > 0) newLeagueIdx = oldLeagueIdx - 1;
+
+    state.leagueIndex = newLeagueIdx;
+    state.leagueGroupId = null;
+    state.leagueGroupSeason = null;
+    state.totalEnergyThisSeason = 0;
+    saveState();
+    pushStateToCloud();
+
+    if (newLeagueIdx > oldLeagueIdx) toast('🎉 Ты повысился в ' + LEAGUES[newLeagueIdx].name + '!', 'success');
+    else if (newLeagueIdx < oldLeagueIdx) toast('⬇️ Ты вылетел в ' + LEAGUES[newLeagueIdx].name, '');
+    else toast('Новый сезон лиги начался!', '');
+  } catch(e) { console.warn('Season end error', e); }
+}
+
+function getLeagueSeasonEnd() {
+  const season = getCurrentSeason();
+  return (season + 1) * LEAGUE_SEASON_MS;
+}
+
+function formatCountdown(ms) {
+  if (ms <= 0) return '00:00:00';
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+  return h + 'ч ' + String(m).padStart(2,'0') + 'м ' + String(s).padStart(2,'0') + 'с';
+}
+
+function renderLeagueModal(data) {
+  const body = document.getElementById('leagueBody');
+  const titleEl = document.getElementById('leagueModalTitle');
+  if (!body) return;
+
+  if (!state.account || !state.account.uid) {
+    body.innerHTML = '<div style="text-align:center;padding:40px 16px;color:var(--text2);">Войди в аккаунт чтобы участвовать в лигах</div>';
+    return;
+  }
+
+  if (!data) {
+    body.innerHTML = '<div style="text-align:center;padding:40px 16px;color:var(--text2);">Загрузка... Попробуй через секунду</div>';
+    return;
+  }
+
+  const league = LEAGUES[data.leagueIdx];
+  const myUid = state.account.uid;
+  const timeLeft = getLeagueSeasonEnd() - Date.now();
+
+  // Update modal style for current league
+  const modal = document.getElementById('leagueModal');
+  if (modal) {
+    modal.style.borderTopColor = league.color + '99';
+  }
+  if (titleEl) titleEl.textContent = league.emoji + ' ' + league.name;
+
+  const players = data.players;
+  const myRank = players.findIndex(p => p.uid === myUid) + 1;
+  const total = players.length;
+
+  let rows = '';
+  players.forEach((p, i) => {
+    const rank = i + 1;
+    const isMe = p.uid === myUid;
+    const isPromote = rank <= PROMOTE_COUNT && total >= PROMOTE_COUNT;
+    const isRelegate = rank > total - RELEGATE_COUNT && total >= PROMOTE_COUNT + RELEGATE_COUNT && data.leagueIdx > 0;
+    let medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '';
+    let cls = 'league-row';
+    if (isMe) cls += ' me';
+    else if (isPromote) cls += ' promote';
+    else if (isRelegate) cls += ' relegate';
+
+    rows += `<div class="${cls}">
+      <span class="league-rank" style="color:${isPromote ? '#00e676' : isRelegate ? '#ff4460' : 'var(--text2)'}">${rank}</span>
+      <span class="league-medal">${medal}</span>
+      <span class="league-name">${p.name || 'Игрок'}${isMe ? ' <span style="font-size:10px;color:var(--text2);">(ты)</span>' : ''}</span>
+      <span class="league-score">⚡ <span>${(p.score || 0).toLocaleString()}</span></span>
+    </div>`;
+
+    // Zone labels
+    if (rank === PROMOTE_COUNT && total > PROMOTE_COUNT) {
+      rows += `<div class="league-zone-label league-zone-mid" style="text-align:center;width:100%;">— удержание —</div>`;
+    }
+    if (rank === total - RELEGATE_COUNT && data.leagueIdx > 0 && total > PROMOTE_COUNT + RELEGATE_COUNT) {
+      rows += `<div class="league-zone-label league-zone-down" style="text-align:center;width:100%;">— вылет ⬇️ —</div>`;
+    }
+  });
+
+  // Zone indicator at top
+  const promoteLabel = `<div class="league-zone-label league-zone-up">⬆️ Топ-${PROMOTE_COUNT} → ${data.leagueIdx < 4 ? LEAGUES[data.leagueIdx+1].name : 'Топ лига'}</div>`;
+  const relegateLabel = data.leagueIdx > 0 ? `<div class="league-zone-label league-zone-down">⬇️ Последние ${RELEGATE_COUNT} → ${LEAGUES[data.leagueIdx-1].name}</div>` : '';
+
+  body.innerHTML = `
+    <div class="league-header">
+      <div class="league-badge" style="--league-glow:${league.glow}">${league.emoji}</div>
+      <div class="league-title" style="--league-gradient:${league.gradient}">${league.name}</div>
+      <div class="league-timer">До конца сезона: <span id="leagueCountdown">${formatCountdown(timeLeft)}</span></div>
+      <div style="font-size:11px;color:var(--text2);margin-top:2px;">${total} / ${LEAGUE_SIZE} игроков · Твоё место: <b style="color:#fff">${myRank || '?'}</b></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;justify-content:center;">
+      ${promoteLabel}
+      ${relegateLabel}
+    </div>
+    <div id="leaguePlayerList">${rows || '<div style="text-align:center;color:var(--text2);padding:20px;">Пока нет игроков</div>'}</div>
+  `;
+
+  // Start countdown timer
+  if (_leagueTimer) clearInterval(_leagueTimer);
+  _leagueTimer = setInterval(() => {
+    const el = document.getElementById('leagueCountdown');
+    if (!el) { clearInterval(_leagueTimer); return; }
+    el.textContent = formatCountdown(getLeagueSeasonEnd() - Date.now());
+  }, 1000);
+}
+
+async function openLeagueModal() {
+  openModal('league');
+  renderLeagueModal(null);
+  // Push current score first
+  state.totalEnergyThisSeason = (state.totalEnergyThisSeason || 0);
+  pushLeagueScore();
+  const data = await loadLeagueData();
+  _leagueData = data;
+  renderLeagueModal(data);
+}
+
+// Hook into openModal
+const _origOpenModal = openModal;
+window.openModal = function(id) {
+  if (id === 'league') { openLeagueModal(); return; }
+  _origOpenModal(id);
+};
+
+// Track energy earned this season
+const _origAddEnergy = window.addEnergy;
+if (typeof addEnergy === 'function') {
+  const __origAdd = addEnergy;
+  window.addEnergy = function(amount) {
+    __origAdd(amount);
+    state.totalEnergyThisSeason = (state.totalEnergyThisSeason || 0) + (amount || 0);
+  };
+}
+
+// Push league score every 30 seconds while playing
+setInterval(() => {
+  if (state.account && state.account.uid) pushLeagueScore();
+}, 30000);
+
+// Init
+setTimeout(() => {
+  if (state.account && state.account.uid) {
+    if (!state.leagueIndex) state.leagueIndex = 0;
+    if (!state.totalEnergyThisSeason) state.totalEnergyThisSeason = 0;
+    pushLeagueScore();
+  }
+}, 3000);
+</script>
 
 </body>
 </html>
