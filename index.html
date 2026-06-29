@@ -3478,6 +3478,27 @@ function doLogin() {
     });
 }
 
+function doForgotPassword() {
+  const login = dcSanitizeUsername(document.getElementById('authLogin')?.value || '');
+  if (login.length < 3) {
+    _setAuthError('Сначала введи свой логин выше');
+    return;
+  }
+  const email = dcEmailFromUsername(login);
+  _setAuthBusy(true, 'Отправляем письмо...');
+  dcAuth.sendPasswordResetEmail(email)
+    .then(() => {
+      _setAuthBusy(false);
+      _setAuthError('');
+      toast('Письмо со сбросом пароля отправлено! Проверь почту 📧', 'success');
+    })
+    .catch(err => {
+      _setAuthBusy(false);
+      if (err.code === 'auth/user-not-found') _setAuthError('Аккаунт с таким логином не найден');
+      else _setAuthError('Ошибка: ' + (err.message || err.code));
+    });
+}
+
 function logout() {
   dcAuth.signOut().catch(()=>{});
 
@@ -4554,7 +4575,8 @@ function renderAccount() {
       <button class="duo-btn green" id="authSubmitBtn" style="margin-top:4px" onclick="${isLogin ? 'doLogin()' : 'doRegister()'}">
         <div class="btn-left"><span class="btn-icon">${isLogin ? '🔑' : '🦉'}</span><span class="btn-title">${isLogin ? 'Войти' : 'Создать аккаунт'}</span></div>
         <span class="btn-cost">→</span>
-      </button>`;
+      </button>
+      ${isLogin ? `<button onclick="doForgotPassword()" style="width:100%;margin-top:10px;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.4);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;">🔐 Забыл пароль</button>` : ''}`;
     setTimeout(() => {
       const p2 = document.getElementById('authPassword2') || document.getElementById('authPassword');
       if (p2) p2.addEventListener('keydown', e => { if (e.key === 'Enter') (isLogin ? doLogin() : doRegister()); });
