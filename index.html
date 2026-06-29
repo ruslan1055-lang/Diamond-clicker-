@@ -10671,75 +10671,144 @@ function claimCashbackChest() {
 
 <script>
 // ============================================================
-//  LEAGUE SYSTEM
+//  LEAGUE SYSTEM — real-time, shared groups
 // ============================================================
 const LEAGUES = [
-  { id:'bronze',   name:'Бронзовая',  emoji:'🥉', color:'#cd7f32', glow:'rgba(205,127,50,0.7)',  grad:'linear-gradient(135deg,#cd7f32,#f0c060)', dark:'#7a3d00' },
-  { id:'silver',   name:'Серебряная', emoji:'🥈', color:'#c0c0c0', glow:'rgba(200,200,200,0.7)',  grad:'linear-gradient(135deg,#aaa,#e8e8e8)',    dark:'#555' },
-  { id:'gold',     name:'Золотая',    emoji:'🥇', color:'#f5c518', glow:'rgba(245,197,24,0.8)',   grad:'linear-gradient(135deg,#f5c518,#ffe566)', dark:'#7a5e00' },
-  { id:'platinum', name:'Платиновая', emoji:'💎', color:'#00e5ff', glow:'rgba(0,229,255,0.8)',    grad:'linear-gradient(135deg,#00c8ff,#80ffea)', dark:'#004a55' },
-  { id:'diamond',  name:'Алмазная',   emoji:'💠', color:'#d070ff', glow:'rgba(180,80,255,0.8)',   grad:'linear-gradient(135deg,#a855f7,#f0a0ff)', dark:'#4a0080' },
+  { id:'bronze',   name:'Бронзовая',  emoji:'🥉', color:'#cd7f32', glow:'rgba(205,127,50,0.7)',  grad:'linear-gradient(135deg,#cd7f32,#f0c060)' },
+  { id:'silver',   name:'Серебряная', emoji:'🥈', color:'#c0c0c0', glow:'rgba(200,200,200,0.7)',  grad:'linear-gradient(135deg,#aaa,#e8e8e8)' },
+  { id:'gold',     name:'Золотая',    emoji:'🥇', color:'#f5c518', glow:'rgba(245,197,24,0.8)',   grad:'linear-gradient(135deg,#f5c518,#ffe566)' },
+  { id:'platinum', name:'Платиновая', emoji:'💎', color:'#00e5ff', glow:'rgba(0,229,255,0.8)',    grad:'linear-gradient(135deg,#00c8ff,#80ffea)' },
+  { id:'diamond',  name:'Алмазная',   emoji:'💠', color:'#d070ff', glow:'rgba(180,80,255,0.8)',   grad:'linear-gradient(135deg,#a855f7,#f0a0ff)' },
 ];
 const LEAGUE_SEASON_MS = 2*24*60*60*1000;
 const LEAGUE_SIZE = 30;
 const PROMOTE_COUNT = 3;
 const RELEGATE_COUNT = 3;
+
 let _leagueTimer = null;
+let _leagueUnsub = null; // realtime listener
 
 function getCurrentSeason() { return Math.floor(Date.now()/LEAGUE_SEASON_MS); }
 function getMyLeagueIndex() { return Math.max(0,Math.min(4,state.leagueIndex||0)); }
 function getLeagueSeasonEnd() { return (getCurrentSeason()+1)*LEAGUE_SEASON_MS; }
 function formatCountdown(ms) {
   if(ms<=0) return '0ч 00м 00с';
-  const h=Math.floor(ms/3600000), m=Math.floor((ms%3600000)/60000), s=Math.floor((ms%60000)/1000);
+  const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000);
   return h+'ч '+String(m).padStart(2,'0')+'м '+String(s).padStart(2,'0')+'с';
 }
 
-function _getGroupDocId() {
+// Назначить игрока в группу через Firestore транзакцию
+async function _assignGroup() {
+  if (!state.account||!state.account.uid) return null;
   const season = getCurrentSeason();
   const leagueIdx = getMyLeagueIndex();
   const leagueId = LEAGUES[leagueIdx].id;
-  if (!state.leagueGroupId || state.leagueGroupSeason !== season) {
-    const uid = state.account ? state.account.uid : 'guest';
-    const hash = [...uid].reduce((a,c)=>a+c.charCodeAt(0),0);
-    state.leagueGroupId = String(Math.floor(hash%999)+1);
+  const uid = state.account.uid;
+
+  // Уже есть актуальная группа?
+  if (state.leagueGroupId && state.leagueGroupSeason === season && state.leagueGroupLeague === leagueId) {
+    return leagueId+'_'+season+'_'+state.leagueGroupId;
+  }
+
+  // Ищем группу с местами (до 30 игроков)
+  // Используем документ-счётчик для каждой лиги/сезона
+  const metaRef = dcDb.collection('league_meta').doc(leagueId+'_'+season);
+
+  try {
+    let groupId = null;
+    await dcDb.runTransaction(async tx => {
+      const meta = await tx.get(metaRef);
+      if (!meta.exists) {
+        // Первая группа
+        tx.set(metaRef, { lastGroup: 1, counts: { '1': 1 } });
+        groupId = '1';
+      } else {
+        const data = meta.data();
+        const counts = data.counts || {};
+        let lastGroup = data.lastGroup || 1;
+        // Найти группу с < 30
+        let found = null;
+        for (let g = 1; g <= lastGroup; g++) {
+          if ((counts[String(g)] || 0) < LEAGUE_SIZE) { found = g; break; }
+        }
+        if (found) {
+          groupId = String(found);
+          counts[groupId] = (counts[groupId] || 0) + 1;
+          tx.update(metaRef, { counts });
+        } else {
+          // Новая группа
+          lastGroup++;
+          groupId = String(lastGroup);
+          counts[groupId] = 1;
+          tx.update(metaRef, { lastGroup, counts });
+        }
+      }
+    });
+
+    state.leagueGroupId = groupId;
     state.leagueGroupSeason = season;
+    state.leagueGroupLeague = leagueId;
     state.leagueScore = 0;
     saveState();
+    return leagueId+'_'+season+'_'+groupId;
+  } catch(e) {
+    console.warn('League assign error', e);
+    // Fallback: простая группа по хэшу
+    const hash = [...uid].reduce((a,c)=>a+c.charCodeAt(0),0);
+    const groupId = String(Math.floor(hash%50)+1);
+    state.leagueGroupId = groupId;
+    state.leagueGroupSeason = season;
+    state.leagueGroupLeague = leagueId;
+    saveState();
+    return leagueId+'_'+season+'_'+groupId;
   }
-  return leagueId+'_'+season+'_g'+state.leagueGroupId;
 }
 
-function pushLeagueScore() {
+async function pushLeagueScore() {
   if (!state.account||!state.account.uid) return;
-  const groupDocId = _getGroupDocId();
+  const season = getCurrentSeason();
+  // Новый сезон?
+  if (state.leagueGroupSeason && state.leagueGroupSeason !== season) {
+    await _processSeasonEnd();
+  }
+  const groupDocId = await _assignGroup();
+  if (!groupDocId) return;
   const uid = state.account.uid;
-  const leagueIdx = getMyLeagueIndex();
   dcDb.collection('league_scores').doc(groupDocId+'_'+uid).set({
-    uid, name: state.account.displayName||state.account.login||'Игрок',
+    uid,
+    name: state.account.displayName || state.account.login || 'Игрок',
     score: Math.floor(state.leagueScore||0),
-    leagueIdx, season: getCurrentSeason(), groupDocId, updatedAt: Date.now(),
+    leagueIdx: getMyLeagueIndex(),
+    season,
+    groupDocId,
+    updatedAt: Date.now(),
   },{merge:true}).catch(e=>console.warn('League push',e));
 }
 
-async function loadLeagueData() {
-  if (!state.account||!state.account.uid) return null;
-  const season = getCurrentSeason();
-  if (state.leagueGroupSeason && state.leagueGroupSeason!==season) await _processSeasonEnd();
-  const groupDocId = _getGroupDocId();
-  try {
-    const snap = await dcDb.collection('league_scores').where('groupDocId','==',groupDocId).limit(LEAGUE_SIZE).get();
-    let players = snap.docs.map(d=>d.data());
-    players.sort((a,b)=>(b.score||0)-(a.score||0));
-    return { players: players.slice(0,LEAGUE_SIZE), leagueIdx: getMyLeagueIndex(), season };
-  } catch(e) { console.warn('League load',e); return null; }
+// Подписка в реальном времени
+async function subscribeLeague(onUpdate) {
+  if (_leagueUnsub) { _leagueUnsub(); _leagueUnsub = null; }
+  if (!state.account||!state.account.uid) return;
+
+  const groupDocId = await _assignGroup();
+  if (!groupDocId) return;
+
+  _leagueUnsub = dcDb.collection('league_scores')
+    .where('groupDocId','==',groupDocId)
+    .onSnapshot(snap => {
+      let players = snap.docs.map(d=>d.data());
+      players.sort((a,b)=>(b.score||0)-(a.score||0));
+      players = players.slice(0, LEAGUE_SIZE);
+      onUpdate({ players, leagueIdx: getMyLeagueIndex(), season: getCurrentSeason() });
+    }, e => console.warn('League snapshot error', e));
 }
 
 async function _processSeasonEnd() {
   if (!state.account||!state.account.uid) return;
   const oldSeason = state.leagueGroupSeason;
   const oldLeagueIdx = getMyLeagueIndex();
-  const oldDocId = LEAGUES[oldLeagueIdx].id+'_'+oldSeason+'_g'+state.leagueGroupId;
+  const oldLeagueId = LEAGUES[oldLeagueIdx].id;
+  const oldDocId = oldLeagueId+'_'+oldSeason+'_'+state.leagueGroupId;
   try {
     const snap = await dcDb.collection('league_scores').where('groupDocId','==',oldDocId).limit(LEAGUE_SIZE).get();
     let players = snap.docs.map(d=>d.data());
@@ -10749,7 +10818,8 @@ async function _processSeasonEnd() {
     let newIdx = oldLeagueIdx;
     if (myRank>0&&myRank<=PROMOTE_COUNT&&oldLeagueIdx<4) newIdx=oldLeagueIdx+1;
     else if (myRank>0&&myRank>total-RELEGATE_COUNT&&oldLeagueIdx>0) newIdx=oldLeagueIdx-1;
-    state.leagueIndex=newIdx; state.leagueGroupId=null; state.leagueGroupSeason=null; state.leagueScore=0;
+    state.leagueIndex=newIdx; state.leagueGroupId=null; state.leagueGroupSeason=null;
+    state.leagueGroupLeague=null; state.leagueScore=0;
     saveState(); pushStateToCloud();
     if (newIdx>oldLeagueIdx) toast('🎉 Повышение в '+LEAGUES[newIdx].name+' лигу!','success');
     else if (newIdx<oldLeagueIdx) toast('⬇️ Вылет в '+LEAGUES[newIdx].name+' лигу','');
@@ -10773,8 +10843,8 @@ function renderLeagueModal(data) {
 
   if (!data) {
     body.innerHTML = `<div style="text-align:center;padding:50px 20px;">
-      <div style="font-size:36px;margin-bottom:12px;animation:spin 1.5s linear infinite;display:inline-block;">⏳</div>
-      <div style="font-size:13px;color:var(--text2);margin-top:8px;">Загружаем лигу...</div>
+      <div style="font-size:36px;margin-bottom:12px;">⏳</div>
+      <div style="font-size:13px;color:var(--text2);">Загружаем лигу...</div>
     </div>`;
     return;
   }
@@ -10785,66 +10855,58 @@ function renderLeagueModal(data) {
   const players = data.players;
   const myRank = players.findIndex(p=>p.uid===myUid)+1;
   const total = players.length;
-  const myScore = Math.floor(state.leagueScore||0);
 
   if (titleEl) titleEl.innerHTML = L.emoji+' '+L.name+' лига';
   const modal = document.getElementById('leagueModal');
   if (modal) { modal.style.borderTopColor=L.color+'cc'; modal.style.boxShadow='0 -10px 60px rgba(0,0,0,0.9), 0 -2px 0 '+L.color+'66'; }
 
-  // Build rows
   let rows = '';
   players.forEach((p,i) => {
-    const rank = i+1;
-    const isMe = p.uid===myUid;
-    const isTop = rank<=PROMOTE_COUNT;
-    const isBot = rank>total-RELEGATE_COUNT && total>=PROMOTE_COUNT+RELEGATE_COUNT && data.leagueIdx>0;
-    const medal = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'';
-
-    let bg = 'rgba(255,255,255,0.03)';
-    let border = 'rgba(255,255,255,0.06)';
-    if (isMe) { bg='rgba('+{bronze:'205,127,50',silver:'180,180,180',gold:'245,197,24',platinum:'0,229,255',diamond:'168,85,247'}[L.id]+',0.18)'; border=L.color+'55'; }
-    else if (isTop) { bg='rgba(0,200,80,0.08)'; border='rgba(0,230,120,0.3)'; }
-    else if (isBot) { bg='rgba(255,40,70,0.07)'; border='rgba(255,50,80,0.25)'; }
-
-    rows += `<div style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:14px;margin-bottom:6px;background:${bg};border:1.5px solid ${border};${isMe?'box-shadow:0 2px 12px '+L.color+'33;':''}">
+    const rank=i+1, isMe=p.uid===myUid;
+    const isTop=rank<=PROMOTE_COUNT;
+    const isBot=rank>total-RELEGATE_COUNT&&total>=PROMOTE_COUNT+RELEGATE_COUNT&&data.leagueIdx>0;
+    const medal=rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'';
+    let bg='rgba(255,255,255,0.03)',border='rgba(255,255,255,0.06)';
+    if(isMe){bg='rgba(255,255,255,0.1)';border=L.color+'66';}
+    else if(isTop){bg='rgba(0,200,80,0.08)';border='rgba(0,230,120,0.3)';}
+    else if(isBot){bg='rgba(255,40,70,0.07)';border='rgba(255,50,80,0.25)';}
+    rows+=`<div style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:14px;margin-bottom:6px;background:${bg};border:1.5px solid ${border};${isMe?'box-shadow:0 2px 12px '+L.color+'33;':''}">
       <span style="font-size:14px;font-weight:900;width:22px;text-align:center;color:${isTop?'#00e676':isBot?'#ff4460':'var(--text2)'};">${medal||rank}</span>
-      <span style="flex:1;font-size:13px;font-weight:800;color:${isMe?'#fff':'rgba(255,255,255,0.85)'};">${p.name||'Игрок'}${isMe?' <span style="font-size:10px;font-weight:700;opacity:0.6;">(ты)</span>':''}</span>
+      <span style="flex:1;font-size:13px;font-weight:800;color:${isMe?'#fff':'rgba(255,255,255,0.85)'};">${p.name||'Игрок'}${isMe?' <span style="font-size:10px;opacity:0.6;">(ты)</span>':''}</span>
       <span style="font-size:13px;font-weight:900;color:${isTop?'#ffe566':isBot?'#ff6680':'rgba(255,255,255,0.7)'};">⚡ ${(p.score||0).toLocaleString()}</span>
     </div>`;
-
-    if (rank===PROMOTE_COUNT&&total>PROMOTE_COUNT)
-      rows+=`<div style="text-align:center;font-size:10px;font-weight:800;color:rgba(255,255,255,0.25);letter-spacing:1px;padding:4px 0;margin-bottom:4px;">· · · УДЕРЖАНИЕ · · ·</div>`;
-    if (data.leagueIdx>0&&rank===total-RELEGATE_COUNT&&total>PROMOTE_COUNT+RELEGATE_COUNT)
-      rows+=`<div style="text-align:center;font-size:10px;font-weight:800;color:rgba(255,80,80,0.4);letter-spacing:1px;padding:4px 0;margin-bottom:4px;">· · · ОПАСНАЯ ЗОНА · · ·</div>`;
+    if(rank===PROMOTE_COUNT&&total>PROMOTE_COUNT)
+      rows+=`<div style="text-align:center;font-size:10px;font-weight:800;color:rgba(255,255,255,0.2);letter-spacing:1px;padding:4px 0;">· · · УДЕРЖАНИЕ · · ·</div>`;
+    if(data.leagueIdx>0&&rank===total-RELEGATE_COUNT&&total>PROMOTE_COUNT+RELEGATE_COUNT)
+      rows+=`<div style="text-align:center;font-size:10px;font-weight:800;color:rgba(255,80,80,0.35);letter-spacing:1px;padding:4px 0;">· · · ОПАСНАЯ ЗОНА · · ·</div>`;
   });
 
-  const nextLeague = data.leagueIdx<4?LEAGUES[data.leagueIdx+1]:null;
-  const prevLeague = data.leagueIdx>0?LEAGUES[data.leagueIdx-1]:null;
+  const nextL=data.leagueIdx<4?LEAGUES[data.leagueIdx+1]:null;
+  const prevL=data.leagueIdx>0?LEAGUES[data.leagueIdx-1]:null;
 
-  body.innerHTML = `
+  body.innerHTML=`
     <div style="position:relative;text-align:center;padding:20px 16px 16px;background:linear-gradient(180deg,${L.color}18 0%,transparent 100%);border-radius:16px;margin-bottom:12px;">
       <div style="font-size:64px;filter:drop-shadow(0 0 20px ${L.glow});animation:leagueBadgePulse 2.5s ease-in-out infinite;">${L.emoji}</div>
-      <div style="font-size:20px;font-weight:900;letter-spacing:0.5px;background:${L.grad};-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin:6px 0 2px;">${L.name} лига</div>
+      <div style="font-size:20px;font-weight:900;background:${L.grad};-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin:6px 0 2px;">${L.name} лига</div>
       <div style="font-size:11px;color:var(--text2);margin-bottom:10px;">До конца сезона: <span id="leagueCountdown" style="color:#fff;font-weight:900;">${formatCountdown(timeLeft)}</span></div>
-      <div style="display:inline-flex;gap:6px;align-items:center;background:rgba(0,0,0,0.3);border-radius:20px;padding:6px 14px;border:1px solid ${L.color}33;">
+      <div style="display:inline-flex;gap:8px;align-items:center;background:rgba(0,0,0,0.35);border-radius:20px;padding:7px 16px;border:1px solid ${L.color}33;">
         <span style="font-size:12px;color:var(--text2);">Твои ⚡:</span>
-        <span style="font-size:14px;font-weight:900;color:#ffe566;">${myScore.toLocaleString()}</span>
-        ${myRank>0?`<span style="font-size:11px;color:var(--text2);margin-left:4px;">· место <b style="color:#fff">${myRank}</b> из ${total}</span>`:''}
+        <span style="font-size:15px;font-weight:900;color:#ffe566;">${Math.floor(state.leagueScore||0).toLocaleString()}</span>
+        ${myRank>0?`<span style="font-size:11px;color:var(--text2);">· место <b style="color:#fff">${myRank}</b>/${total}</span>`:''}
       </div>
+      <div style="margin-top:6px;font-size:10px;color:rgba(255,255,255,0.3);">🔴 Обновляется в реальном времени</div>
     </div>
-
     <div style="display:flex;gap:8px;margin-bottom:12px;">
-      ${nextLeague?`<div style="flex:1;background:rgba(0,200,80,0.1);border:1px solid rgba(0,200,80,0.3);border-radius:10px;padding:8px 10px;text-align:center;">
-        <div style="font-size:9px;color:#00e676;font-weight:800;letter-spacing:1px;">⬆️ ТОП-${PROMOTE_COUNT} → </div>
-        <div style="font-size:11px;color:#fff;font-weight:800;margin-top:2px;">${nextLeague.emoji} ${nextLeague.name}</div>
-      </div>`:'<div style="flex:1;background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.3);border-radius:10px;padding:8px;text-align:center;font-size:11px;color:#ffd700;font-weight:800;">👑 Высшая лига!</div>'}
-      ${prevLeague?`<div style="flex:1;background:rgba(255,50,80,0.08);border:1px solid rgba(255,50,80,0.25);border-radius:10px;padding:8px 10px;text-align:center;">
+      ${nextL?`<div style="flex:1;background:rgba(0,200,80,0.1);border:1px solid rgba(0,200,80,0.3);border-radius:10px;padding:8px;text-align:center;">
+        <div style="font-size:9px;color:#00e676;font-weight:800;letter-spacing:1px;">⬆️ ТОП-${PROMOTE_COUNT} →</div>
+        <div style="font-size:11px;color:#fff;font-weight:800;margin-top:2px;">${nextL.emoji} ${nextL.name}</div>
+      </div>`:`<div style="flex:1;background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.3);border-radius:10px;padding:8px;text-align:center;font-size:11px;color:#ffd700;font-weight:800;">👑 Высшая лига!</div>`}
+      ${prevL?`<div style="flex:1;background:rgba(255,50,80,0.08);border:1px solid rgba(255,50,80,0.25);border-radius:10px;padding:8px;text-align:center;">
         <div style="font-size:9px;color:#ff4460;font-weight:800;letter-spacing:1px;">⬇️ ПОСЛЕДНИЕ ${RELEGATE_COUNT} →</div>
-        <div style="font-size:11px;color:#fff;font-weight:800;margin-top:2px;">${prevLeague.emoji} ${prevLeague.name}</div>
+        <div style="font-size:11px;color:#fff;font-weight:800;margin-top:2px;">${prevL.emoji} ${prevL.name}</div>
       </div>`:''}
     </div>
-
-    <div style="font-size:10px;font-weight:800;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;padding-left:4px;">Таблица · ${total} / ${LEAGUE_SIZE} игроков</div>
+    <div style="font-size:10px;font-weight:800;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;padding-left:4px;">Таблица · ${total}/${LEAGUE_SIZE} игроков</div>
     ${rows||`<div style="text-align:center;padding:30px;color:var(--text2);">
       <div style="font-size:32px;margin-bottom:8px;">🏁</div>
       <div style="font-size:13px;">Пока только ты в этой группе!</div>
@@ -10852,8 +10914,8 @@ function renderLeagueModal(data) {
     </div>`}
   `;
 
-  if (_leagueTimer) clearInterval(_leagueTimer);
-  _leagueTimer = setInterval(()=>{
+  if(_leagueTimer) clearInterval(_leagueTimer);
+  _leagueTimer=setInterval(()=>{
     const el=document.getElementById('leagueCountdown');
     if(!el){clearInterval(_leagueTimer);return;}
     el.textContent=formatCountdown(getLeagueSeasonEnd()-Date.now());
@@ -10863,10 +10925,17 @@ function renderLeagueModal(data) {
 async function openLeagueModal() {
   _origOpenModal('league');
   renderLeagueModal(null);
-  pushLeagueScore();
-  const data = await loadLeagueData();
-  renderLeagueModal(data);
+  await pushLeagueScore();
+  // Подписываемся на реальное время
+  subscribeLeague(data => renderLeagueModal(data));
 }
+
+// Закрытие модала — отписаться
+const _origCloseModal = closeModal;
+window.closeModal = function(id) {
+  if (id==='league' && _leagueUnsub) { _leagueUnsub(); _leagueUnsub=null; }
+  _origCloseModal(id);
+};
 
 const _origOpenModal = openModal;
 window.openModal = function(id) {
@@ -10874,8 +10943,16 @@ window.openModal = function(id) {
   _origOpenModal(id);
 };
 
+// Пушим очки каждые 60 секунд
 setInterval(()=>{ if(state.account&&state.account.uid) pushLeagueScore(); },60000);
-setTimeout(()=>{ if(state.account&&state.account.uid){ if(!state.leagueIndex)state.leagueIndex=0; if(!state.leagueScore)state.leagueScore=0; pushLeagueScore(); }},3000);
+
+setTimeout(()=>{
+  if(state.account&&state.account.uid){
+    if(!state.leagueIndex) state.leagueIndex=0;
+    if(!state.leagueScore) state.leagueScore=0;
+    pushLeagueScore();
+  }
+},3000);
 </script>
 
 </body>
