@@ -2773,6 +2773,13 @@ body.vip-theme-16 ::selection { background: rgba(200,150,255,0.35); }
   <button class="nav-btn" onclick="openModal('rules')" style="background:linear-gradient(160deg,#3a4a6b,#1a2438);border-color:rgba(125,200,255,0.3);box-shadow:0 4px 0 #0a1020,0 6px 18px rgba(80,140,255,0.25);color:#cfe6ff;">
     <span class="nav-icon">📖</span>Правила
   </button>
+  <button class="nav-btn" onclick="openModal('transfer')" style="background:linear-gradient(160deg,#00c2a8,#00785f);border-color:rgba(0,220,190,0.35);box-shadow:0 4px 0 #003a30,0 6px 18px rgba(0,200,170,0.3);color:#e0fff8;">
+    <span class="nav-icon">📤</span>Перевод
+  </button>
+  <button class="nav-btn" id="podgonyNavBtn" onclick="openModal('podgony')" style="background:linear-gradient(160deg,#ffb300,#c97a00);border-color:rgba(255,190,0,0.4);box-shadow:0 4px 0 #663d00,0 6px 18px rgba(255,170,0,0.3);color:#fff;position:relative;">
+    <span class="nav-icon">🎁</span>Подгоны
+    <span id="podgonyDot" style="display:none;position:absolute;top:6px;right:8px;width:8px;height:8px;background:#ff4655;border-radius:50%;box-shadow:0 0 6px rgba(255,70,85,0.9);"></span>
+  </button>
 </div>
 
 <!-- LEAGUE MODAL -->
@@ -2816,6 +2823,35 @@ body.vip-theme-16 ::selection { background: rgba(200,150,255,0.35); }
     </div>
   </div>
 </div>
+
+<!-- TRANSFER (SEND) MODAL -->
+<div class="modal-overlay" id="modal-transfer">
+  <div class="modal" style="border-top-color:rgba(0,220,190,0.4);box-shadow:0 -10px 50px rgba(0,0,0,0.8),0 -2px 0 rgba(0,220,190,0.3);">
+    <div class="modal-handle" style="background:rgba(0,220,190,0.35);"></div>
+    <div class="modal-header" style="border-bottom-color:rgba(0,220,190,0.15);">
+      <span class="modal-title" style="background:linear-gradient(135deg,#00e8c8 0%,#00b894 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">📤 Перевод другому игроку</span>
+      <button class="modal-close" onclick="closeModal('transfer')" style="border-color:rgba(0,220,190,0.25);color:rgba(0,220,190,0.7);">✕</button>
+    </div>
+    <div class="modal-body" id="transferBody">
+      <!-- filled by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- PODGONY (CLAIM INCOMING TRANSFERS) MODAL -->
+<div class="modal-overlay" id="modal-podgony">
+  <div class="modal" style="border-top-color:rgba(255,190,0,0.4);box-shadow:0 -10px 50px rgba(0,0,0,0.8),0 -2px 0 rgba(255,190,0,0.3);">
+    <div class="modal-handle" style="background:rgba(255,190,0,0.35);"></div>
+    <div class="modal-header" style="border-bottom-color:rgba(255,190,0,0.15);">
+      <span class="modal-title" style="background:linear-gradient(135deg,#ffd166 0%,#ff9f1c 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">🎁 Подгоны</span>
+      <button class="modal-close" onclick="closeModal('podgony')" style="border-color:rgba(255,190,0,0.25);color:rgba(255,190,0,0.7);">✕</button>
+    </div>
+    <div class="modal-body" id="podgonyBody">
+      <!-- filled by JS -->
+    </div>
+  </div>
+</div>
+
 
 
 <!-- SUMMER MODAL -->
@@ -3700,6 +3736,7 @@ function _continueAuthFlow(user) {
     updateUI();
     renderAccount();
     _setAuthBusy(false);
+    checkPodgonyDot();
   }).catch(() => {
     state.account = { login: username, uid: user.uid };
     _setAuthBusy(false);
@@ -4712,11 +4749,238 @@ function renderAccount() {
 }
 
 // ============================================================
+//  ПЕРЕВОДЫ МЕЖДУ ИГРОКАМИ (отправка + "Подгоны" — получение)
+//  Перевод хранится в Firestore-коллекции "transfers" и адресуется
+//  по логину получателя (toLogin), а не по uid — так получателю не
+//  нужно ничего вводить, кроме как зайти в раздел «Подгоны».
+//  Комиссия 15% удерживается с отправителя сразу при отправке.
+// ============================================================
+const TRANSFER_FEE_RATE = 0.15;
+let _transferCurrency = 'gems'; // 'gems' (💎) | 'xp' (⚡)
+
+function setTransferCurrency(cur) {
+  _transferCurrency = cur;
+  renderTransfer();
+}
+
+function renderTransfer() {
+  const body = document.getElementById('transferBody');
+  if (!body) return;
+
+  if (!state.account) {
+    body.innerHTML = `
+      <div style="text-align:center;padding:30px 10px;color:var(--text2);">
+        <div style="font-size:46px;margin-bottom:10px;">🔒</div>
+        <div style="font-weight:800;margin-bottom:6px;">Нужен аккаунт</div>
+        <div style="font-size:13px;opacity:0.7;">Зайди в раздел «Аккаунт», чтобы отправлять переводы другим игрокам.</div>
+      </div>`;
+    return;
+  }
+
+  const balGems = Math.floor(state.gems || 0);
+  const balXp   = Math.floor(state.xp || 0);
+  const isGems  = _transferCurrency === 'gems';
+  const balance = isGems ? balGems : balXp;
+
+  body.innerHTML = `
+    <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6;">
+      Отправь 💎 алмазы или ⚡ опыт другому игроку по его логину. С перевода удерживается комиссия <b style="color:var(--red);">15%</b> — получатель увидит сумму уже после вычета комиссии в разделе «🎁 Подгоны».
+    </p>
+
+    <input class="duo-input" id="transferLogin" type="text" placeholder="Логин получателя" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="20" style="margin-bottom:10px;">
+
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <button onclick="setTransferCurrency('gems')" style="flex:1;padding:12px;border-radius:12px;cursor:pointer;font-family:'Nunito',sans-serif;font-weight:900;font-size:14px;display:flex;align-items:center;justify-content:center;gap:6px;
+        border:1.5px solid ${isGems ? 'rgba(0,200,255,0.6)' : 'rgba(255,255,255,0.12)'};
+        background:${isGems ? 'rgba(0,200,255,0.15)' : 'rgba(255,255,255,0.04)'};
+        color:${isGems ? 'var(--blue)' : 'rgba(255,255,255,0.5)'};">💎 Алмазы</button>
+      <button onclick="setTransferCurrency('xp')" style="flex:1;padding:12px;border-radius:12px;cursor:pointer;font-family:'Nunito',sans-serif;font-weight:900;font-size:14px;display:flex;align-items:center;justify-content:center;gap:6px;
+        border:1.5px solid ${!isGems ? 'rgba(255,170,0,0.6)' : 'rgba(255,255,255,0.12)'};
+        background:${!isGems ? 'rgba(255,170,0,0.15)' : 'rgba(255,255,255,0.04)'};
+        color:${!isGems ? 'var(--orange, #ffaa00)' : 'rgba(255,255,255,0.5)'};">⚡ Опыт</button>
+    </div>
+
+    <div style="font-size:11px;color:var(--text2);margin-bottom:6px;">Доступно: <b>${balance.toLocaleString('ru-RU')} ${isGems ? '💎' : '⚡'}</b></div>
+    <input class="duo-input" id="transferAmount" type="number" min="1" max="${balance}" placeholder="Количество" inputmode="numeric" style="margin-bottom:6px;" oninput="renderTransferPreview()">
+
+    <div id="transferPreview" style="font-size:12px;color:var(--text2);min-height:18px;margin-bottom:10px;"></div>
+    <div id="transferError" style="color:var(--red);font-size:12px;font-weight:800;min-height:16px;margin:2px 2px 8px;"></div>
+
+    <button class="duo-btn green" id="transferSubmitBtn" onclick="sendTransfer()">
+      <div class="btn-left"><span class="btn-icon">📤</span><span class="btn-title">Отправить</span></div>
+      <span class="btn-cost">→</span>
+    </button>`;
+  renderTransferPreview();
+}
+
+function renderTransferPreview() {
+  const el = document.getElementById('transferPreview');
+  if (!el) return;
+  const amt = parseInt(document.getElementById('transferAmount')?.value || '0') || 0;
+  if (amt <= 0) { el.textContent = ''; return; }
+  const fee = Math.ceil(amt * TRANSFER_FEE_RATE);
+  const receive = amt - fee;
+  const icon = _transferCurrency === 'gems' ? '💎' : '⚡';
+  el.innerHTML = `Комиссия 15%: <b style="color:var(--red);">-${fee.toLocaleString('ru-RU')} ${icon}</b> &nbsp;→&nbsp; Получит игрок: <b style="color:var(--green);">${receive.toLocaleString('ru-RU')} ${icon}</b>`;
+}
+
+function sendTransfer() {
+  const errEl = document.getElementById('transferError');
+  if (errEl) errEl.textContent = '';
+  if (!state.account) { if (errEl) errEl.textContent = 'Нужен аккаунт'; return; }
+
+  const toLogin = dcSanitizeUsername(document.getElementById('transferLogin')?.value);
+  const amt = parseInt(document.getElementById('transferAmount')?.value || '0') || 0;
+  const isGems = _transferCurrency === 'gems';
+  const balance = Math.floor((isGems ? state.gems : state.xp) || 0);
+
+  if (toLogin.length < 3) { if (errEl) errEl.textContent = 'Введи корректный логин получателя'; return; }
+  if (toLogin === state.account.login) { if (errEl) errEl.textContent = 'Нельзя перевести самому себе'; return; }
+  if (amt <= 0) { if (errEl) errEl.textContent = 'Введи количество больше 0'; return; }
+  if (amt > balance) { if (errEl) errEl.textContent = 'Недостаточно средств'; return; }
+
+  const fee = Math.ceil(amt * TRANSFER_FEE_RATE);
+  const receiveAmt = amt - fee;
+  if (receiveAmt <= 0) { if (errEl) errEl.textContent = 'Сумма слишком мала после комиссии'; return; }
+
+  const btn = document.getElementById('transferSubmitBtn');
+  if (btn) btn.disabled = true;
+
+  // Списываем у отправителя сразу
+  if (isGems) state.gems = Math.max(0, (state.gems || 0) - amt);
+  else        state.xp   = Math.max(0, (state.xp   || 0) - amt);
+  saveState();
+  pushStateToCloud();
+  updateUI();
+
+  dcDb.collection('transfers').add({
+    fromLogin: state.account.login,
+    toLogin: toLogin,
+    currency: isGems ? 'gems' : 'xp',
+    amount: receiveAmt,
+    originalAmount: amt,
+    fee: fee,
+    claimed: false,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(() => {
+    if (btn) btn.disabled = false;
+    toast(`📤 Отправлено ${receiveAmt.toLocaleString('ru-RU')} ${isGems ? '💎' : '⚡'} игроку ${toLogin}`, 'success');
+    closeModal('transfer');
+  }).catch(err => {
+    if (btn) btn.disabled = false;
+    // Если запись в облако не удалась — возвращаем средства игроку
+    if (isGems) state.gems = (state.gems || 0) + amt;
+    else        state.xp   = (state.xp   || 0) + amt;
+    saveState();
+    pushStateToCloud();
+    updateUI();
+    if (errEl) errEl.textContent = 'Не удалось отправить перевод. Проверь интернет и попробуй снова.';
+  });
+}
+
+function renderPodgony() {
+  const body = document.getElementById('podgonyBody');
+  if (!body) return;
+
+  if (!state.account) {
+    body.innerHTML = `
+      <div style="text-align:center;padding:30px 10px;color:var(--text2);">
+        <div style="font-size:46px;margin-bottom:10px;">🔒</div>
+        <div style="font-weight:800;margin-bottom:6px;">Нужен аккаунт</div>
+        <div style="font-size:13px;opacity:0.7;">Зайди в раздел «Аккаунт», чтобы получать переводы от других игроков.</div>
+      </div>`;
+    return;
+  }
+
+  body.innerHTML = `<div style="text-align:center;padding:30px 0;color:var(--text2);">Загрузка подгонов...</div>`;
+
+  dcDb.collection('transfers')
+    .where('toLogin', '==', state.account.login)
+    .where('claimed', '==', false)
+    .get()
+    .then(snap => {
+      if (snap.empty) {
+        body.innerHTML = `
+          <div style="text-align:center;padding:30px 10px;color:var(--text2);">
+            <div style="font-size:46px;margin-bottom:10px;">🎁</div>
+            <div style="font-weight:800;margin-bottom:6px;">Пока пусто</div>
+            <div style="font-size:13px;opacity:0.7;">Здесь появятся переводы от других игроков, которые ты сможешь забрать.</div>
+          </div>`;
+        setPodgonyDot(false);
+        return;
+      }
+      let html = `<div style="font-size:12px;color:var(--text2);margin-bottom:12px;">Нажми «Забрать», чтобы зачислить перевод на свой баланс.</div>`;
+      snap.forEach(doc => {
+        const d = doc.data();
+        const icon = d.currency === 'gems' ? '💎' : '⚡';
+        html += `
+          <div style="background:var(--card);border-radius:14px;padding:14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+            <div>
+              <div style="font-size:13px;font-weight:900;color:#fff;">${icon} +${(d.amount || 0).toLocaleString('ru-RU')}</div>
+              <div style="font-size:11px;color:var(--text2);margin-top:2px;">от игрока <b>${d.fromLogin}</b></div>
+            </div>
+            <button class="duo-btn green" style="width:auto;padding:10px 16px;" onclick="claimPodgon('${doc.id}')">
+              <div class="btn-left"><span class="btn-icon">🎁</span><span class="btn-title">Забрать</span></div>
+            </button>
+          </div>`;
+      });
+      body.innerHTML = html;
+      setPodgonyDot(true);
+    })
+    .catch(() => {
+      body.innerHTML = `<div style="text-align:center;padding:30px 10px;color:var(--red);">Не удалось загрузить подгоны. Проверь интернет.</div>`;
+    });
+}
+
+function claimPodgon(docId) {
+  if (!state.account) return;
+  const ref = dcDb.collection('transfers').doc(docId);
+  ref.get().then(doc => {
+    if (!doc.exists) { toast('Этот подгон уже забрали', 'error'); renderPodgony(); return; }
+    const d = doc.data();
+    if (d.claimed) { toast('Этот подгон уже забрали', 'error'); renderPodgony(); return; }
+    if (d.toLogin !== state.account.login) { toast('Этот подгон не для тебя', 'error'); return; }
+
+    return ref.update({ claimed: true }).then(() => {
+      if (d.currency === 'gems') state.gems = (state.gems || 0) + (d.amount || 0);
+      else                       state.xp   = (state.xp   || 0) + (d.amount || 0);
+      saveState();
+      pushStateToCloud();
+      updateUI();
+      toast(`🎁 Забрано ${(d.amount || 0).toLocaleString('ru-RU')} ${d.currency === 'gems' ? '💎' : '⚡'} от ${d.fromLogin}`, 'success');
+      renderPodgony();
+    });
+  }).catch(() => {
+    toast('Не удалось забрать подгон. Попробуй ещё раз.', 'error');
+  });
+}
+
+function setPodgonyDot(show) {
+  const dot = document.getElementById('podgonyDot');
+  if (dot) dot.style.display = show ? 'block' : 'none';
+}
+
+// Лёгкая периодическая проверка новых подгонов (раз в 60 сек), чтобы
+// показывать красную точку на кнопке «Подгоны» даже без открытия раздела.
+function checkPodgonyDot() {
+  if (!state.account || !dcDb) return;
+  dcDb.collection('transfers')
+    .where('toLogin', '==', state.account.login)
+    .where('claimed', '==', false)
+    .limit(1)
+    .get()
+    .then(snap => setPodgonyDot(!snap.empty))
+    .catch(() => {});
+}
+setInterval(checkPodgonyDot, 60000);
+
+// ============================================================
 //  WITHDRAWAL
 // ============================================================
 function getCommissionRate(amt) {
   // Если одобрена оплата ⭐ — комиссия 0% (на 30 дней)
   if ((state.noCommissionUntil || 0) > Date.now()) return 0;
+
   // Dynamic commission: 5% for small, up to 15% for large amounts
   let rate;
   if (amt < 300)   rate = 0.05;   // 5%
@@ -9033,6 +9297,8 @@ function openModal(id) {
   if (id === 'summer')        renderSummer();
   if (id === 'promo')         renderPromo();
   if (id === 'rules')         renderRules();
+  if (id === 'transfer')      renderTransfer();
+  if (id === 'podgony')       renderPodgony();
   const overlay = document.getElementById('modal-' + id);
   overlay.classList.remove('closing');
   overlay.classList.add('active');
