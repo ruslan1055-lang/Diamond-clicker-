@@ -3515,11 +3515,39 @@ function doLogin() {
   dcAuth.signInWithEmailAndPassword(dcEmailFromUsername(login), password)
     .catch(err => {
       _setAuthBusy(false);
+      if (err.code === 'auth/user-disabled') { showBanScreen(); return; }
       if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') _setAuthError('Аккаунт не найден или неверный пароль');
       else if (err.code === 'auth/wrong-password')   _setAuthError('Неверный пароль');
       else if (err.code === 'auth/too-many-requests')_setAuthError('Слишком много попыток — подожди немного');
       else _setAuthError('Ошибка входа: ' + (err.message || err.code));
     });
+}
+
+function showBanScreen() {
+  // Чистим всё локально и выходим
+  clearTimeout(_dcSyncTimer);
+  if (window._dcBanCheckInterval) { clearInterval(window._dcBanCheckInterval); window._dcBanCheckInterval = null; }
+  dcAuth.signOut().catch(()=>{});
+  try {
+    const keys = [];
+    for (let i = 0; i < localStorage.length; i++) keys.push(localStorage.key(i));
+    keys.forEach(k => localStorage.removeItem(k));
+  } catch(e) {}
+
+  // Полноэкранный баннер бана поверх всего
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:999999;background:radial-gradient(ellipse at center,#3a0000 0%,#0a0000 70%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;font-family:"Nunito",sans-serif;';
+  overlay.innerHTML = `
+    <div style="font-size:72px;margin-bottom:16px;filter:drop-shadow(0 0 24px rgba(255,0,0,0.6));">🚫</div>
+    <div style="font-size:24px;font-weight:900;color:#ff3344;margin-bottom:10px;letter-spacing:0.5px;">АККАУНТ ЗАБЛОКИРОВАН</div>
+    <div style="font-size:14px;color:rgba(255,255,255,0.7);max-width:320px;line-height:1.5;margin-bottom:24px;">
+      Твой аккаунт был заблокирован администрацией за нарушение правил игры.
+      Доступ к игре закрыт.
+    </div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.4);">Если считаешь это ошибкой — свяжись с поддержкой</div>
+  `;
+  document.body.innerHTML = '';
+  document.body.appendChild(overlay);
 }
 
 function logout() {
@@ -3622,6 +3650,20 @@ dcAuth.onAuthStateChanged(function(user) {
     renderAccount();
     toast('Не удалось загрузить облачный прогресс — проверь интернет', 'error');
   });
+
+  // Периодически проверяем не забанили ли уже залогиненного игрока.
+  // Firebase отключает аккаунт мгновенно, но клиент узнаёт об этом
+  // только при попытке обновить токен — форсируем эту проверку.
+  if (!window._dcBanCheckInterval) {
+    window._dcBanCheckInterval = setInterval(() => {
+      if (!dcAuth.currentUser) return;
+      dcAuth.currentUser.getIdToken(true).catch(err => {
+        if (err.code === 'auth/user-disabled' || err.code === 'auth/user-token-expired') {
+          showBanScreen();
+        }
+      });
+    }, 30000);
+  }
 });
 
 // На случай закрытия вкладки/сворачивания — добиваем последнее сохранение.
