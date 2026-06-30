@@ -10759,6 +10759,108 @@ async function _assignGroup() {
   }
 }
 
+async function showLobbyPicker() {
+  if (!state.account||!state.account.uid) return;
+  const leagueIdx = getMyLeagueIndex();
+  const leagueId = LEAGUES[leagueIdx].id;
+  const body = document.getElementById('leagueBody');
+  if (!body) return;
+
+  body.innerHTML = `<div style="text-align:center;padding:40px 20px;">
+    <div style="font-size:32px;margin-bottom:12px;">🔍</div>
+    <div style="font-size:13px;color:var(--text2);">Ищем доступные лобби...</div>
+  </div>`;
+
+  try {
+    const snap = await dcDb.collection('league_groups')
+      .where('leagueId','==',leagueId)
+      .where('finished','==',false)
+      .limit(50)
+      .get();
+
+    let groups = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // Сортировка: сначала ждущие игроков, потом по количеству
+    groups.sort((a,b) => {
+      if (a.started !== b.started) return a.started ? 1 : -1;
+      return (b.count||0) - (a.count||0);
+    });
+
+    const L = LEAGUES[leagueIdx];
+    let rows = '';
+    groups.forEach(g => {
+      const groupId = g.id.split('_').slice(1).join('_');
+      const isMine = state.leagueGroupId === groupId;
+      const full = (g.count||0) >= LEAGUE_SIZE;
+      rows += `<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;margin-bottom:8px;background:${isMine?'rgba(255,255,255,0.1)':'rgba(255,255,255,0.04)'};border:1.5px solid ${isMine?L.color+'66':'rgba(255,255,255,0.08)'};">
+        <span style="font-size:20px;">${g.started ? '🏁' : '⏳'}</span>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:800;color:#fff;">${g.started ? 'Сезон идёт' : 'Ожидание'} ${isMine?'<span style="font-size:10px;opacity:0.6;">(твоё)</span>':''}</div>
+          <div style="font-size:11px;color:var(--text2);">${g.count||0}/${LEAGUE_SIZE} игроков</div>
+        </div>
+        ${isMine ? '<span style="font-size:11px;color:#00e676;font-weight:800;">Ты тут</span>' :
+          full ? '<span style="font-size:11px;color:#ff4460;font-weight:800;">Заполнено</span>' :
+          `<button onclick="joinSpecificLobby('${groupId}')" style="padding:8px 14px;border-radius:10px;border:none;background:${L.grad};color:#000;font-size:12px;font-weight:900;cursor:pointer;">Войти</button>`}
+      </div>`;
+    });
+
+    body.innerHTML = `
+      <div style="text-align:center;padding:8px 0 16px;">
+        <div style="font-size:18px;font-weight:900;color:#fff;">${L.emoji} Все лобби лиги "${L.name}"</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:4px;">Найдено ${groups.length} ${groups.length===1?'лобби':'лобби'}</div>
+      </div>
+      ${rows || `<div style="text-align:center;padding:30px;color:var(--text2);">Лобби не найдено</div>`}
+      <button onclick="openLeagueModal()" style="width:100%;margin-top:12px;padding:11px;border-radius:12px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);color:#fff;font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;cursor:pointer;">← Назад в моё лобби</button>
+    `;
+  } catch(e) {
+    console.warn('Lobby list error', e);
+    body.innerHTML = `<div style="text-align:center;padding:30px;color:var(--text2);">Не удалось загрузить список лобби</div>
+      <button onclick="openLeagueModal()" style="width:100%;margin-top:12px;padding:11px;border-radius:12px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);color:#fff;font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;cursor:pointer;">← Назад</button>`;
+  }
+}
+
+async function joinSpecificLobby(targetGroupId) {
+  if (!state.account||!state.account.uid) return;
+  const leagueIdx = getMyLeagueIndex();
+  const leagueId = LEAGUES[leagueIdx].id;
+  const uid = state.account.uid;
+
+  // Покинуть текущую группу если есть
+  if (state.leagueGroupId && state.leagueGroupLeague) {
+    const oldDocId = state.leagueGroupLeague+'_'+state.leagueGroupId;
+    try {
+      await dcDb.collection('league_scores').doc(oldDocId+'_'+uid).delete();
+      const oldRef = dcDb.collection('league_groups').doc(oldDocId);
+      await dcDb.runTransaction(async tx => {
+        const snap = await tx.get(oldRef);
+        if (snap.exists) tx.update(oldRef, { count: Math.max(0, (snap.data().count||1)-1) });
+      });
+    } catch(e) { console.warn('Leave old lobby error', e); }
+  }
+
+  // Присоединиться к новой
+  const targetDocId = leagueId+'_'+targetGroupId;
+  try {
+    await dcDb.runTransaction(async tx => {
+      const ref = dcDb.collection('league_groups').doc(targetDocId);
+      const snap = await tx.get(ref);
+      if (!snap.exists) throw new Error('Лобби больше не существует');
+      const g = snap.data();
+      if ((g.count||0) >= LEAGUE_SIZE) throw new Error('Лобби уже заполнено');
+      tx.update(ref, { count: (g.count||0)+1 });
+    });
+
+    state.leagueGroupId = targetGroupId;
+    state.leagueGroupLeague = leagueId;
+    state.leagueScore = 0;
+    saveState();
+    toast('✅ Перешёл в новое лобби!', 'success');
+    openLeagueModal();
+  } catch(e) {
+    toast('❌ ' + (e.message || 'Не удалось войти'), 'error');
+    showLobbyPicker();
+  }
+}
+
 async function resetMyLeague() {
   if (!state.account||!state.account.uid) return;
   if (!confirm('Вернуться в бронзовую лигу и начать заново?')) return;
@@ -10952,7 +11054,10 @@ function renderLeagueModal(data) {
       <div style="font-size:10px;font-weight:800;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;padding-left:4px;">В лобби · ${total} ${total===1?'игрок':'игроков'}</div>
       ${waitRows}
       <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.3);margin-top:16px;">🔴 Обновляется автоматически — оставайся здесь</div>
-      <button onclick="resetMyLeague()" style="width:100%;margin-top:14px;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.35);font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;">🥉 Вернуться в бронзовую лигу</button>
+      <div style="display:flex;gap:8px;margin-top:14px;">
+        <button onclick="showLobbyPicker()" style="flex:1;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.7);font-family:'Nunito',sans-serif;font-size:11px;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent;">🔀 Другое лобби</button>
+        <button onclick="resetMyLeague()" style="flex:1;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.35);font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;">🥉 В бронзу</button>
+      </div>
     `;
     if(_leagueTimer) clearInterval(_leagueTimer);
     return;
@@ -11008,7 +11113,10 @@ function renderLeagueModal(data) {
     </div>
     <div style="font-size:10px;font-weight:800;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;padding-left:4px;">Таблица · ${total}/${LEAGUE_SIZE} игроков</div>
     ${rows}
-    <button onclick="resetMyLeague()" style="width:100%;margin-top:16px;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.35);font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;">🥉 Вернуться в бронзовую лигу</button>
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button onclick="showLobbyPicker()" style="flex:1;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.7);font-family:'Nunito',sans-serif;font-size:11px;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent;">🔀 Другое лобби</button>
+      <button onclick="resetMyLeague()" style="flex:1;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.35);font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;">🥉 В бронзу</button>
+    </div>
   `;
 
   if(_leagueTimer) clearInterval(_leagueTimer);
