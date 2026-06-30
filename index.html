@@ -10671,7 +10671,7 @@ function claimCashbackChest() {
 
 <script>
 // ============================================================
-//  LEAGUE SYSTEM — real-time, shared groups
+//  LEAGUE SYSTEM — lobby + real-time, per-group timer
 // ============================================================
 const LEAGUES = [
   { id:'bronze',   name:'Бронзовая',  emoji:'🥉', color:'#cd7f32', glow:'rgba(205,127,50,0.7)',  grad:'linear-gradient(135deg,#cd7f32,#f0c060)' },
@@ -10680,97 +10680,87 @@ const LEAGUES = [
   { id:'platinum', name:'Платиновая', emoji:'💎', color:'#00e5ff', glow:'rgba(0,229,255,0.8)',    grad:'linear-gradient(135deg,#00c8ff,#80ffea)' },
   { id:'diamond',  name:'Алмазная',   emoji:'💠', color:'#d070ff', glow:'rgba(180,80,255,0.8)',   grad:'linear-gradient(135deg,#a855f7,#f0a0ff)' },
 ];
-const LEAGUE_SEASON_MS = 2*24*60*60*1000;
+const LEAGUE_SEASON_MS = 2*24*60*60*1000; // длительность сезона ПОСЛЕ старта
 const LEAGUE_SIZE = 30;
 const PROMOTE_COUNT = 3;
 const RELEGATE_COUNT = 3;
+const MIN_PLAYERS_TO_START = 3;
 
 let _leagueTimer = null;
-let _leagueUnsub = null; // realtime listener
+let _leagueUnsub = null;
+let _leagueMetaUnsub = null;
 
-function getCurrentSeason() { return Math.floor(Date.now()/LEAGUE_SEASON_MS); }
-function getMyLeagueIndex() { return Math.max(0,Math.min(4,state.leagueIndex||0)); }
-function getLeagueSeasonEnd() { return (getCurrentSeason()+1)*LEAGUE_SEASON_MS; }
 function formatCountdown(ms) {
   if(ms<=0) return '0ч 00м 00с';
   const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000);
   return h+'ч '+String(m).padStart(2,'0')+'м '+String(s).padStart(2,'0')+'с';
 }
+function getMyLeagueIndex() { return Math.max(0,Math.min(4,state.leagueIndex||0)); }
 
-// Назначить игрока в группу через Firestore транзакцию
+// Найти/создать группу-лобби, ожидающую игроков (без привязки к глобальному сезону)
 async function _assignGroup() {
   if (!state.account||!state.account.uid) return null;
-  const season = getCurrentSeason();
   const leagueIdx = getMyLeagueIndex();
   const leagueId = LEAGUES[leagueIdx].id;
   const uid = state.account.uid;
 
-  // Уже есть актуальная группа?
-  if (state.leagueGroupId && state.leagueGroupSeason === season && state.leagueGroupLeague === leagueId) {
-    return leagueId+'_'+season+'_'+state.leagueGroupId;
+  // Уже привязан к актуальной (не завершённой) группе?
+  if (state.leagueGroupId && state.leagueGroupLeague === leagueId) {
+    const docId = leagueId+'_'+state.leagueGroupId;
+    const groupSnap = await dcDb.collection('league_groups').doc(docId).get().catch(()=>null);
+    if (groupSnap && groupSnap.exists) {
+      const g = groupSnap.data();
+      if (!g.finished) return docId;
+    }
+    // Группа не найдена или завершена — назначаем заново
+    state.leagueGroupId = null;
   }
 
-  // Ищем группу с местами (до 30 игроков)
-  // Используем документ-счётчик для каждой лиги/сезона
-  const metaRef = dcDb.collection('league_meta').doc(leagueId+'_'+season);
+  const metaRef = dcDb.collection('league_meta').doc(leagueId);
 
   try {
     let groupId = null;
     await dcDb.runTransaction(async tx => {
       const meta = await tx.get(metaRef);
-      if (!meta.exists) {
-        // Первая группа
-        tx.set(metaRef, { lastGroup: 1, counts: { '1': 1 } });
-        groupId = '1';
-      } else {
-        const data = meta.data();
-        const counts = data.counts || {};
-        let lastGroup = data.lastGroup || 1;
-        // Найти группу с < 30
-        let found = null;
-        for (let g = 1; g <= lastGroup; g++) {
-          if ((counts[String(g)] || 0) < LEAGUE_SIZE) { found = g; break; }
-        }
-        if (found) {
-          groupId = String(found);
-          counts[groupId] = (counts[groupId] || 0) + 1;
-          tx.update(metaRef, { counts });
-        } else {
-          // Новая группа
-          lastGroup++;
-          groupId = String(lastGroup);
-          counts[groupId] = 1;
-          tx.update(metaRef, { lastGroup, counts });
+      let openGroupId = null;
+      if (meta.exists) openGroupId = meta.data().openGroupId || null;
+
+      if (openGroupId) {
+        const groupRef = dcDb.collection('league_groups').doc(leagueId+'_'+openGroupId);
+        const groupSnap = await tx.get(groupRef);
+        if (groupSnap.exists) {
+          const g = groupSnap.data();
+          if (!g.started && !g.finished && (g.count||0) < LEAGUE_SIZE) {
+            groupId = openGroupId;
+            tx.update(groupRef, { count: (g.count||0)+1 });
+            return;
+          }
         }
       }
+
+      // Создаём новую группу
+      const newId = String(Date.now());
+      groupId = newId;
+      tx.set(dcDb.collection('league_groups').doc(leagueId+'_'+newId), {
+        leagueId, count: 1, started: false, finished: false,
+        createdAt: Date.now(), startedAt: null, endsAt: null,
+      });
+      tx.set(metaRef, { openGroupId: newId }, { merge: true });
     });
 
     state.leagueGroupId = groupId;
-    state.leagueGroupSeason = season;
     state.leagueGroupLeague = leagueId;
-    state.leagueScore = 0;
+    if (state.leagueScore === undefined) state.leagueScore = 0;
     saveState();
-    return leagueId+'_'+season+'_'+groupId;
+    return leagueId+'_'+groupId;
   } catch(e) {
     console.warn('League assign error', e);
-    // Fallback: простая группа по хэшу
-    const hash = [...uid].reduce((a,c)=>a+c.charCodeAt(0),0);
-    const groupId = String(Math.floor(hash%50)+1);
-    state.leagueGroupId = groupId;
-    state.leagueGroupSeason = season;
-    state.leagueGroupLeague = leagueId;
-    saveState();
-    return leagueId+'_'+season+'_'+groupId;
+    return null;
   }
 }
 
 async function pushLeagueScore() {
   if (!state.account||!state.account.uid) return;
-  const season = getCurrentSeason();
-  // Новый сезон?
-  if (state.leagueGroupSeason && state.leagueGroupSeason !== season) {
-    await _processSeasonEnd();
-  }
   const groupDocId = await _assignGroup();
   if (!groupDocId) return;
   const uid = state.account.uid;
@@ -10779,52 +10769,95 @@ async function pushLeagueScore() {
     name: state.account.displayName || state.account.login || 'Игрок',
     score: Math.floor(state.leagueScore||0),
     leagueIdx: getMyLeagueIndex(),
-    season,
     groupDocId,
     updatedAt: Date.now(),
   },{merge:true}).catch(e=>console.warn('League push',e));
 }
 
-// Подписка в реальном времени
+// Подписка на группу (метаданные: started/endsAt/count) + подписка на игроков
 async function subscribeLeague(onUpdate) {
-  if (_leagueUnsub) { _leagueUnsub(); _leagueUnsub = null; }
+  if (_leagueUnsub) { _leagueUnsub(); _leagueUnsub=null; }
+  if (_leagueMetaUnsub) { _leagueMetaUnsub(); _leagueMetaUnsub=null; }
   if (!state.account||!state.account.uid) return;
 
   const groupDocId = await _assignGroup();
   if (!groupDocId) return;
+
+  let latestGroup = null;
+  let latestPlayers = [];
+
+  function emit() {
+    if (!latestGroup) return;
+    onUpdate({ group: latestGroup, players: latestPlayers, leagueIdx: getMyLeagueIndex() });
+  }
+
+  _leagueMetaUnsub = dcDb.collection('league_groups').doc(groupDocId).onSnapshot(async snap => {
+    if (!snap.exists) return;
+    const g = snap.data();
+    latestGroup = g;
+
+    // Если набралось минимум игроков и группа ещё не стартовала — запустить таймер
+    if (!g.started && (g.count||0) >= MIN_PLAYERS_TO_START) {
+      const startedAt = Date.now();
+      const endsAt = startedAt + LEAGUE_SEASON_MS;
+      dcDb.collection('league_groups').doc(groupDocId).update({
+        started: true, startedAt, endsAt
+      }).catch(()=>{});
+    }
+
+    // Если сезон закончился — обработать переход (только один раз, у первого кто увидит)
+    if (g.started && g.endsAt && Date.now() >= g.endsAt && !g.finished) {
+      _finishGroupSeason(groupDocId, g);
+    }
+
+    emit();
+  }, e => console.warn('Group meta error', e));
 
   _leagueUnsub = dcDb.collection('league_scores')
     .where('groupDocId','==',groupDocId)
     .onSnapshot(snap => {
       let players = snap.docs.map(d=>d.data());
       players.sort((a,b)=>(b.score||0)-(a.score||0));
-      players = players.slice(0, LEAGUE_SIZE);
-      onUpdate({ players, leagueIdx: getMyLeagueIndex(), season: getCurrentSeason() });
-    }, e => console.warn('League snapshot error', e));
+      latestPlayers = players.slice(0, LEAGUE_SIZE);
+      emit();
+    }, e => console.warn('League players error', e));
 }
 
-async function _processSeasonEnd() {
-  if (!state.account||!state.account.uid) return;
-  const oldSeason = state.leagueGroupSeason;
-  const oldLeagueIdx = getMyLeagueIndex();
-  const oldLeagueId = LEAGUES[oldLeagueIdx].id;
-  const oldDocId = oldLeagueId+'_'+oldSeason+'_'+state.leagueGroupId;
+async function _finishGroupSeason(groupDocId, g) {
   try {
-    const snap = await dcDb.collection('league_scores').where('groupDocId','==',oldDocId).limit(LEAGUE_SIZE).get();
-    let players = snap.docs.map(d=>d.data());
-    players.sort((a,b)=>(b.score||0)-(a.score||0));
-    const myRank = players.findIndex(p=>p.uid===state.account.uid)+1;
-    const total = players.length;
-    let newIdx = oldLeagueIdx;
-    if (myRank>0&&myRank<=PROMOTE_COUNT&&oldLeagueIdx<4) newIdx=oldLeagueIdx+1;
-    else if (myRank>0&&myRank>total-RELEGATE_COUNT&&oldLeagueIdx>0) newIdx=oldLeagueIdx-1;
-    state.leagueIndex=newIdx; state.leagueGroupId=null; state.leagueGroupSeason=null;
-    state.leagueGroupLeague=null; state.leagueScore=0;
-    saveState(); pushStateToCloud();
-    if (newIdx>oldLeagueIdx) toast('🎉 Повышение в '+LEAGUES[newIdx].name+' лигу!','success');
-    else if (newIdx<oldLeagueIdx) toast('⬇️ Вылет в '+LEAGUES[newIdx].name+' лигу','');
-    else toast('🏆 Новый сезон начался!','');
-  } catch(e){console.warn('Season end',e);}
+    const groupRef = dcDb.collection('league_groups').doc(groupDocId);
+    // Атомарно пометить как finished, чтобы только один клиент это сделал
+    let didFinish = false;
+    await dcDb.runTransaction(async tx => {
+      const fresh = await tx.get(groupRef);
+      if (!fresh.exists) return;
+      const fd = fresh.data();
+      if (fd.finished) return;
+      tx.update(groupRef, { finished: true });
+      didFinish = true;
+    });
+    if (!didFinish) return;
+
+    // Если МОЯ группа — применить результат к себе
+    if (state.leagueGroupId && (g.leagueId+'_'+state.leagueGroupId) === groupDocId) {
+      const snap = await dcDb.collection('league_scores').where('groupDocId','==',groupDocId).limit(LEAGUE_SIZE).get();
+      let players = snap.docs.map(d=>d.data());
+      players.sort((a,b)=>(b.score||0)-(a.score||0));
+      const myRank = players.findIndex(p=>p.uid===state.account.uid)+1;
+      const total = players.length;
+      const oldIdx = getMyLeagueIndex();
+      let newIdx = oldIdx;
+      if (myRank>0&&myRank<=PROMOTE_COUNT&&oldIdx<4) newIdx=oldIdx+1;
+      else if (myRank>0&&myRank>total-RELEGATE_COUNT&&oldIdx>0) newIdx=oldIdx-1;
+
+      state.leagueIndex=newIdx; state.leagueGroupId=null; state.leagueGroupLeague=null; state.leagueScore=0;
+      saveState(); pushStateToCloud();
+
+      if (newIdx>oldIdx) toast('🎉 Повышение в '+LEAGUES[newIdx].name+' лигу!','success');
+      else if (newIdx<oldIdx) toast('⬇️ Вылет в '+LEAGUES[newIdx].name+' лигу','');
+      else toast('🏆 Сезон лиги завершён!','');
+    }
+  } catch(e) { console.warn('Finish season error', e); }
 }
 
 function renderLeagueModal(data) {
@@ -10841,7 +10874,7 @@ function renderLeagueModal(data) {
     return;
   }
 
-  if (!data) {
+  if (!data || !data.group) {
     body.innerHTML = `<div style="text-align:center;padding:50px 20px;">
       <div style="font-size:36px;margin-bottom:12px;">⏳</div>
       <div style="font-size:13px;color:var(--text2);">Загружаем лигу...</div>
@@ -10851,15 +10884,48 @@ function renderLeagueModal(data) {
 
   const L = LEAGUES[data.leagueIdx];
   const myUid = state.account.uid;
-  const timeLeft = getLeagueSeasonEnd()-Date.now();
   const players = data.players;
   const myRank = players.findIndex(p=>p.uid===myUid)+1;
   const total = players.length;
+  const g = data.group;
 
   if (titleEl) titleEl.innerHTML = L.emoji+' '+L.name+' лига';
   const modal = document.getElementById('leagueModal');
   if (modal) { modal.style.borderTopColor=L.color+'cc'; modal.style.boxShadow='0 -10px 60px rgba(0,0,0,0.9), 0 -2px 0 '+L.color+'66'; }
 
+  // ===== ЛОББИ (ждём игроков) =====
+  if (!g.started) {
+    let waitRows = '';
+    players.forEach((p,i) => {
+      const isMe = p.uid===myUid;
+      waitRows += `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:14px;margin-bottom:6px;background:${isMe?'rgba(255,255,255,0.1)':'rgba(255,255,255,0.03)'};border:1.5px solid ${isMe?L.color+'66':'rgba(255,255,255,0.06)'};">
+        <span style="font-size:16px;">👤</span>
+        <span style="flex:1;font-size:13px;font-weight:800;color:#fff;">${p.name||'Игрок'}${isMe?' <span style="font-size:10px;opacity:0.6;">(ты)</span>':''}</span>
+        <span style="font-size:11px;color:#00e676;font-weight:800;">✓ готов</span>
+      </div>`;
+    });
+    const need = Math.max(0, MIN_PLAYERS_TO_START - total);
+
+    body.innerHTML = `
+      <div style="text-align:center;padding:24px 16px 16px;background:linear-gradient(180deg,${L.color}18 0%,transparent 100%);border-radius:16px;margin-bottom:14px;">
+        <div style="font-size:64px;filter:drop-shadow(0 0 20px ${L.glow});opacity:0.7;">${L.emoji}</div>
+        <div style="font-size:20px;font-weight:900;background:${L.grad};-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin:6px 0 10px;">${L.name} лига</div>
+        <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,200,0,0.12);border:1px solid rgba(255,200,0,0.3);border-radius:20px;padding:8px 18px;">
+          <span style="width:8px;height:8px;background:#ffd700;border-radius:50%;animation:adDotPulse 1s ease-in-out infinite;"></span>
+          <span style="font-size:13px;font-weight:800;color:#ffd700;">Ожидание игроков · ${total}/${MIN_PLAYERS_TO_START}+</span>
+        </div>
+        ${need>0?`<div style="font-size:11px;color:var(--text2);margin-top:8px;">Нужно ещё ${need} ${need===1?'игрок':'игрока'} чтобы начать сезон</div>`:`<div style="font-size:11px;color:#00e676;margin-top:8px;">Сейчас начнётся! ⏱️</div>`}
+      </div>
+      <div style="font-size:10px;font-weight:800;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;padding-left:4px;">В лобби · ${total} ${total===1?'игрок':'игроков'}</div>
+      ${waitRows}
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.3);margin-top:16px;">🔴 Обновляется автоматически — оставайся здесь</div>
+    `;
+    if(_leagueTimer) clearInterval(_leagueTimer);
+    return;
+  }
+
+  // ===== АКТИВНЫЙ СЕЗОН =====
+  const timeLeft = (g.endsAt||0) - Date.now();
   let rows = '';
   players.forEach((p,i) => {
     const rank=i+1, isMe=p.uid===myUid;
@@ -10907,18 +10973,14 @@ function renderLeagueModal(data) {
       </div>`:''}
     </div>
     <div style="font-size:10px;font-weight:800;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;padding-left:4px;">Таблица · ${total}/${LEAGUE_SIZE} игроков</div>
-    ${rows||`<div style="text-align:center;padding:30px;color:var(--text2);">
-      <div style="font-size:32px;margin-bottom:8px;">🏁</div>
-      <div style="font-size:13px;">Пока только ты в этой группе!</div>
-      <div style="font-size:11px;margin-top:4px;opacity:0.6;">Другие игроки появятся скоро</div>
-    </div>`}
+    ${rows}
   `;
 
   if(_leagueTimer) clearInterval(_leagueTimer);
   _leagueTimer=setInterval(()=>{
     const el=document.getElementById('leagueCountdown');
     if(!el){clearInterval(_leagueTimer);return;}
-    el.textContent=formatCountdown(getLeagueSeasonEnd()-Date.now());
+    el.textContent=formatCountdown((g.endsAt||0)-Date.now());
   },1000);
 }
 
@@ -10926,14 +10988,15 @@ async function openLeagueModal() {
   _origOpenModal('league');
   renderLeagueModal(null);
   await pushLeagueScore();
-  // Подписываемся на реальное время
   subscribeLeague(data => renderLeagueModal(data));
 }
 
-// Закрытие модала — отписаться
 const _origCloseModal = closeModal;
 window.closeModal = function(id) {
-  if (id==='league' && _leagueUnsub) { _leagueUnsub(); _leagueUnsub=null; }
+  if (id==='league') {
+    if (_leagueUnsub) { _leagueUnsub(); _leagueUnsub=null; }
+    if (_leagueMetaUnsub) { _leagueMetaUnsub(); _leagueMetaUnsub=null; }
+  }
   _origCloseModal(id);
 };
 
@@ -10943,13 +11006,12 @@ window.openModal = function(id) {
   _origOpenModal(id);
 };
 
-// Пушим очки каждые 60 секунд
 setInterval(()=>{ if(state.account&&state.account.uid) pushLeagueScore(); },60000);
 
 setTimeout(()=>{
   if(state.account&&state.account.uid){
     if(!state.leagueIndex) state.leagueIndex=0;
-    if(!state.leagueScore) state.leagueScore=0;
+    if(state.leagueScore===undefined) state.leagueScore=0;
     pushLeagueScore();
   }
 },3000);
