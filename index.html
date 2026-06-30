@@ -1,6 +1,17 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+<script>
+// Мгновенная проверка локального флага бана — срабатывает раньше всего
+// остального кода, чтобы исключить любое мигание интерфейса игры.
+(function(){
+  try {
+    if (localStorage.getItem('dc_banned_flag') === '1') {
+      document.write('<style>body *{display:none !important;}</style>');
+    }
+  } catch(e){}
+})();
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2448,6 +2459,15 @@ body.vip-theme-16 ::selection { background: rgba(200,150,255,0.35); }
 </style>
 </head>
 <body>
+<script>
+(function(){
+  try {
+    if (localStorage.getItem('dc_banned_flag') === '1') {
+      document.addEventListener('DOMContentLoaded', function(){ showBanScreen(); });
+    }
+  } catch(e){}
+})();
+</script>
 
 <!-- ===== CUSTOM CONFIRM DIALOG ===== -->
 <div id="customConfirm">
@@ -3524,18 +3544,18 @@ function doLogin() {
 }
 
 function showBanScreen() {
-  // Чистим всё локально и выходим
   clearTimeout(_dcSyncTimer);
   if (window._dcBanCheckInterval) { clearInterval(window._dcBanCheckInterval); window._dcBanCheckInterval = null; }
-  dcAuth.signOut().catch(()=>{});
+
   try {
     const keys = [];
     for (let i = 0; i < localStorage.length; i++) keys.push(localStorage.key(i));
-    keys.forEach(k => localStorage.removeItem(k));
+    keys.forEach(k => { if (k !== 'dc_banned_flag') localStorage.removeItem(k); });
   } catch(e) {}
+  try { localStorage.setItem('dc_banned_flag', '1'); } catch(e) {}
 
-  // Строгий системный экран блокировки — поверх всего, не закрывается
   const overlay = document.createElement('div');
+  overlay.id = 'dcBanOverlay';
   overlay.style.cssText = 'position:fixed;inset:0;z-index:999999;background:#050505;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;font-family:"Nunito",-apple-system,sans-serif;';
   overlay.innerHTML = `
     <div style="width:100%;max-width:380px;background:linear-gradient(160deg,#1a0606,#0a0202);border:2px solid #ff1a1a;border-radius:18px;box-shadow:0 0 0 1px rgba(255,0,0,0.15),0 0 60px rgba(255,0,0,0.25),0 20px 60px rgba(0,0,0,0.8);overflow:hidden;">
@@ -3545,28 +3565,30 @@ function showBanScreen() {
         <span style="font-size:12px;font-weight:900;color:#fff;letter-spacing:1.5px;text-transform:uppercase;">System Warning</span>
       </div>
 
-      <div style="padding:28px 22px 24px;">
+      <div style="padding:28px 22px 22px;">
         <div style="font-size:56px;margin-bottom:14px;filter:drop-shadow(0 0 18px rgba(255,20,20,0.7));">🚫</div>
 
-        <div style="font-size:13px;font-weight:900;color:#ff4444;letter-spacing:1px;margin-bottom:4px;font-family:monospace;">ERROR: ACCOUNT_NOT_FOUND</div>
-        <div style="font-size:11px;font-weight:700;color:rgba(255,80,80,0.7);letter-spacing:0.5px;margin-bottom:16px;font-family:monospace;">An error has occurred. Access denied.</div>
+        <div style="font-size:14px;font-weight:900;color:#ff4444;letter-spacing:1px;margin-bottom:6px;font-family:monospace;">ERROR: ACCOUNT_NOT_FOUND</div>
+        <div style="font-size:12px;font-weight:700;color:rgba(255,80,80,0.75);letter-spacing:0.3px;margin-bottom:10px;font-family:monospace;">An error has occurred. Access denied.</div>
 
-        <div style="height:1px;background:rgba(255,30,30,0.25);margin:14px 0;"></div>
+        <div style="height:1px;background:rgba(255,30,30,0.25);margin:16px 0;"></div>
 
-        <div style="font-size:18px;font-weight:900;color:#fff;margin-bottom:10px;letter-spacing:0.3px;">АККАУНТ ЗАБЛОКИРОВАН</div>
-        <div style="font-size:13px;color:rgba(255,255,255,0.6);line-height:1.6;margin-bottom:18px;">
-          Доступ к этому аккаунту был ограничен администрацией за нарушение правил игры. Дальнейшее использование невозможно.
-        </div>
-
-        <div style="background:rgba(255,0,0,0.08);border:1px solid rgba(255,0,0,0.2);border-radius:10px;padding:10px 12px;font-size:11px;color:rgba(255,255,255,0.45);font-family:monospace;">
+        <div style="background:rgba(255,0,0,0.08);border:1px solid rgba(255,0,0,0.2);border-radius:10px;padding:10px 12px;font-size:11px;color:rgba(255,255,255,0.45);font-family:monospace;margin-bottom:18px;">
           STATUS: DISABLED&nbsp;&nbsp;·&nbsp;&nbsp;CODE: 403
         </div>
+
+        <button onclick="dcBanLogoutClick()" style="width:100%;padding:13px;border-radius:12px;border:1px solid rgba(255,40,40,0.4);background:rgba(255,20,20,0.12);color:#ff6666;font-family:'Nunito',sans-serif;font-size:13px;font-weight:900;letter-spacing:0.5px;cursor:pointer;-webkit-tap-highlight-color:transparent;">Выйти из аккаунта</button>
       </div>
     </div>
-    <div style="font-size:11px;color:rgba(255,255,255,0.25);margin-top:18px;">Diamond Clicker Security System</div>
   `;
   document.body.innerHTML = '';
   document.body.appendChild(overlay);
+  dcAuth.signOut().catch(()=>{});
+}
+
+function dcBanLogoutClick() {
+  try { localStorage.removeItem('dc_banned_flag'); } catch(e) {}
+  location.reload();
 }
 
 function logout() {
@@ -3624,6 +3646,21 @@ function pushStateToCloud() {
 dcAuth.onAuthStateChanged(function(user) {
   if (!user) return; // гостевой режим — ничего не трогаем
 
+  // Принудительно обновляем токен — если аккаунт disabled, Firebase
+  // вернёт ошибку именно здесь, ДО того как мы успеем загрузить прогресс.
+  user.getIdToken(true).then(() => {
+    _continueAuthFlow(user);
+  }).catch(err => {
+    if (err.code === 'auth/user-disabled' || err.code === 'auth/user-token-expired' || err.code === 'auth/user-not-found') {
+      showBanScreen();
+    } else {
+      // Сетевая ошибка и т.п. — пробуем продолжить как есть
+      _continueAuthFlow(user);
+    }
+  });
+});
+
+function _continueAuthFlow(user) {
   const username = (user.email || '').split('@')[0];
 
   if (_pendingNewUsername) {
@@ -3683,7 +3720,7 @@ dcAuth.onAuthStateChanged(function(user) {
       });
     }, 30000);
   }
-});
+}
 
 // На случай закрытия вкладки/сворачивания — добиваем последнее сохранение.
 document.addEventListener('visibilitychange', () => {
