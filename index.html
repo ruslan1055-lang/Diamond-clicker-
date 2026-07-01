@@ -3518,45 +3518,42 @@ function _setAuthBusy(busy, label) {
 
 function doRegister() {
   const login     = dcSanitizeUsername(document.getElementById('authLogin')?.value);
-  const email     = (document.getElementById('authEmail')?.value || '').trim().toLowerCase();
   const password  = document.getElementById('authPassword')?.value || '';
   const password2 = document.getElementById('authPassword2')?.value || '';
   _setAuthError('');
   if (login.length < 3)         { _setAuthError('Логин должен быть от 3 символов (буквы/цифры)'); return; }
-  if (!email || !email.includes('@')) { _setAuthError('Введи настоящий email — он нужен для восстановления пароля'); return; }
   if (password.length < 6)      { _setAuthError('Пароль минимум 6 символов'); return; }
   if (password !== password2)   { _setAuthError('Пароли не совпадают'); return; }
   _setAuthBusy(true, 'Создаём...');
-  dcAuth.createUserWithEmailAndPassword(email, password)
+  dcAuth.createUserWithEmailAndPassword(dcEmailFromUsername(login), password)
     .then(cred => {
       _pendingNewUsername = login;
-      // Сохраняем email для восстановления пароля
       return cred.user.updateProfile({ displayName: login });
     })
     .catch(err => {
       _setAuthBusy(false);
-      if (err.code === 'auth/email-already-in-use') _setAuthError('Этот email уже используется');
+      if (err.code === 'auth/email-already-in-use') _setAuthError('Этот логин уже занят');
       else if (err.code === 'auth/weak-password')    _setAuthError('Пароль слишком простой');
-      else if (err.code === 'auth/invalid-email')    _setAuthError('Неверный формат email');
+      else if (err.code === 'auth/invalid-email')    _setAuthError('Логин содержит недопустимые символы');
       else _setAuthError('Не удалось создать аккаунт: ' + (err.message || err.code));
     });
 }
 
 function doForgotPassword() {
-  const emailInput = prompt('Введи email который ты указал при регистрации:');
-  if (!emailInput) return;
-  const email = emailInput.trim().toLowerCase();
-  if (!email.includes('@')) { _setAuthError('Неверный формат email'); return; }
+  const loginInput = prompt('Введи логин который ты указал при регистрации:');
+  if (!loginInput) return;
+  const login = dcSanitizeUsername(loginInput);
+  if (login.length < 3) { _setAuthError('Неверный логин'); return; }
   _setAuthBusy(true, 'Отправляем письмо...');
-  dcAuth.sendPasswordResetEmail(email)
+  dcAuth.sendPasswordResetEmail(dcEmailFromUsername(login))
     .then(() => {
       _setAuthBusy(false);
       _setAuthError('');
-      toast('Письмо со сбросом пароля отправлено! Проверь почту 📧', 'success');
+      toast('Если аккаунт существует — письмо отправлено 📧', 'success');
     })
     .catch(err => {
       _setAuthBusy(false);
-      if (err.code === 'auth/user-not-found') _setAuthError('Аккаунт с таким email не найден');
+      if (err.code === 'auth/user-not-found') _setAuthError('Аккаунт с таким логином не найден');
       else _setAuthError('Ошибка: ' + (err.message || err.code));
     });
 }
@@ -4731,7 +4728,6 @@ function renderAccount() {
       </div>
 
       <input class="duo-input" id="authLogin" type="text" placeholder="Логин (буквы, цифры, _ . -)" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="20" style="margin-bottom:10px;">
-      ${!isLogin ? '<input class="duo-input" id="authEmail" type="email" placeholder="Эл. почта (для восстановления пароля)" autocomplete="off" style="margin-bottom:10px;">' : ''}
       <input class="duo-input" id="authPassword" type="password" placeholder="Пароль (минимум 6 символов)" autocomplete="off" style="margin-bottom:${isLogin ? '4px' : '10px'};">
       ${!isLogin ? '<input class="duo-input" id="authPassword2" type="password" placeholder="Повтори пароль" autocomplete="off" style="margin-bottom:4px;">' : ''}
       <div id="authError" style="color:var(--red);font-size:12px;font-weight:800;min-height:16px;margin:2px 2px 8px;"></div>
