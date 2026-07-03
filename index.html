@@ -111,6 +111,132 @@ body.perf-hint  .click-hint               { animation: none !important; opacity:
   position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
   background: linear-gradient(90deg, transparent, rgba(0,200,255,0.35), transparent);
 }
+/* ===== SIDEBAR DRAWER ===== */
+#sidebarOverlay {
+  position: fixed; inset: 0; z-index: 9998;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.28s ease;
+}
+#sidebarOverlay.open { opacity: 1; pointer-events: all; }
+
+#sidebar {
+  position: fixed; top: 0; left: 0; bottom: 0;
+  width: 78vw; max-width: 300px;
+  z-index: 9999;
+  background: rgba(6,11,22,0.98);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border-right: 1px solid rgba(0,200,255,0.12);
+  display: flex; flex-direction: column;
+  transform: translateX(-105%);
+  transition: transform 0.3s cubic-bezier(0.32,0.72,0,1);
+  overflow: hidden;
+}
+#sidebar.open { transform: translateX(0); }
+#sidebar::before {
+  content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 1px;
+  background: linear-gradient(180deg, transparent, rgba(0,200,255,0.35), rgba(150,0,255,0.25), transparent);
+  pointer-events: none;
+}
+
+.sidebar-header {
+  padding: calc(env(safe-area-inset-top,0px) + 18px) 18px 16px;
+  background: linear-gradient(160deg, rgba(0,200,255,0.08), rgba(150,0,255,0.05));
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  flex-shrink: 0;
+}
+.sidebar-avatar {
+  width: 60px; height: 60px; border-radius: 50%;
+  background: linear-gradient(135deg, rgba(0,200,255,0.2), rgba(150,0,255,0.15));
+  border: 2px solid rgba(0,200,255,0.3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; margin-bottom: 10px;
+  box-shadow: 0 0 20px rgba(0,200,255,0.18);
+}
+.sidebar-username {
+  font-size: 16px; font-weight: 900; color: #fff;
+  text-shadow: 0 0 12px rgba(0,200,255,0.3);
+  margin-bottom: 3px;
+  max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.sidebar-sub {
+  font-size: 11px; color: rgba(255,255,255,0.4); font-weight: 700;
+}
+
+.sidebar-body {
+  flex: 1; overflow-y: auto; padding: 10px 10px 20px;
+  overscroll-behavior: contain;
+}
+.sidebar-section-label {
+  font-size: 9px; font-weight: 900; color: rgba(255,255,255,0.25);
+  text-transform: uppercase; letter-spacing: 1.5px;
+  padding: 10px 8px 5px;
+}
+.sidebar-btn {
+  display: flex; align-items: center; gap: 12px;
+  width: 100%; padding: 12px 14px;
+  border-radius: 14px; border: 1px solid transparent;
+  background: rgba(255,255,255,0.04);
+  color: #fff; font-family: 'Nunito', sans-serif;
+  font-weight: 800; font-size: 13px;
+  cursor: pointer; text-align: left;
+  margin-bottom: 5px;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+}
+.sidebar-btn:active { transform: scale(0.97); }
+.sidebar-btn .sb-icon {
+  font-size: 20px; width: 34px; height: 34px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.sidebar-btn .sb-arrow {
+  margin-left: auto; font-size: 13px; opacity: 0.35;
+}
+.sidebar-btn.green  { border-color: rgba(0,220,100,0.2); }
+.sidebar-btn.green  .sb-icon { background: rgba(0,200,80,0.15); }
+.sidebar-btn.orange { border-color: rgba(255,160,0,0.2); }
+.sidebar-btn.orange .sb-icon { background: rgba(255,140,0,0.15); }
+.sidebar-btn.red    { border-color: rgba(255,60,80,0.2); }
+.sidebar-btn.red    .sb-icon { background: rgba(255,50,70,0.15); }
+.sidebar-btn.blue   { border-color: rgba(0,180,255,0.2); }
+.sidebar-btn.blue   .sb-icon { background: rgba(0,180,255,0.15); }
+.sidebar-btn.shop   { border-color: rgba(255,200,0,0.2); }
+.sidebar-btn.shop   .sb-icon { background: rgba(255,190,0,0.15); }
+.sidebar-btn.teal   { border-color: rgba(0,220,190,0.2); }
+.sidebar-btn.teal   .sb-icon { background: rgba(0,200,170,0.15); }
+.sidebar-btn.yellow { border-color: rgba(255,200,0,0.2); }
+.sidebar-btn.yellow .sb-icon { background: rgba(255,190,0,0.15); }
+.sidebar-btn.admin  { border-color: rgba(255,80,80,0.2); }
+.sidebar-btn.admin  .sb-icon { background: rgba(255,50,50,0.12); }
+.sidebar-btn.gray   { border-color: rgba(255,255,255,0.1); }
+.sidebar-btn.gray   .sb-icon { background: rgba(255,255,255,0.07); }
+
+.sb-badge {
+  position: absolute; top: 8px; right: 46px;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #ff4655; box-shadow: 0 0 6px rgba(255,70,85,0.9);
+}
+
+#burgerBtn {
+  background: none; border: none; cursor: pointer;
+  padding: 4px 6px; border-radius: 10px;
+  display: flex; flex-direction: column; gap: 5px;
+  -webkit-tap-highlight-color: transparent;
+  margin-right: 4px; flex-shrink: 0;
+  transition: opacity 0.15s;
+}
+#burgerBtn:active { opacity: 0.6; }
+#burgerBtn span {
+  display: block; width: 22px; height: 2.5px; border-radius: 2px;
+  background: rgba(255,255,255,0.75);
+  transition: transform 0.25s, opacity 0.2s;
+}
+
 .topbar-gems {
   display: flex; align-items: center; gap: 6px;
   background: linear-gradient(135deg, rgba(0,200,255,0.13), rgba(0,80,255,0.06));
@@ -2457,6 +2583,65 @@ body.vip-theme-16 ::selection { background: rgba(200,150,255,0.35); }
 
 
 </style>
+<!-- Firebase (Authentication + Firestore) — облачные аккаунты игры -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script>
+  var dcAuth, dcDb;
+
+  // Stubs — используются если Firebase CDN недоступен (офлайн / CSP-блок).
+  // Приложение работает в гостевом режиме: локальные данные сохраняются,
+  // облачные функции (аккаунт, лига, переводы) тихо пропускаются.
+  function _makeFirebaseStubs() {
+    var noopUnsub = function(){};
+    dcAuth = {
+      onAuthStateChanged: function(cb){ cb(null); return noopUnsub; },
+      signInWithEmailAndPassword: function(){ return Promise.reject(new Error('offline')); },
+      createUserWithEmailAndPassword: function(){ return Promise.reject(new Error('offline')); },
+      sendPasswordResetEmail: function(){ return Promise.reject(new Error('offline')); },
+      signOut: function(){ return Promise.resolve(); },
+      currentUser: null
+    };
+    var noopDoc = function(){ return {
+      get: function(){ return Promise.resolve({ exists: false, data: function(){ return null; } }); },
+      set: function(){ return Promise.resolve(); },
+      update: function(){ return Promise.resolve(); },
+      delete: function(){ return Promise.resolve(); },
+      onSnapshot: function(cb){ return noopUnsub; }
+    }; };
+    var noopCol = function(){ return {
+      doc: noopDoc,
+      add: function(){ return Promise.resolve({ id: 'offline' }); },
+      where: function(){ return { get: function(){ return Promise.resolve({ docs: [] }); }, limit: function(){ return { get: function(){ return Promise.resolve({ docs: [] }); } }; }, onSnapshot: function(){ return noopUnsub; } }; },
+      limit: function(){ return { get: function(){ return Promise.resolve({ docs: [] }); } }; },
+      orderBy: function(){ return { limit: function(){ return { get: function(){ return Promise.resolve({ docs: [] }); } }; } }; }
+    }; };
+    dcDb = {
+      collection: noopCol,
+      runTransaction: function(fn){ return Promise.resolve(); }
+    };
+    console.warn('Firebase недоступен — гостевой режим');
+  }
+
+  try {
+    if (typeof firebase === 'undefined') throw new Error('Firebase CDN не загружен');
+    var firebaseConfig = {
+      apiKey: "AIzaSyDfjCmE_t8xz0fTQuQOyMnKtdcNrU3ErVU",
+      authDomain: "diamond-clicker-4edcf.firebaseapp.com",
+      projectId: "diamond-clicker-4edcf",
+      storageBucket: "diamond-clicker-4edcf.firebasestorage.app",
+      messagingSenderId: "28298480948",
+      appId: "1:28298480948:web:cf68a6b1d4ea28d3672961"
+    };
+    firebase.initializeApp(firebaseConfig);
+    dcAuth = firebase.auth();
+    dcDb   = firebase.firestore();
+  } catch(e) {
+    console.error("Firebase init failed:", e);
+    _makeFirebaseStubs();
+  }
+</script>
 </head>
 <body>
 <script>
@@ -2537,6 +2722,9 @@ body.vip-theme-16 ::selection { background: rgba(200,150,255,0.35); }
 
 <!-- TOP BAR -->
 <div class="topbar">
+  <button id="burgerBtn" onclick="toggleSidebar()" aria-label="Меню">
+    <span></span><span></span><span></span>
+  </button>
   <div class="topbar-gems">
     <span><img src="data:image/webp;base64,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" alt="💎" style="width:18px;height:18px;vertical-align:-4px;display:inline-block;"></span>
     <span class="gem-count" id="gemCount">0</span>
@@ -2724,42 +2912,65 @@ body.vip-theme-16 ::selection { background: rgba(200,150,255,0.35); }
   </div>
 </div>
 
-<!-- BOTTOM NAV -->
-<div class="bottom-nav">
-  <button class="nav-btn green"  onclick="openModal('withdrawal')">
-    <span class="nav-icon">💸</span>Вывод
-  </button>
-  <button class="nav-btn orange" onclick="openModal('bonuses')">
-    <span class="nav-icon">⚡</span>Бонусы
-  </button>
-  <button class="nav-btn" id="adNavBtn" onclick="openAdReward()" style="background:linear-gradient(160deg,#ff9800,#e65100);border-color:rgba(255,160,0,0.4);box-shadow:0 4px 0 #7a2e00,0 6px 18px rgba(255,140,0,0.35);position:relative;">
-    <span class="nav-icon">📺</span>Реклама
-    <span id="adReadyDot" style="display:none;position:absolute;top:6px;right:8px;width:8px;height:8px;background:#00e676;border-radius:50%;box-shadow:0 0 6px rgba(0,230,120,0.9);animation:adDotPulse 1.2s ease-in-out infinite;"></span>
-  </button>
-  <button class="nav-btn blue" id="accountNavBtn"  onclick="openModal('account')">
-    <span class="nav-icon">👤</span>Аккаунт
-    <span id="dailyDot" style="display:none;position:absolute;top:6px;right:8px;width:8px;height:8px;background:#ff4655;border-radius:50%;box-shadow:0 0 6px rgba(255,70,85,0.9);"></span>
-  </button>
-  <button class="nav-btn red"    onclick="openModal('tasks')">
-    <span class="nav-icon">📋</span>Задания
-  </button>
+<!-- SIDEBAR OVERLAY -->
+<div id="sidebarOverlay" onclick="closeSidebar()"></div>
 
-  <button class="nav-btn shop"   onclick="openModal('shop')">
-    <span class="nav-icon">🛒</span>Магазин
-  </button>
-  <button class="nav-btn admin"  onclick="openModal('admin')">
-    <span class="nav-icon">🔐</span>Админ
-  </button>
-  <button class="nav-btn settings" onclick="openModal('settings')">
-    <span class="nav-icon">⚙️</span>Настройки
-  </button>
-  <button class="nav-btn notif" id="notifNavBtn" onclick="openModal('notifications')" style="position:relative;">
-    <span class="nav-icon">🔔</span>Уведомл.
-    <span class="notif-badge" id="notifBadge"></span>
-  </button>
-  <button class="nav-btn summer" onclick="openModal('summer')">
-    <span class="nav-icon">🌞</span>Летние Акции
-  </button>
+<!-- SIDEBAR DRAWER -->
+<div id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-avatar" id="sbAvatar">🦉</div>
+    <div class="sidebar-username" id="sbUsername">Гость</div>
+    <div class="sidebar-sub" id="sbSub">Войди в аккаунт</div>
+  </div>
+  <div class="sidebar-body">
+    <div class="sidebar-section-label">💰 Финансы</div>
+    <button class="sidebar-btn green" onclick="closeSidebar();openModal('withdrawal')">
+      <span class="sb-icon">💸</span><span>Вывод</span><span class="sb-arrow">›</span>
+    </button>
+    <button class="sidebar-btn yellow" onclick="closeSidebar();openModal('podgony')" style="position:relative;">
+      <span class="sb-icon">🎁</span><span>Подгоны</span>
+      <span id="sbPodgonyDot" class="sb-badge" style="display:none;"></span>
+      <span class="sb-arrow">›</span>
+    </button>
+    <button class="sidebar-btn teal" onclick="closeSidebar();openModal('transfer')">
+      <span class="sb-icon">📤</span><span>Перевод</span><span class="sb-arrow">›</span>
+    </button>
+
+    <div class="sidebar-section-label">⚡ Активности</div>
+    <button class="sidebar-btn orange" onclick="closeSidebar();openModal('bonuses')">
+      <span class="sb-icon">⚡</span><span>Бонусы</span><span class="sb-arrow">›</span>
+    </button>
+    <button class="sidebar-btn red" onclick="closeSidebar();openModal('tasks')">
+      <span class="sb-icon">📋</span><span>Задания</span><span class="sb-arrow">›</span>
+    </button>
+    <button class="sidebar-btn blue" onclick="closeSidebar();openAdReward()" style="position:relative;">
+      <span class="sb-icon">📺</span><span>Реклама</span>
+      <span id="sbAdDot" class="sb-badge" style="display:none;"></span>
+      <span class="sb-arrow">›</span>
+    </button>
+
+    <div class="sidebar-section-label">🛒 Магазин</div>
+    <button class="sidebar-btn shop" onclick="closeSidebar();openModal('shop')">
+      <span class="sb-icon">🛒</span><span>Магазин</span><span class="sb-arrow">›</span>
+    </button>
+
+    <div class="sidebar-section-label">🔔 Прочее</div>
+    <button class="sidebar-btn blue" onclick="closeSidebar();openModal('notifications')" style="position:relative;">
+      <span class="sb-icon">🔔</span><span>Уведомления</span>
+      <span id="sbNotifBadge" class="sb-badge" style="display:none;"></span>
+      <span class="sb-arrow">›</span>
+    </button>
+    <button class="sidebar-btn gray" onclick="closeSidebar();openModal('settings')">
+      <span class="sb-icon">⚙️</span><span>Настройки</span><span class="sb-arrow">›</span>
+    </button>
+    <button class="sidebar-btn admin" onclick="closeSidebar();openModal('admin')">
+      <span class="sb-icon">🔐</span><span>Админ</span><span class="sb-arrow">›</span>
+    </button>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav" style="grid-template-columns: repeat(4, 1fr);">
   <button class="nav-btn league-nav-btn" onclick="openModal('league')" id="leagueNavBtn">
     <span class="nav-icon">🏆</span>Лига
     <span class="league-dot" id="leagueDot" style="display:none;"></span>
@@ -2767,18 +2978,12 @@ body.vip-theme-16 ::selection { background: rgba(200,150,255,0.35); }
   <button class="nav-btn quest-rainbow" onclick="openQuestModal()">
     <span class="nav-icon">🗺️</span>Квесты
   </button>
-  <button class="nav-btn" onclick="openModal('promo')" style="background:linear-gradient(160deg,#ff2244,#cc0022);border-color:rgba(255,60,80,0.45);box-shadow:0 4px 0 #7a0010,0 6px 18px rgba(255,30,60,0.45);color:#fff;position:relative;animation:promoBtnGlow 2s ease-in-out infinite alternate;">
-    <span class="nav-icon">🎟️</span>Промокоды
+  <button class="nav-btn blue" id="accountNavBtn" onclick="openModal('account')">
+    <span class="nav-icon">👤</span>Аккаунт
+    <span id="dailyDot" style="display:none;position:absolute;top:6px;right:8px;width:8px;height:8px;background:#ff4655;border-radius:50%;box-shadow:0 0 6px rgba(255,70,85,0.9);"></span>
   </button>
   <button class="nav-btn" onclick="openModal('rules')" style="background:linear-gradient(160deg,#3a4a6b,#1a2438);border-color:rgba(125,200,255,0.3);box-shadow:0 4px 0 #0a1020,0 6px 18px rgba(80,140,255,0.25);color:#cfe6ff;">
     <span class="nav-icon">📖</span>Правила
-  </button>
-  <button class="nav-btn" onclick="openModal('transfer')" style="background:linear-gradient(160deg,#00c2a8,#00785f);border-color:rgba(0,220,190,0.35);box-shadow:0 4px 0 #003a30,0 6px 18px rgba(0,200,170,0.3);color:#e0fff8;">
-    <span class="nav-icon">📤</span>Перевод
-  </button>
-  <button class="nav-btn" id="podgonyNavBtn" onclick="openModal('podgony')" style="background:linear-gradient(160deg,#ffb300,#c97a00);border-color:rgba(255,190,0,0.4);box-shadow:0 4px 0 #663d00,0 6px 18px rgba(255,170,0,0.3);color:#fff;position:relative;">
-    <span class="nav-icon">🎁</span>Подгоны
-    <span id="podgonyDot" style="display:none;position:absolute;top:6px;right:8px;width:8px;height:8px;background:#ff4655;border-radius:50%;box-shadow:0 0 6px rgba(255,70,85,0.9);"></span>
   </button>
 </div>
 
@@ -3050,23 +3255,6 @@ body.vip-theme-16 ::selection { background: rgba(200,150,255,0.35); }
 </div>
 
 
-<!-- Firebase (Authentication + Firestore) — облачные аккаунты игры -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script>
-  var firebaseConfig = {
-    apiKey: "AIzaSyDfjCmE_t8xz0fTQuQOyMnKtdcNrU3ErVU",
-    authDomain: "diamond-clicker-4edcf.firebaseapp.com",
-    projectId: "diamond-clicker-4edcf",
-    storageBucket: "diamond-clicker-4edcf.firebasestorage.app",
-    messagingSenderId: "28298480948",
-    appId: "1:28298480948:web:cf68a6b1d4ea28d3672961"
-  };
-  firebase.initializeApp(firebaseConfig);
-  var dcAuth = firebase.auth();
-  var dcDb   = firebase.firestore();
-</script>
 
 <script>
 // ============================================================
@@ -3676,7 +3864,7 @@ function pushStateToCloud() {
 
 // Срабатывает: при запуске страницы (восстановление сессии), сразу после
 // входа и сразу после регистрации.
-dcAuth.onAuthStateChanged(function(user) {
+if (dcAuth) dcAuth.onAuthStateChanged(function(user) {
   if (!user) return; // гостевой режим — ничего не трогаем
 
   // Принудительно обновляем токен — если аккаунт disabled, Firebase
@@ -4131,6 +4319,8 @@ function getActiveXpBonus() {
 function updateUI() {
   document.getElementById('gemCount').textContent = Math.floor(state.gems);
   document.getElementById('xpCount').textContent  = Math.floor(state.xp);
+  updateSidebarHeader();
+  updateSidebarBadges();
   updateMultiplierPill();
   updateCashbackUI();
   // Always recalculate click power from current state
@@ -4997,6 +5187,10 @@ function hasWithdrawAccess() {
 
 function getTodayStr() {
   const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function getYesterdayStr() {
+  const d = new Date(Date.now() - 86400000);
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
 function getDailyWithdrawLimit() {
@@ -7340,10 +7534,10 @@ function openSystemInfo() {
   if (!body) return;
 
   const rows = [
-    ['🧬', 'Версия', 'Kepler 5.3'],
-    ['🔑', 'Серийный код', 'NASGSFBFD371441801'],
+    ['🧬', 'Версия', 'Kepler 5.2'],
+    ['🔑', 'Серийный код', 'AM-510025A255SFA17'],
     ['📅', 'Дата выпуска', '14.06.2026 16:02'],
-    ['🛡️', 'Последняя проверка безопасности', '22 июня 2026 года в 17:53'],
+    ['🛡️', 'Последняя проверка безопасности', '1 июня 2026 года в 12:35'],
   ];
 
   let rowsHtml = '';
@@ -8922,16 +9116,6 @@ const DAILY_REWARDS = [
     label: '250 💎', vipLabel: '500 💎',
   },
 ];
-
-function getTodayStr() {
-  const d = new Date();
-  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-}
-
-function getYesterdayStr() {
-  const d = new Date(Date.now() - 86400000);
-  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-}
 
 function canClaimDailyReward() {
   const dr = state.dailyRewards;
@@ -10663,6 +10847,60 @@ const CASHBACK_MIN     = 100;
 const CASHBACK_MAX     = 1000000;
 
 // ============================================================
+//  SIDEBAR DRAWER
+// ============================================================
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  if (sb.classList.contains('open')) closeSidebar();
+  else openSidebar();
+}
+function openSidebar() {
+  updateSidebarHeader();
+  updateSidebarBadges();
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebarOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function updateSidebarHeader() {
+  const avatar = document.getElementById('sbAvatar');
+  const uname  = document.getElementById('sbUsername');
+  const sub    = document.getElementById('sbSub');
+  if (!avatar) return;
+  if (state.account) {
+    const login = state.account.login || 'Игрок';
+    avatar.textContent = '🦉';
+    uname.textContent  = login;
+    sub.innerHTML = '💎 ' + Math.floor(state.gems) + ' &nbsp;·&nbsp; ⚡ ' + Math.floor(state.xp);
+  } else {
+    avatar.textContent = '👤';
+    uname.textContent  = 'Гость';
+    sub.textContent    = 'Войди в аккаунт';
+  }
+}
+function updateSidebarBadges() {
+  const notifBadge = document.getElementById('notifBadge');
+  const sbNotif = document.getElementById('sbNotifBadge');
+  if (sbNotif && notifBadge) {
+    sbNotif.style.display = notifBadge.textContent ? 'block' : 'none';
+  }
+  const podgonyDot = document.getElementById('podgonyDot');
+  const sbPodgony = document.getElementById('sbPodgonyDot');
+  if (sbPodgony && podgonyDot) {
+    sbPodgony.style.display = podgonyDot.style.display !== 'none' ? 'block' : 'none';
+  }
+  const adDot = document.getElementById('adReadyDot');
+  const sbAd  = document.getElementById('sbAdDot');
+  if (sbAd && adDot) {
+    sbAd.style.display = adDot.style.display !== 'none' ? 'block' : 'none';
+  }
+}
+
+// ============================================================
 //  INIT
 // ============================================================
 applySettings();
@@ -11498,6 +11736,12 @@ async function openLeagueModal() {
   subscribeLeague(data => renderLeagueModal(data));
 }
 
+const _origOpenModal = openModal;
+window.openModal = function(id) {
+  if (id==='league') { openLeagueModal(); return; }
+  _origOpenModal(id);
+};
+
 const _origCloseModal = closeModal;
 window.closeModal = function(id) {
   if (id==='league') {
@@ -11505,12 +11749,6 @@ window.closeModal = function(id) {
     if (_leagueMetaUnsub) { _leagueMetaUnsub(); _leagueMetaUnsub=null; }
   }
   _origCloseModal(id);
-};
-
-const _origOpenModal = openModal;
-window.openModal = function(id) {
-  if (id==='league') { openLeagueModal(); return; }
-  _origOpenModal(id);
 };
 
 setInterval(()=>{ if(state.account&&state.account.uid) pushLeagueScore(); },60000);
@@ -11523,6 +11761,7 @@ setTimeout(()=>{
   }
 },3000);
 </script>
+
 
 </body>
 </html>
