@@ -8188,7 +8188,7 @@ function renderVip() {
           <span class="btn-sub" style="${state.gems >= RC.VIP_COST_GEMS ? 'color:rgba(168,85,247,0.5);' : ''}">30 дней MAX · оплата алмазами</span>
         </div>
       </div>
-      <span class="btn-cost" style="${state.gems >= RC.VIP_COST_GEMS ? 'background:rgba(168,85,247,0.1);border-color:rgba(168,85,247,0.3);color:#c77dff;' : ''}">RC.VIP_COST_GEMS.toLocaleString('ru-RU') + ' ' + ${diaIcon(13)}</span>
+      <span class="btn-cost" style="${state.gems >= RC.VIP_COST_GEMS ? 'background:rgba(168,85,247,0.1);border-color:rgba(168,85,247,0.3);color:#c77dff;' : ''}">${RC.VIP_COST_GEMS.toLocaleString('ru-RU')} ${diaIcon(13)}</span>
     </button>
     ${state.gems < RC.VIP_COST_GEMS ?
       `<div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.3);margin-top:5px;">Нужно ещё <strong style="color:#c77dff;text-shadow:0 0 10px rgba(168,85,247,0.6);">${(RC.VIP_COST_GEMS - state.gems).toLocaleString('ru-RU')} ${diaIcon(12)}</strong></div>` :
@@ -8235,7 +8235,7 @@ function renderVip() {
           <span class="btn-sub" style="${state.gems >= RC.VIP_COST_GEMS ? 'color:rgba(168,85,247,0.5);' : ''}">+30 дней MAX · оплата алмазами</span>
         </div>
       </div>
-      <span class="btn-cost" style="${state.gems >= RC.VIP_COST_GEMS ? 'background:rgba(168,85,247,0.1);border-color:rgba(168,85,247,0.3);color:#c77dff;' : ''}">RC.VIP_COST_GEMS.toLocaleString('ru-RU') + ' ' + ${diaIcon(13)}</span>
+      <span class="btn-cost" style="${state.gems >= RC.VIP_COST_GEMS ? 'background:rgba(168,85,247,0.1);border-color:rgba(168,85,247,0.3);color:#c77dff;' : ''}">${RC.VIP_COST_GEMS.toLocaleString('ru-RU')} ${diaIcon(13)}</span>
     </button>
     ${state.gems < RC.VIP_COST_GEMS ?
       `<div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.3);margin-top:5px;">Нужно ещё <strong style="color:#c77dff;text-shadow:0 0 10px rgba(168,85,247,0.6);">${(RC.VIP_COST_GEMS - state.gems).toLocaleString('ru-RU')} ${diaIcon(12)}</strong></div>` :
@@ -9522,6 +9522,7 @@ function openModal(id) {
   if (id === 'transfer')      renderTransfer();
   if (id === 'podgony')       renderPodgony();
   const overlay = document.getElementById('modal-' + id);
+  if (!overlay) { console.warn('openModal: no element for id=', id); return; }
   overlay.classList.remove('closing');
   overlay.classList.add('active');
 }
