@@ -2583,64 +2583,108 @@ body.vip-theme-16 ::selection { background: rgba(200,150,255,0.35); }
 
 
 </style>
-<!-- Firebase (Authentication + Firestore) — облачные аккаунты игры -->
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-remote-config-compat.js"></script>
 <script>
-  var dcAuth, dcDb;
+var dcAuth, dcDb, dcRC;
+var RC = {}; // Remote Config значения (используются везде)
 
-  // Stubs — используются если Firebase CDN недоступен (офлайн / CSP-блок).
-  // Приложение работает в гостевом режиме: локальные данные сохраняются,
-  // облачные функции (аккаунт, лига, переводы) тихо пропускаются.
-  function _makeFirebaseStubs() {
-    var noopUnsub = function(){};
-    dcAuth = {
-      onAuthStateChanged: function(cb){ cb(null); return noopUnsub; },
-      signInWithEmailAndPassword: function(){ return Promise.reject(new Error('offline')); },
-      createUserWithEmailAndPassword: function(){ return Promise.reject(new Error('offline')); },
-      sendPasswordResetEmail: function(){ return Promise.reject(new Error('offline')); },
-      signOut: function(){ return Promise.resolve(); },
-      currentUser: null
-    };
-    var noopDoc = function(){ return {
-      get: function(){ return Promise.resolve({ exists: false, data: function(){ return null; } }); },
-      set: function(){ return Promise.resolve(); },
-      update: function(){ return Promise.resolve(); },
-      delete: function(){ return Promise.resolve(); },
-      onSnapshot: function(cb){ return noopUnsub; }
-    }; };
-    var noopCol = function(){ return {
-      doc: noopDoc,
-      add: function(){ return Promise.resolve({ id: 'offline' }); },
-      where: function(){ return { get: function(){ return Promise.resolve({ docs: [] }); }, limit: function(){ return { get: function(){ return Promise.resolve({ docs: [] }); } }; }, onSnapshot: function(){ return noopUnsub; } }; },
-      limit: function(){ return { get: function(){ return Promise.resolve({ docs: [] }); } }; },
-      orderBy: function(){ return { limit: function(){ return { get: function(){ return Promise.resolve({ docs: [] }); } }; } }; }
-    }; };
-    dcDb = {
-      collection: noopCol,
-      runTransaction: function(fn){ return Promise.resolve(); }
-    };
-    console.warn('Firebase недоступен — гостевой режим');
-  }
+function _makeFirebaseStubs() {
+  var noop = function(){ return Promise.resolve(); };
+  var noopUnsub = function(){};
+  dcAuth = {
+    onAuthStateChanged: function(cb){ cb(null); return noopUnsub; },
+    signInWithEmailAndPassword: function(){ return Promise.reject(new Error('offline')); },
+    createUserWithEmailAndPassword: function(){ return Promise.reject(new Error('offline')); },
+    sendPasswordResetEmail: function(){ return Promise.reject(new Error('offline')); },
+    signOut: function(){ return Promise.resolve(); },
+    currentUser: null
+  };
+  var noopDoc = function(){ return { get: function(){ return Promise.resolve({ exists: false, data: function(){ return null; } }); }, set: noop, update: noop, delete: noop, onSnapshot: function(){ return noopUnsub; } }; };
+  dcDb = { collection: function(){ return { doc: noopDoc, add: function(){ return Promise.resolve({ id: 'offline' }); }, where: function(){ return { get: function(){ return Promise.resolve({ docs: [] }); }, limit: function(){ return { get: function(){ return Promise.resolve({ docs: [] }); } }; }, onSnapshot: function(){ return noopUnsub; } }; }, limit: function(){ return { get: function(){ return Promise.resolve({ docs: [] }); } }; }, orderBy: function(){ return { limit: function(){ return { get: function(){ return Promise.resolve({ docs: [] }); } }; } }; } }; }, runTransaction: function(fn){ return Promise.resolve(); } };
+  dcRC = null;
+  console.warn('Firebase недоступен — гостевой режим');
+}
 
-  try {
-    if (typeof firebase === 'undefined') throw new Error('Firebase CDN не загружен');
-    var firebaseConfig = {
-      apiKey: "AIzaSyDfjCmE_t8xz0fTQuQOyMnKtdcNrU3ErVU",
-      authDomain: "diamond-clicker-4edcf.firebaseapp.com",
-      projectId: "diamond-clicker-4edcf",
-      storageBucket: "diamond-clicker-4edcf.firebasestorage.app",
-      messagingSenderId: "28298480948",
-      appId: "1:28298480948:web:cf68a6b1d4ea28d3672961"
-    };
-    firebase.initializeApp(firebaseConfig);
-    dcAuth = firebase.auth();
-    dcDb   = firebase.firestore();
-  } catch(e) {
-    console.error("Firebase init failed:", e);
-    _makeFirebaseStubs();
-  }
+function _loadRemoteConfig() {
+  if (!dcRC) return Promise.resolve();
+  dcRC.defaultConfig = {
+    vip_cost_xp:       415000,
+    vip_cost_gems:     175000,
+    dm_cost_xp:        455000,
+    fd_cost_xp:        200000,
+    chest_common:      50,
+    chest_rare:        400,
+    chest_epic:        1000,
+    chest_epic_chest:  2000,
+    chest_legend:      3500,
+    pct_small_cost:    3000,
+    pct_big_cost:      5000,
+    prgram_rate_gems:  400,
+    prgram_rate_out:   3000,
+    prgram_min_gems:   400
+  };
+  dcRC.settings = { minimumFetchIntervalMillis: 3600000 };
+  return firebase.remoteConfig().fetchAndActivate().then(function() {
+    var v = dcRC.getAll();
+    RC.VIP_COST_XP      = Number(v.vip_cost_xp.asString())      || 415000;
+    RC.VIP_COST_GEMS    = Number(v.vip_cost_gems.asString())     || 175000;
+    RC.DM_COST_XP       = Number(v.dm_cost_xp.asString())        || 455000;
+    RC.FD_COST_XP       = Number(v.fd_cost_xp.asString())        || 200000;
+    RC.CHEST_COMMON     = Number(v.chest_common.asString())       || 50;
+    RC.CHEST_RARE       = Number(v.chest_rare.asString())         || 400;
+    RC.CHEST_EPIC       = Number(v.chest_epic.asString())         || 1000;
+    RC.CHEST_EPIC_CHEST = Number(v.chest_epic_chest.asString())   || 2000;
+    RC.CHEST_LEGEND     = Number(v.chest_legend.asString())       || 3500;
+    RC.PCT_SMALL_COST   = Number(v.pct_small_cost.asString())     || 3000;
+    RC.PCT_BIG_COST     = Number(v.pct_big_cost.asString())       || 5000;
+    RC.PRGRAM_RATE_GEMS = Number(v.prgram_rate_gems.asString())   || 400;
+    RC.PRGRAM_RATE_OUT  = Number(v.prgram_rate_out.asString())    || 3000;
+    RC.PRGRAM_MIN_GEMS  = Number(v.prgram_min_gems.asString())    || 400;
+    console.log('Remote Config загружен', RC);
+  }).catch(function(e) {
+    console.warn('Remote Config fetchAndActivate failed, используем defaults:', e);
+  });
+}
+
+// Инициализируем defaults сразу (до загрузки RC) чтобы игра не ждала
+RC.VIP_COST_XP      = 415000;
+RC.VIP_COST_GEMS    = 175000;
+RC.DM_COST_XP       = 455000;
+RC.FD_COST_XP       = 200000;
+RC.CHEST_COMMON     = 50;
+RC.CHEST_RARE       = 400;
+RC.CHEST_EPIC       = 1000;
+RC.CHEST_EPIC_CHEST = 2000;
+RC.CHEST_LEGEND     = 3500;
+RC.PCT_SMALL_COST   = 3000;
+RC.PCT_BIG_COST     = 5000;
+RC.PRGRAM_RATE_GEMS = 400;
+RC.PRGRAM_RATE_OUT  = 3000;
+RC.PRGRAM_MIN_GEMS  = 400;
+
+try {
+  if (typeof firebase === 'undefined') throw new Error('Firebase CDN не загружен');
+  var firebaseConfig = {
+    apiKey: "AIzaSyDfjCmE_t8xz0fTQuQOyMnKtdcNrU3ErVU",
+    authDomain: "diamond-clicker-4edcf.firebaseapp.com",
+    projectId: "diamond-clicker-4edcf",
+    storageBucket: "diamond-clicker-4edcf.firebasestorage.app",
+    messagingSenderId: "28298480948",
+    appId: "1:28298480948:web:cf68a6b1d4ea28d3672961"
+  };
+  firebase.initializeApp(firebaseConfig);
+  dcAuth = firebase.auth();
+  dcDb   = firebase.firestore();
+  dcRC   = firebase.remoteConfig();
+  _loadRemoteConfig();
+} catch(e) {
+  console.error('Firebase init failed:', e);
+  _makeFirebaseStubs();
+}
 </script>
 </head>
 <body>
@@ -3254,6 +3298,8 @@ body.vip-theme-16 ::selection { background: rgba(200,150,255,0.35); }
   </div>
 </div>
 
+
+<!-- Firebase (Authentication + Firestore) — облачные аккаунты игры -->
 
 
 <script>
@@ -4113,7 +4159,7 @@ function isVipActive() {
 //  DIAMOND MAGNATE
 // ============================================================
 const DM_TOTAL_DAYS = 30;
-const DM_COST = 455000; // ⚡ за месяц
+const DM_COST = RC.DM_COST_XP; // ⚡ за месяц
 
 function dmRewardForDay(day) {
   return (day % 7 === 0) ? 16000 : 1000; // 26*1000 + 4*16000 = 90000 за 30 дней
@@ -4196,7 +4242,7 @@ function buyDiamondMagnate() {
 // ============================================================
 //  FIRE DUOLINGO
 // ============================================================
-const FD_COST = 200000; // ⚡ за месяц
+const FD_COST = RC.FD_COST_XP; // ⚡ за месяц
 
 function isFireDuoActive() {
   return !!(state.fireDuo && state.fireDuo.end > Date.now());
@@ -5189,10 +5235,6 @@ function getTodayStr() {
   const d = new Date();
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
-function getYesterdayStr() {
-  const d = new Date(Date.now() - 86400000);
-  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-}
 function getDailyWithdrawLimit() {
   return isVipActive() ? 40 : 20;
 }
@@ -5203,9 +5245,9 @@ function getDailyWithdrawUsed() {
 }
 
 // === Обмен 💎 на PRGRAM ===
-const PRGRAM_RATE_GEMS = 400;   // 💎
-const PRGRAM_RATE_OUT  = 3000;  // PRGRAM
-const PRGRAM_MIN_GEMS  = 400;   // минимальная сумма обмена
+const PRGRAM_RATE_GEMS = RC.PRGRAM_RATE_GEMS; // 💎
+const PRGRAM_RATE_OUT  = RC.PRGRAM_RATE_OUT;  // PRGRAM
+const PRGRAM_MIN_GEMS  = RC.PRGRAM_MIN_GEMS;  // минимальная сумма обмена
 let wdActiveTab = 'withdraw';   // 'withdraw' | 'exchange' — какая вкладка открыта в окне «Вывод»
 
 function switchWithdrawTab(tab) {
@@ -6008,8 +6050,8 @@ function renderShop() {
   const lvl  = Number(state.upgradeLevel) || 0;
 
   // Pct upgrade costs
-  const PCT_SMALL_COST = 3000; // 0.1% for 3000 xp
-  const PCT_BIG_COST   = 5000; // 1%   for 5000 xp
+  const PCT_SMALL_COST = RC.PCT_SMALL_COST; // 0.1%
+  const PCT_BIG_COST   = RC.PCT_BIG_COST;   // 1%
 
   body.innerHTML = `
     <!-- Current stats -->
@@ -7786,7 +7828,7 @@ function renderVip() {
   const body = document.getElementById('vipBody');
   const vipActive = isVipActive();
   const xp = Math.floor(state.xp);
-  const VIP_COST = 415000;
+  const VIP_COST = RC.VIP_COST_XP;
   const canBuy = xp >= VIP_COST;
   const daysLeft = vipActive ? Math.ceil((state.vip.end - Date.now()) / 86400000) : 0;
   const hoursLeft = vipActive ? Math.ceil((state.vip.end - Date.now()) / 3600000) : 0;
@@ -8133,23 +8175,23 @@ function renderVip() {
     </div>
 
     <!-- Buy with gems — neon purple -->
-    <button class="duo-btn ${state.gems >= 175000 ? 'purple' : 'gray'}" onclick="buyVipGems()" ${state.gems < 175000 ? 'disabled' : ''} style="${state.gems >= 175000 ? `
+    <button class="duo-btn ${state.gems >= RC.VIP_COST_GEMS ? 'purple' : 'gray'}" onclick="buyVipGems()" ${state.gems < RC.VIP_COST_GEMS ? 'disabled' : ''} style="${state.gems >= RC.VIP_COST_GEMS ? `
       background: linear-gradient(160deg, #100025 0%, #0d0020 100%);
       border: 1.5px solid rgba(168,85,247,0.7) !important;
       box-shadow: 0 4px 0 #080012, 0 0 20px rgba(168,85,247,0.35), 0 0 50px rgba(120,40,255,0.15), inset 0 0 20px rgba(168,85,247,0.04);
       color: #c77dff;
     ` : ''}">
       <div class="btn-left">
-        <span class="btn-icon" style="${state.gems >= 175000 ? 'filter:drop-shadow(0 0 14px rgba(168,85,247,0.9)) drop-shadow(0 0 28px rgba(120,40,255,0.6));' : ''}">${diaIcon(22)}</span>
+        <span class="btn-icon" style="${state.gems >= RC.VIP_COST_GEMS ? 'filter:drop-shadow(0 0 14px rgba(168,85,247,0.9)) drop-shadow(0 0 28px rgba(120,40,255,0.6));' : ''}">${diaIcon(22)}</span>
         <div class="btn-label">
-          <span class="btn-title" style="${state.gems >= 175000 ? 'color:#c77dff;text-shadow:0 0 14px rgba(168,85,247,0.7);' : ''}">Купить за алмазы</span>
-          <span class="btn-sub" style="${state.gems >= 175000 ? 'color:rgba(168,85,247,0.5);' : ''}">30 дней MAX · оплата алмазами</span>
+          <span class="btn-title" style="${state.gems >= RC.VIP_COST_GEMS ? 'color:#c77dff;text-shadow:0 0 14px rgba(168,85,247,0.7);' : ''}">Купить за алмазы</span>
+          <span class="btn-sub" style="${state.gems >= RC.VIP_COST_GEMS ? 'color:rgba(168,85,247,0.5);' : ''}">30 дней MAX · оплата алмазами</span>
         </div>
       </div>
-      <span class="btn-cost" style="${state.gems >= 175000 ? 'background:rgba(168,85,247,0.1);border-color:rgba(168,85,247,0.3);color:#c77dff;' : ''}">175 000 ${diaIcon(13)}</span>
+      <span class="btn-cost" style="${state.gems >= RC.VIP_COST_GEMS ? 'background:rgba(168,85,247,0.1);border-color:rgba(168,85,247,0.3);color:#c77dff;' : ''}">RC.VIP_COST_GEMS.toLocaleString('ru-RU') + ' ' + ${diaIcon(13)}</span>
     </button>
-    ${state.gems < 175000 ?
-      `<div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.3);margin-top:5px;">Нужно ещё <strong style="color:#c77dff;text-shadow:0 0 10px rgba(168,85,247,0.6);">${(175000 - state.gems).toLocaleString('ru-RU')} ${diaIcon(12)}</strong></div>` :
+    ${state.gems < RC.VIP_COST_GEMS ?
+      `<div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.3);margin-top:5px;">Нужно ещё <strong style="color:#c77dff;text-shadow:0 0 10px rgba(168,85,247,0.6);">${(RC.VIP_COST_GEMS - state.gems).toLocaleString('ru-RU')} ${diaIcon(12)}</strong></div>` :
       `<div style="text-align:center;font-size:11px;color:rgba(168,85,247,0.65);margin-top:5px;text-shadow:0 0 10px rgba(168,85,247,0.4);">✅ У тебя достаточно алмазов!</div>`
     }
     ` : `
@@ -8180,23 +8222,23 @@ function renderVip() {
     </div>
 
     <!-- Renew with gems -->
-    <button class="duo-btn ${state.gems >= 175000 ? 'purple' : 'gray'}" onclick="buyVipGems()" ${state.gems < 175000 ? 'disabled' : ''} style="${state.gems >= 175000 ? `
+    <button class="duo-btn ${state.gems >= RC.VIP_COST_GEMS ? 'purple' : 'gray'}" onclick="buyVipGems()" ${state.gems < RC.VIP_COST_GEMS ? 'disabled' : ''} style="${state.gems >= RC.VIP_COST_GEMS ? `
       background: linear-gradient(160deg, #100025 0%, #0d0020 100%);
       border: 1.5px solid rgba(168,85,247,0.7) !important;
       box-shadow: 0 4px 0 #080012, 0 0 20px rgba(168,85,247,0.35), 0 0 50px rgba(120,40,255,0.15), inset 0 0 20px rgba(168,85,247,0.04);
       color: #c77dff;
     ` : ''}">
       <div class="btn-left">
-        <span class="btn-icon" style="${state.gems >= 175000 ? 'filter:drop-shadow(0 0 14px rgba(168,85,247,0.9));' : ''}">${diaIcon(22)}</span>
+        <span class="btn-icon" style="${state.gems >= RC.VIP_COST_GEMS ? 'filter:drop-shadow(0 0 14px rgba(168,85,247,0.9));' : ''}">${diaIcon(22)}</span>
         <div class="btn-label">
-          <span class="btn-title" style="${state.gems >= 175000 ? 'color:#c77dff;text-shadow:0 0 14px rgba(168,85,247,0.7);' : ''}">Продлить за алмазы</span>
-          <span class="btn-sub" style="${state.gems >= 175000 ? 'color:rgba(168,85,247,0.5);' : ''}">+30 дней MAX · оплата алмазами</span>
+          <span class="btn-title" style="${state.gems >= RC.VIP_COST_GEMS ? 'color:#c77dff;text-shadow:0 0 14px rgba(168,85,247,0.7);' : ''}">Продлить за алмазы</span>
+          <span class="btn-sub" style="${state.gems >= RC.VIP_COST_GEMS ? 'color:rgba(168,85,247,0.5);' : ''}">+30 дней MAX · оплата алмазами</span>
         </div>
       </div>
-      <span class="btn-cost" style="${state.gems >= 175000 ? 'background:rgba(168,85,247,0.1);border-color:rgba(168,85,247,0.3);color:#c77dff;' : ''}">175 000 ${diaIcon(13)}</span>
+      <span class="btn-cost" style="${state.gems >= RC.VIP_COST_GEMS ? 'background:rgba(168,85,247,0.1);border-color:rgba(168,85,247,0.3);color:#c77dff;' : ''}">RC.VIP_COST_GEMS.toLocaleString('ru-RU') + ' ' + ${diaIcon(13)}</span>
     </button>
-    ${state.gems < 175000 ?
-      `<div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.3);margin-top:5px;">Нужно ещё <strong style="color:#c77dff;text-shadow:0 0 10px rgba(168,85,247,0.6);">${(175000 - state.gems).toLocaleString('ru-RU')} ${diaIcon(12)}</strong></div>` :
+    ${state.gems < RC.VIP_COST_GEMS ?
+      `<div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.3);margin-top:5px;">Нужно ещё <strong style="color:#c77dff;text-shadow:0 0 10px rgba(168,85,247,0.6);">${(RC.VIP_COST_GEMS - state.gems).toLocaleString('ru-RU')} ${diaIcon(12)}</strong></div>` :
       `<div style="text-align:center;font-size:11px;color:rgba(168,85,247,0.65);margin-top:5px;text-shadow:0 0 10px rgba(168,85,247,0.4);">✅ У тебя достаточно алмазов!</div>`
     }
     `}`;
@@ -8359,7 +8401,7 @@ function closePerkDetail() {
 }
 
 function buyVip() {
-  const VIP_COST = 415000;
+  const VIP_COST = RC.VIP_COST_XP;
   if (state.xp < VIP_COST) { toast('Недостаточно ⚡!', 'error'); return; }
   state.xp = parseFloat((state.xp - VIP_COST).toFixed(4));
   const now = Date.now();
@@ -8385,7 +8427,7 @@ function buyVip() {
 }
 
 function buyVipGems() {
-  const GEM_COST = 175000;
+  const GEM_COST = RC.VIP_COST_GEMS;
   if (state.gems < GEM_COST) { toast('Недостаточно 💎!', 'error'); return; }
   state.gems -= GEM_COST; addCashback(GEM_COST);
   const now = Date.now();
@@ -9409,7 +9451,7 @@ function openVipThemes() {
     // Show VIP upsell overlay inside account modal
     const body = document.getElementById('accountBody');
     const xp = Math.floor(state.xp);
-    const VIP_COST = 415000;
+    const VIP_COST = RC.VIP_COST_XP;
     const canBuy = xp >= VIP_COST;
     body.innerHTML = `
       <div style="text-align:center;padding:8px 0 14px;">
@@ -10295,7 +10337,7 @@ function flashPromoError(inp, msg) {
 // ============================================================
 const QUEST_FREE_BONUS  = 100;
 const QUEST_COOLDOWN_MS = 24*60*60*1000;
-const CHEST_PRICES = {common:50,rare:400,epic:1000,epic_chest:2000,legend:3500};
+const CHEST_PRICES = {common:RC.CHEST_COMMON,rare:RC.CHEST_RARE,epic:RC.CHEST_EPIC,epic_chest:RC.CHEST_EPIC_CHEST,legend:RC.CHEST_LEGEND};
 const CHEST_NAMES  = {common:'Обычный',rare:'Редкий',epic:'Сверхредкий',epic_chest:'Эпический',legend:'Легендарный',cashback:'Кэшбек'};
 let _questFreeTimer = null;
 
@@ -10849,6 +10891,7 @@ const CASHBACK_MAX     = 1000000;
 // ============================================================
 //  SIDEBAR DRAWER
 // ============================================================
+// ===== SIDEBAR DRAWER =====
 function toggleSidebar() {
   const sb = document.getElementById('sidebar');
   if (sb.classList.contains('open')) closeSidebar();
@@ -10883,16 +10926,19 @@ function updateSidebarHeader() {
   }
 }
 function updateSidebarBadges() {
+  // Notif badge
   const notifBadge = document.getElementById('notifBadge');
   const sbNotif = document.getElementById('sbNotifBadge');
   if (sbNotif && notifBadge) {
     sbNotif.style.display = notifBadge.textContent ? 'block' : 'none';
   }
+  // Podgony dot
   const podgonyDot = document.getElementById('podgonyDot');
   const sbPodgony = document.getElementById('sbPodgonyDot');
   if (sbPodgony && podgonyDot) {
     sbPodgony.style.display = podgonyDot.style.display !== 'none' ? 'block' : 'none';
   }
+  // Ad dot
   const adDot = document.getElementById('adReadyDot');
   const sbAd  = document.getElementById('sbAdDot');
   if (sbAd && adDot) {
