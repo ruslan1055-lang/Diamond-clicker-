@@ -2627,7 +2627,7 @@ function _loadRemoteConfig() {
     prgram_rate_out:   3000,
     prgram_min_gems:   400
   };
-  dcRC.settings = { minimumFetchIntervalMillis: 3600000 };
+  dcRC.settings = { minimumFetchIntervalMillis: 0 }; // 0 = всегда свежие данные (для продакшена поставь 3600000)
   return firebase.remoteConfig().fetchAndActivate().then(function() {
     var v = dcRC.getAll();
     RC.VIP_COST_XP      = Number(v.vip_cost_xp.asString())      || 415000;
