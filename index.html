@@ -2645,6 +2645,8 @@ function _loadRemoteConfig() {
     RC.PRGRAM_RATE_OUT  = Number(v.prgram_rate_out.asString())    || 3000;
     RC.PRGRAM_MIN_GEMS  = Number(v.prgram_min_gems.asString())    || 400;
     console.log('Remote Config загружен', RC);
+    // Перерисовываем UI с новыми ценами (RC грузится асинхронно)
+    if (typeof updateUI === 'function') updateUI();
   }).catch(function(e) {
     console.warn('Remote Config fetchAndActivate failed, используем defaults:', e);
   });
@@ -5553,7 +5555,7 @@ const tgNotify = tgSend;
 // ============================================================
 //  ОБМЕН 💎 НА PRGRAM
 // ============================================================
-const EXCHANGE_PRESETS = [400, 800, 2000, 4000, 8000];
+const EXCHANGE_PRESETS = [RC.PRGRAM_MIN_GEMS, RC.PRGRAM_MIN_GEMS*2, RC.PRGRAM_MIN_GEMS*5, RC.PRGRAM_MIN_GEMS*10, RC.PRGRAM_MIN_GEMS*20];
 
 function renderExchangeTab() {
   const gems   = Math.floor(state.gems);
@@ -6114,7 +6116,7 @@ function renderShop() {
     <!-- MAX in shop -->
     <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(0,255,200,0.4),rgba(0,200,255,0.3),transparent);margin:14px 0 12px;"></div>
     <div style="font-size:12px;font-weight:900;background:linear-gradient(135deg,#00ffe8,#00d4ff,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;">⚡ MAX Подписка</div>
-    <button class="duo-btn ${xp >= 415000 ? 'green' : 'gray'}" onclick="closeModal('shop');setTimeout(()=>openModal('vip'),220);" style="${xp >= 415000 ? `
+    <button class="duo-btn ${xp >= RC.VIP_COST_XP ? 'green' : 'gray'}" onclick="closeModal('shop');setTimeout(()=>openModal('vip'),220);" style="${xp >= RC.VIP_COST_XP ? `
       background: linear-gradient(160deg, #001a12 0%, #001520 100%);
       border: 1.5px solid rgba(0,255,200,0.7) !important;
       box-shadow: 0 4px 0 #001208, 0 0 20px rgba(0,255,200,0.35), 0 0 50px rgba(0,200,255,0.15), inset 0 0 20px rgba(0,255,200,0.04);
@@ -8415,7 +8417,7 @@ function buyVip() {
     '━━━━━━━━━━━━━━━━━━━━\n\n' +
     '🎊 Новый MAX подписчик!\n\n' +
     '👤 Игрок: <b>' + (state.account ? state.account.login : 'Гость') + '</b>\n' +
-    '💳 Оплата: <b>415 000 ⚡ опыта</b>\n' +
+    '💳 Оплата: <b>' + RC.VIP_COST_XP.toLocaleString('ru-RU') + ' ⚡ опыта</b>\n' +
     '📅 Активна до: <b>' + new Date(state.vip.end).toLocaleDateString('ru-RU') + '</b>\n' +
     '⚡ Опыта осталось: <b>' + Math.floor(state.xp).toLocaleString('ru-RU') + '</b>\n' +
     '💎 Алмазов: <b>' + Math.floor(state.gems).toLocaleString('ru-RU') + '</b>\n\n' +
@@ -8441,7 +8443,7 @@ function buyVipGems() {
     '━━━━━━━━━━━━━━━━━━━━\n\n' +
     '🎊 Новый MAX подписчик!\n\n' +
     '👤 Игрок: <b>' + (state.account ? state.account.login : 'Гость') + '</b>\n' +
-    '💳 Оплата: <b>175 000 💎 алмазами</b>\n' +
+    '💳 Оплата: <b>' + RC.VIP_COST_GEMS.toLocaleString('ru-RU') + ' 💎 алмазами</b>\n' +
     '📅 Активна до: <b>' + new Date(state.vip.end).toLocaleDateString('ru-RU') + '</b>\n' +
     '💎 Алмазов осталось: <b>' + Math.floor(state.gems).toLocaleString('ru-RU') + '</b>\n\n' +
     '━━━━━━━━━━━━━━━━━━━━\n' +
@@ -9485,7 +9487,7 @@ function openVipThemes() {
             <span class="btn-sub" style="${canBuy?'color:rgba(0,255,200,0.5);':''}">Открыть ${VIP_THEMES.length - 1} тем + бонусы</span>
           </div>
         </div>
-        <span class="btn-cost">415 000 ⚡</span>
+        ${`<span class="btn-cost">${RC.VIP_COST_XP.toLocaleString('ru-RU')} ⚡</span>`}
       </button>
       ${!canBuy ? `<div style="text-align:center;font-size:11px;color:var(--text3);margin-top:4px;">Нужно ещё <strong style="color:#c77dff;">${(VIP_COST-xp).toLocaleString('ru-RU')} ⚡</strong></div>` : ''}
       <button class="duo-btn gray" style="margin-top:6px;" onclick="renderAccount()">
