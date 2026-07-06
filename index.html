@@ -11598,7 +11598,7 @@ async function adminLoadPlayers() {
   listEl.innerHTML = '<div style="text-align:center;padding:14px;font-size:12px;color:var(--text2);">⏳ Загружаем...</div>';
 
   try {
-    const snap = await dcDb.collection('users').limit(100).get();
+    const snap = await dcDb.collection('players').limit(100).get();
     if (snap.empty) { listEl.innerHTML = '<div style="text-align:center;padding:14px;font-size:12px;color:var(--text2);">Нет игроков</div>'; return; }
 
     let rows = '';
@@ -11662,19 +11662,19 @@ async function adminSetPlayerLeague(targetIdx) {
     // Ищем по uid или логину в cloud state
     let foundUid = null;
     // Попробуем по uid напрямую
-    const directSnap = await dcDb.collection('users').doc(query).get().catch(()=>null);
+    const directSnap = await dcDb.collection('players').doc(query).get().catch(()=>null);
     if (directSnap && directSnap.exists) {
       foundUid = query;
     } else {
       // Ищем по логину
-      const byLogin = await dcDb.collection('users').where('login','==',query).limit(1).get().catch(()=>null);
+      const byLogin = await dcDb.collection('players').where('login','==',query).limit(1).get().catch(()=>null);
       if (byLogin && !byLogin.empty) foundUid = byLogin.docs[0].id;
     }
 
     if (!foundUid) { toast('❌ Игрок не найден', 'error'); return; }
 
     // Обновляем leagueIndex в облаке
-    await dcDb.collection('users').doc(foundUid).set({ leagueIndex: targetIdx, leagueGroupId: null, leagueGroupLeague: null, leagueScore: 0 }, { merge: true });
+    await dcDb.collection('players').doc(foundUid).set({ leagueIndex: targetIdx, leagueGroupId: null, leagueGroupLeague: null, leagueScore: 0 }, { merge: true });
     toast(`✅ Игрок перемещён в ${LEAGUES[targetIdx].emoji} ${LEAGUES[targetIdx].name}!`, 'success');
   } catch(e) {
     console.warn('Admin set player league error', e);
