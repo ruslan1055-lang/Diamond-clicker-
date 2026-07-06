@@ -3399,6 +3399,10 @@ function defaultState() {
     prgramExchanged:  0,   // суммарно потрачено 💎 на обмен (для статистики/заданий)
     exchangeCount:    0,   // количество совершённых обменов
     exchangeHistory:  [],  // история обменов 💎 → PRGRAM
+    leagueIndex:      0,   // 0=bronze,1=silver,2=gold,3=platinum,4=diamond
+    leagueGroupId:    null,
+    leagueGroupLeague: null,
+    leagueScore:      0,
   };
 }
 
@@ -3470,6 +3474,10 @@ function sanitizeState(merged, parsed) {
       if (typeof merged.prgramExchanged !== 'number') merged.prgramExchanged = 0;
       if (typeof merged.exchangeCount !== 'number') merged.exchangeCount = 0;
       if (!Array.isArray(merged.exchangeHistory)) merged.exchangeHistory = [];
+      if (typeof merged.leagueIndex !== "number") merged.leagueIndex = 0;
+      if (merged.leagueGroupId === undefined) merged.leagueGroupId = null;
+      if (merged.leagueGroupLeague === undefined) merged.leagueGroupLeague = null;
+      if (typeof merged.leagueScore !== "number") merged.leagueScore = 0;
   return merged;
 }
 function saveState() {
