@@ -3059,6 +3059,7 @@ function defaultState() {
     account: null,
     bonuses: {
       xp2_end: 0, xp15_end: 0, xp3_10_end: 0, xp3_1h_end: 0,
+      chestMult_val: 0, chestMult_end: 0,
       freeXp3_lastUsed: 0,
       dailyMult_val: 0, dailyMult_end: 0,
     },
@@ -3133,6 +3134,8 @@ function sanitizeState(merged, parsed) {
       if (!Array.isArray(merged.dailyRewards.badges)) merged.dailyRewards.badges = [];
       if (!merged.bonuses.dailyMult_val) merged.bonuses.dailyMult_val = 0;
       if (!merged.bonuses.dailyMult_end) merged.bonuses.dailyMult_end = 0;
+      if (!merged.bonuses.chestMult_val) merged.bonuses.chestMult_val = 0;
+      if (!merged.bonuses.chestMult_end) merged.bonuses.chestMult_end = 0;
       if (typeof merged.currentLevel !== 'number') merged.currentLevel = 1;
       if (typeof merged.levelCompleted !== 'boolean') merged.levelCompleted = false;
       // leagueClicks: если нет в сохранении — это старый пользователь, начинаем с 0
@@ -3795,17 +3798,24 @@ function getUpgradeCost() {
 function getXpMultiplier() {
   const now = Date.now();
   const bonus = (() => {
-    // Daily reward multiplier takes priority if higher
+    // Множитель из сундука (уже содержит VIP x3 если был применён через applyChestMultiplierBonus)
+    const chestMult = (state.bonuses.chestMult_end > now) ? (state.bonuses.chestMult_val || 0) : 0;
+    // Ежедневный множитель (из ежедневных наград и покупок)
     const dailyMult = (state.bonuses.dailyMult_end > now) ? (state.bonuses.dailyMult_val || 0) : 0;
-    if (state.bonuses.xp3_1h_end > now) return Math.max(3, dailyMult);
-    if (state.bonuses.xp3_10_end > now) return Math.max(3, dailyMult);
-    if (state.bonuses.xp2_end > now)    return Math.max(2, dailyMult);
-    if (state.bonuses.xp15_end > now)   return Math.max(1.5, dailyMult);
-    if (dailyMult > 0)                  return dailyMult;
+    // Берём максимальный из активных
+    const baseMult = Math.max(chestMult, dailyMult);
+    if (baseMult > 0) return baseMult;
+    // Устаревшие слоты (для совместимости со старыми сохранениями)
+    if (state.bonuses.xp3_1h_end > now) return 3;
+    if (state.bonuses.xp3_10_end > now) return 3;
+    if (state.bonuses.xp2_end > now)    return 2;
+    if (state.bonuses.xp15_end > now)   return 1.5;
     return 1;
   })();
-  // VIP triples XP gain (stacks multiplicatively with bonus)
-  return isVipActive() ? bonus * 3 : bonus;
+  // VIP утраивает опыт только если нет активного сундучного множителя
+  // (сундучный уже учитывает VIP внутри applyChestMultiplierBonus)
+  const hasChestMult = (state.bonuses.chestMult_end > now) && (state.bonuses.chestMult_val > 0);
+  return (isVipActive() && !hasChestMult) ? bonus * 3 : bonus;
 }
 function updateMultiplierPill() {
   const pill = document.getElementById('multiplierPill');
@@ -3819,6 +3829,17 @@ function updateMultiplierPill() {
 }
 function getActiveXpBonus() {
   const now = Date.now();
+  // Сначала проверяем точный сундучный множитель
+  if (state.bonuses.chestMult_end > now && state.bonuses.chestMult_val > 0) {
+    const v = state.bonuses.chestMult_val;
+    return { label: 'Х' + v + ' XP (сундук)', end: state.bonuses.chestMult_end };
+  }
+  // Затем ежедневные / покупные
+  if (state.bonuses.dailyMult_end > now && state.bonuses.dailyMult_val > 0) {
+    const v = state.bonuses.dailyMult_val;
+    return { label: 'Х' + v + ' XP (бонус)', end: state.bonuses.dailyMult_end };
+  }
+  // Устаревшие слоты (совместимость)
   if (state.bonuses.xp3_1h_end > now) return { label:'Х3 XP (час)',   end: state.bonuses.xp3_1h_end };
   if (state.bonuses.xp3_10_end > now) return { label:'Х3 XP (10мин)', end: state.bonuses.xp3_10_end };
   if (state.bonuses.xp2_end > now)    return { label:'Х2 XP (30мин)', end: state.bonuses.xp2_end };
@@ -3826,15 +3847,37 @@ function getActiveXpBonus() {
   return null;
 }
 
-// Сбрасывает все XP-множители (используется при выпадении множителя из сундука,
-// чтобы новый множитель заменял старый, а не суммировался с ним)
+// Сбрасывает XP-множители из сундуков (НЕ трогает dailyMult из ежедневных наград и покупок).
+// Вызывается перед применением нового множителя из сундука, чтобы он заменял старый.
 function clearXpMultipliersFromChest() {
   state.bonuses.xp3_1h_end  = 0;
   state.bonuses.xp3_10_end  = 0;
   state.bonuses.xp2_end     = 0;
   state.bonuses.xp15_end    = 0;
-  state.bonuses.dailyMult_val = 0;
-  state.bonuses.dailyMult_end = 0;
+  // dailyMult (ежедневная награда) и bonuses из покупок НЕ сбрасываются
+}
+
+// Применяет множитель из сундука с учётом MAX подписки (x3).
+// Заменяет старые сундучные множители на новый.
+// Не трогает dailyMult (ежедневные награды/бонусы покупок).
+// Возвращает итоговый множитель (для отображения в UI).
+function applyChestMultiplierBonus(baseMultiplier, durationMs) {
+  const now = Date.now();
+  clearXpMultipliersFromChest();
+  const finalMult = isVipActive() ? baseMultiplier * 3 : baseMultiplier;
+  // Сохраняем реальное значение множителя и время окончания в dailyMult слот чундука
+  // чтобы getXpMultiplier мог его корректно применить
+  if (finalMult >= 3) {
+    state.bonuses.xp3_1h_end = now + durationMs;
+  } else if (finalMult >= 2) {
+    state.bonuses.xp2_end = now + durationMs;
+  } else {
+    state.bonuses.xp15_end = now + durationMs;
+  }
+  // Сохраняем точное значение для правильного отображения в пилюле и UI
+  state.bonuses.chestMult_val = finalMult;
+  state.bonuses.chestMult_end = now + durationMs;
+  return finalMult;
 }
 
 // ============================================================
@@ -8575,9 +8618,8 @@ function buyStormChest(){
   let rewardIcon='⚡', rewardTitle='', rewardSub='';
   if(reward === 'x2_25m'){
     const dur = 25*60*1000;
-    clearXpMultipliersFromChest();
-    state.bonuses.xp2_end = now + dur;
-    rewardIcon='✨'; rewardTitle='Х2 опыта на 25 минут!'; rewardSub='Множитель активирован';
+    const fm = applyChestMultiplierBonus(2, dur);
+    rewardIcon='✨'; rewardTitle='Х'+fm+' опыта на 25 минут!'; rewardSub='Множитель активирован'+(isVipActive()&&fm!==2?' (MAX x3 применён)':'');
   } else if(reward === 'energy15'){
     const maxE = getEnergyMax ? getEnergyMax() : 500;
     state.energy = Math.min(maxE, (state.energy||0) + 15);
@@ -8585,18 +8627,16 @@ function buyStormChest(){
     rewardIcon='⚡'; rewardTitle='+15 Энергии!'; rewardSub='Добавлено к твоему запасу энергии';
   } else if(reward === 'x15_35m'){
     const dur = 35*60*1000;
-    clearXpMultipliersFromChest();
-    state.bonuses.xp15_end = now + dur;
-    rewardIcon='💫'; rewardTitle='Х1.5 опыта на 35 минут!'; rewardSub='Множитель активирован';
+    const fm = applyChestMultiplierBonus(1.5, dur);
+    rewardIcon='💫'; rewardTitle='Х'+fm+' опыта на 35 минут!'; rewardSub='Множитель активирован'+(isVipActive()&&fm!==1.5?' (MAX x3 применён)':'');
   } else if(reward === 'zap200'){
     state.xp = parseFloat(((state.xp||0) + 200).toFixed(4));
     rewardIcon='⚡'; rewardTitle='+200 ⚡!'; rewardSub='Добавлено к балансу энергии';
   } else {
     // x3 XP — give for 60 min
     const dur = 60*60*1000;
-    clearXpMultipliersFromChest();
-    state.bonuses.xp3_1h_end = now + dur;
-    rewardIcon='🌟'; rewardTitle='Х3 опыта на 1 час!'; rewardSub='Множитель активирован';
+    const fm = applyChestMultiplierBonus(3, dur);
+    rewardIcon='🌟'; rewardTitle='Х'+fm+' опыта на 1 час!'; rewardSub='Множитель активирован'+(isVipActive()&&fm!==3?' (MAX x3 применён)':'');
   }
   saveState(); updateUI();
   // Show animation overlay
@@ -8641,9 +8681,8 @@ function buyMediumStormChest(){
   let rewardIcon='⚡', rewardTitle='', rewardSub='';
   if(reward === 'x4_25m'){
     const dur = 25*60*1000;
-    clearXpMultipliersFromChest();
-    state.bonuses.xp3_1h_end = now + dur;
-    rewardIcon='✨'; rewardTitle='Х4 опыта на 25 минут!'; rewardSub='Множитель активирован';
+    const fm = applyChestMultiplierBonus(4, dur);
+    rewardIcon='✨'; rewardTitle='Х'+fm+' опыта на 25 минут!'; rewardSub='Множитель активирован'+(isVipActive()&&fm!==4?' (MAX x3 применён)':'');
   } else if(reward === 'energy30'){
     const maxE = getEnergyMax ? getEnergyMax() : 500;
     state.energy = Math.min(maxE, (state.energy||0) + 30);
@@ -8651,17 +8690,15 @@ function buyMediumStormChest(){
     rewardIcon='⚡'; rewardTitle='+30 Энергии!'; rewardSub='Добавлено к твоему запасу энергии';
   } else if(reward === 'x3_35m'){
     const dur = 35*60*1000;
-    clearXpMultipliersFromChest();
-    state.bonuses.xp3_10_end = now + dur;
-    rewardIcon='🌟'; rewardTitle='Х3 опыта на 35 минут!'; rewardSub='Множитель активирован';
+    const fm = applyChestMultiplierBonus(3, dur);
+    rewardIcon='🌟'; rewardTitle='Х'+fm+' опыта на 35 минут!'; rewardSub='Множитель активирован'+(isVipActive()&&fm!==3?' (MAX x3 применён)':'');
   } else if(reward === 'zap750'){
     state.xp = parseFloat(((state.xp||0) + 750).toFixed(4));
     rewardIcon='⚡'; rewardTitle='+750 ⚡!'; rewardSub='Добавлено к балансу энергии';
   } else if(reward === 'x5_xp'){
     const dur = 60*60*1000;
-    clearXpMultipliersFromChest();
-    state.bonuses.xp3_1h_end = now + dur;
-    rewardIcon='💥'; rewardTitle='Х5 опыта на 1 час!'; rewardSub='Множитель активирован';
+    const fm = applyChestMultiplierBonus(5, dur);
+    rewardIcon='💥'; rewardTitle='Х'+fm+' опыта на 1 час!'; rewardSub='Множитель активирован'+(isVipActive()&&fm!==5?' (MAX x3 применён)':'');
   } else {
     state.gems = parseFloat(((state.gems||0) + 350).toFixed(4));
     state.totalGems = parseFloat(((state.totalGems||0) + 350).toFixed(4));
@@ -8712,10 +8749,8 @@ function buyUltraStormChest(){
   let rewardIcon='⚡', rewardTitle='', rewardSub='';
   if(reward === 'x6_25m'){
     const dur = 25*60*1000;
-    const cur = state.bonuses.clickMult || 1;
-    state.bonuses.clickMult = parseFloat((cur * 6).toFixed(4));
-    state.bonuses.clickMult_end = Math.max(state.bonuses.clickMult_end||0, now + dur);
-    rewardIcon='⚡'; rewardTitle='Х6 на 25 минут!'; rewardSub='Множитель кликов активирован';
+    const fm = applyChestMultiplierBonus(6, dur);
+    rewardIcon='⚡'; rewardTitle='Х'+fm+' опыта на 25 минут!'; rewardSub='Множитель активирован'+(isVipActive()&&fm!==6?' (MAX x3 применён)':'');
   } else if(reward === 'energy65'){
     const maxE = getEnergyMax ? getEnergyMax() : 500;
     state.energy = Math.min(maxE, (state.energy||0) + 65);
@@ -8723,17 +8758,15 @@ function buyUltraStormChest(){
     rewardIcon='⚡'; rewardTitle='+65 Энергии!'; rewardSub='Добавлено к твоему запасу энергии';
   } else if(reward === 'x4_35m'){
     const dur = 35*60*1000;
-    clearXpMultipliersFromChest();
-    state.bonuses.xp3_1h_end = now + dur;
-    rewardIcon='💫'; rewardTitle='Х4 опыта на 35 минут!'; rewardSub='Множитель активирован';
+    const fm = applyChestMultiplierBonus(4, dur);
+    rewardIcon='💫'; rewardTitle='Х'+fm+' опыта на 35 минут!'; rewardSub='Множитель активирован'+(isVipActive()&&fm!==4?' (MAX x3 применён)':'');
   } else if(reward === 'zap1000'){
     state.xp = parseFloat(((state.xp||0) + 1000).toFixed(4));
     rewardIcon='⚡'; rewardTitle='+1000 ⚡!'; rewardSub='Добавлено к балансу энергии';
   } else if(reward === 'x4_1d'){
     const dur = 24*60*60*1000;
-    clearXpMultipliersFromChest();
-    state.bonuses.xp3_1h_end = now + dur;
-    rewardIcon='🌟'; rewardTitle='Х4 опыта на 1 день!'; rewardSub='Множитель активирован';
+    const fm = applyChestMultiplierBonus(4, dur);
+    rewardIcon='🌟'; rewardTitle='Х'+fm+' опыта на 1 день!'; rewardSub='Множитель активирован'+(isVipActive()&&fm!==4?' (MAX x3 применён)':'');
   } else if(reward === 'gems1000'){
     state.gems = parseFloat(((state.gems||0) + 1000).toFixed(4));
     state.totalGems = parseFloat(((state.totalGems||0) + 1000).toFixed(4));
@@ -8748,10 +8781,10 @@ function buyUltraStormChest(){
     state.totalGems = parseFloat(((state.totalGems||0) + 350).toFixed(4));
     rewardIcon='💎'; rewardTitle='+350 💎!'; rewardSub='Алмазы добавлены на баланс';
   } else {
-    // MAX subscription 3 days
+    // MAX subscription 3 days — множители НЕ трогаются
     const dur = 3*24*60*60*1000;
-    state.vip_end = Math.max(state.vip_end||0, now + dur);
-    state.vip_level = Math.max(state.vip_level||0, 3);
+    if (!state.vip) state.vip = {};
+    state.vip.end = Math.max(state.vip.end||0, now + dur);
     rewardIcon='👑'; rewardTitle='MAX подписка на 3 дня!'; rewardSub='Подписка MAX активирована';
     if(typeof applyVipTheme === 'function') applyVipTheme();
   }
