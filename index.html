@@ -3826,6 +3826,17 @@ function getActiveXpBonus() {
   return null;
 }
 
+// Сбрасывает все XP-множители (используется при выпадении множителя из сундука,
+// чтобы новый множитель заменял старый, а не суммировался с ним)
+function clearXpMultipliersFromChest() {
+  state.bonuses.xp3_1h_end  = 0;
+  state.bonuses.xp3_10_end  = 0;
+  state.bonuses.xp2_end     = 0;
+  state.bonuses.xp15_end    = 0;
+  state.bonuses.dailyMult_val = 0;
+  state.bonuses.dailyMult_end = 0;
+}
+
 // ============================================================
 //  UPDATE UI
 // ============================================================
@@ -8564,7 +8575,8 @@ function buyStormChest(){
   let rewardIcon='⚡', rewardTitle='', rewardSub='';
   if(reward === 'x2_25m'){
     const dur = 25*60*1000;
-    state.bonuses.xp2_end = Math.max(state.bonuses.xp2_end||0, now + dur);
+    clearXpMultipliersFromChest();
+    state.bonuses.xp2_end = now + dur;
     rewardIcon='✨'; rewardTitle='Х2 опыта на 25 минут!'; rewardSub='Множитель активирован';
   } else if(reward === 'energy15'){
     const maxE = getEnergyMax ? getEnergyMax() : 500;
@@ -8573,7 +8585,8 @@ function buyStormChest(){
     rewardIcon='⚡'; rewardTitle='+15 Энергии!'; rewardSub='Добавлено к твоему запасу энергии';
   } else if(reward === 'x15_35m'){
     const dur = 35*60*1000;
-    state.bonuses.xp15_end = Math.max(state.bonuses.xp15_end||0, now + dur);
+    clearXpMultipliersFromChest();
+    state.bonuses.xp15_end = now + dur;
     rewardIcon='💫'; rewardTitle='Х1.5 опыта на 35 минут!'; rewardSub='Множитель активирован';
   } else if(reward === 'zap200'){
     state.xp = parseFloat(((state.xp||0) + 200).toFixed(4));
@@ -8581,7 +8594,8 @@ function buyStormChest(){
   } else {
     // x3 XP — give for 60 min
     const dur = 60*60*1000;
-    state.bonuses.xp3_1h_end = Math.max(state.bonuses.xp3_1h_end||0, now + dur);
+    clearXpMultipliersFromChest();
+    state.bonuses.xp3_1h_end = now + dur;
     rewardIcon='🌟'; rewardTitle='Х3 опыта на 1 час!'; rewardSub='Множитель активирован';
   }
   saveState(); updateUI();
@@ -8627,7 +8641,8 @@ function buyMediumStormChest(){
   let rewardIcon='⚡', rewardTitle='', rewardSub='';
   if(reward === 'x4_25m'){
     const dur = 25*60*1000;
-    state.bonuses.xp3_1h_end = Math.max(state.bonuses.xp3_1h_end||0, now + dur);
+    clearXpMultipliersFromChest();
+    state.bonuses.xp3_1h_end = now + dur;
     rewardIcon='✨'; rewardTitle='Х4 опыта на 25 минут!'; rewardSub='Множитель активирован';
   } else if(reward === 'energy30'){
     const maxE = getEnergyMax ? getEnergyMax() : 500;
@@ -8636,14 +8651,16 @@ function buyMediumStormChest(){
     rewardIcon='⚡'; rewardTitle='+30 Энергии!'; rewardSub='Добавлено к твоему запасу энергии';
   } else if(reward === 'x3_35m'){
     const dur = 35*60*1000;
-    state.bonuses.xp3_10_end = Math.max(state.bonuses.xp3_10_end||0, now + dur);
+    clearXpMultipliersFromChest();
+    state.bonuses.xp3_10_end = now + dur;
     rewardIcon='🌟'; rewardTitle='Х3 опыта на 35 минут!'; rewardSub='Множитель активирован';
   } else if(reward === 'zap750'){
     state.xp = parseFloat(((state.xp||0) + 750).toFixed(4));
     rewardIcon='⚡'; rewardTitle='+750 ⚡!'; rewardSub='Добавлено к балансу энергии';
   } else if(reward === 'x5_xp'){
     const dur = 60*60*1000;
-    state.bonuses.xp3_1h_end = Math.max(state.bonuses.xp3_1h_end||0, now + dur);
+    clearXpMultipliersFromChest();
+    state.bonuses.xp3_1h_end = now + dur;
     rewardIcon='💥'; rewardTitle='Х5 опыта на 1 час!'; rewardSub='Множитель активирован';
   } else {
     state.gems = parseFloat(((state.gems||0) + 350).toFixed(4));
@@ -8706,14 +8723,16 @@ function buyUltraStormChest(){
     rewardIcon='⚡'; rewardTitle='+65 Энергии!'; rewardSub='Добавлено к твоему запасу энергии';
   } else if(reward === 'x4_35m'){
     const dur = 35*60*1000;
-    state.bonuses.xp3_1h_end = Math.max(state.bonuses.xp3_1h_end||0, now + dur);
+    clearXpMultipliersFromChest();
+    state.bonuses.xp3_1h_end = now + dur;
     rewardIcon='💫'; rewardTitle='Х4 опыта на 35 минут!'; rewardSub='Множитель активирован';
   } else if(reward === 'zap1000'){
     state.xp = parseFloat(((state.xp||0) + 1000).toFixed(4));
     rewardIcon='⚡'; rewardTitle='+1000 ⚡!'; rewardSub='Добавлено к балансу энергии';
   } else if(reward === 'x4_1d'){
     const dur = 24*60*60*1000;
-    state.bonuses.xp3_1h_end = Math.max(state.bonuses.xp3_1h_end||0, now + dur);
+    clearXpMultipliersFromChest();
+    state.bonuses.xp3_1h_end = now + dur;
     rewardIcon='🌟'; rewardTitle='Х4 опыта на 1 день!'; rewardSub='Множитель активирован';
   } else if(reward === 'gems1000'){
     state.gems = parseFloat(((state.gems||0) + 1000).toFixed(4));
