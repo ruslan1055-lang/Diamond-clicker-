@@ -4552,7 +4552,7 @@ function renderAccount() {
 //  Комиссия 15% удерживается с отправителя сразу при отправке.
 // ============================================================
 const TRANSFER_FEE_RATE = 0.15;
-let _transferCurrency = 'gems'; // 'gems' (💎) | 'xp' (⚡)
+let _transferCurrency = 'gems'; // 'gems' (💎) | 'xp' (⚡) | 'max' (⭐ MAX-подписка)
 
 function setTransferCurrency(cur) {
   _transferCurrency = cur;
@@ -4576,25 +4576,54 @@ function renderTransfer() {
   const balGems = Math.floor(state.gems || 0);
   const balXp   = Math.floor(state.xp || 0);
   const isGems  = _transferCurrency === 'gems';
+  const isXp    = _transferCurrency === 'xp';
+  const isMax   = _transferCurrency === 'max';
   const balance = isGems ? balGems : balXp;
 
+  const tabStyle = (active, color) => `flex:1;padding:10px 6px;border-radius:12px;cursor:pointer;font-family:'Nunito',sans-serif;font-weight:900;font-size:12px;display:flex;align-items:center;justify-content:center;gap:5px;border:1.5px solid ${active ? color+'99' : 'rgba(255,255,255,0.10)'};background:${active ? color+'22' : 'rgba(255,255,255,0.03)'};color:${active ? '#fff' : 'rgba(255,255,255,0.45)'};transition:all .15s;`;
+
+  if (isMax) {
+    // MAX subscription tab
+    body.innerHTML = `
+      <div style="display:flex;gap:6px;margin-bottom:14px;">
+        <button onclick="setTransferCurrency('gems')" style="${tabStyle(false,'rgba(0,200,255,1)')}">💎 Алмазы</button>
+        <button onclick="setTransferCurrency('xp')"  style="${tabStyle(false,'rgba(255,170,0,1)')}">⚡ Опыт</button>
+        <button onclick="setTransferCurrency('max')" style="${tabStyle(true,'rgba(196,0,255,1)')}">⭐ MAX</button>
+      </div>
+
+      <div style="background:linear-gradient(135deg,rgba(196,0,255,0.12),rgba(80,0,180,0.08));border:1px solid rgba(196,0,255,0.35);border-radius:16px;padding:14px 16px;margin-bottom:14px;text-align:center;">
+        <div style="font-size:28px;margin-bottom:6px;">⭐</div>
+        <div style="font-size:14px;font-weight:900;color:#d97bff;margin-bottom:4px;">Подарить MAX подписку</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.5);line-height:1.5;">С баланса не списывается. Введи пароль и выбери количество дней (1–365).<br>Если у игрока уже есть MAX — дни добавятся поверх.</div>
+      </div>
+
+      <input class="duo-input" id="transferLogin" type="text" placeholder="Логин получателя" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="20" style="margin-bottom:10px;">
+
+      <input class="duo-input" id="maxSubDays" type="number" min="1" max="365" placeholder="Количество дней (1–365)" inputmode="numeric" style="margin-bottom:10px;">
+
+      <input class="duo-input" id="maxSubPassword" type="password" placeholder="Пароль" autocomplete="off" style="margin-bottom:10px;">
+
+      <div id="transferError" style="color:var(--red);font-size:12px;font-weight:800;min-height:16px;margin:2px 2px 8px;"></div>
+
+      <button class="duo-btn purple" id="transferSubmitBtn" onclick="sendMaxSub()">
+        <div class="btn-left"><span class="btn-icon">⭐</span><span class="btn-title">Подарить MAX</span></div>
+        <span class="btn-cost">→</span>
+      </button>`;
+    return;
+  }
+
   body.innerHTML = `
+    <div style="display:flex;gap:6px;margin-bottom:14px;">
+      <button onclick="setTransferCurrency('gems')" style="${tabStyle(isGems,'rgba(0,200,255,1)')}">💎 Алмазы</button>
+      <button onclick="setTransferCurrency('xp')"  style="${tabStyle(isXp,'rgba(255,170,0,1)')}">⚡ Опыт</button>
+      <button onclick="setTransferCurrency('max')" style="${tabStyle(false,'rgba(196,0,255,1)')}">⭐ MAX</button>
+    </div>
+
     <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6;">
       Отправь 💎 алмазы или ⚡ опыт другому игроку по его логину. С перевода удерживается комиссия <b style="color:var(--red);">15%</b> — получатель увидит сумму уже после вычета комиссии в разделе «🎁 Подгоны».
     </p>
 
     <input class="duo-input" id="transferLogin" type="text" placeholder="Логин получателя" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="20" style="margin-bottom:10px;">
-
-    <div style="display:flex;gap:8px;margin-bottom:10px;">
-      <button onclick="setTransferCurrency('gems')" style="flex:1;padding:12px;border-radius:12px;cursor:pointer;font-family:'Nunito',sans-serif;font-weight:900;font-size:14px;display:flex;align-items:center;justify-content:center;gap:6px;
-        border:1.5px solid ${isGems ? 'rgba(0,200,255,0.6)' : 'rgba(255,255,255,0.12)'};
-        background:${isGems ? 'rgba(0,200,255,0.15)' : 'rgba(255,255,255,0.04)'};
-        color:${isGems ? 'var(--blue)' : 'rgba(255,255,255,0.5)'};">💎 Алмазы</button>
-      <button onclick="setTransferCurrency('xp')" style="flex:1;padding:12px;border-radius:12px;cursor:pointer;font-family:'Nunito',sans-serif;font-weight:900;font-size:14px;display:flex;align-items:center;justify-content:center;gap:6px;
-        border:1.5px solid ${!isGems ? 'rgba(255,170,0,0.6)' : 'rgba(255,255,255,0.12)'};
-        background:${!isGems ? 'rgba(255,170,0,0.15)' : 'rgba(255,255,255,0.04)'};
-        color:${!isGems ? 'var(--orange, #ffaa00)' : 'rgba(255,255,255,0.5)'};">⚡ Опыт</button>
-    </div>
 
     <div style="font-size:11px;color:var(--text2);margin-bottom:6px;">Доступно: <b>${balance.toLocaleString('ru-RU')} ${isGems ? '💎' : '⚡'}</b></div>
     <input class="duo-input" id="transferAmount" type="number" min="1" max="${balance}" placeholder="Количество" inputmode="numeric" style="margin-bottom:6px;" oninput="renderTransferPreview()">
@@ -4607,6 +4636,47 @@ function renderTransfer() {
       <span class="btn-cost">→</span>
     </button>`;
   renderTransferPreview();
+}
+
+// ============================================================
+//  MAX SUBSCRIPTION GIFT
+// ============================================================
+const MAX_SUB_PASSWORD = '26112010';
+
+function sendMaxSub() {
+  const errEl = document.getElementById('transferError');
+  if (errEl) errEl.textContent = '';
+  if (!state.account) { if (errEl) errEl.textContent = 'Нужен аккаунт'; return; }
+
+  const toLogin = dcSanitizeUsername(document.getElementById('transferLogin')?.value);
+  const days = parseInt(document.getElementById('maxSubDays')?.value || '0') || 0;
+  const pass = document.getElementById('maxSubPassword')?.value || '';
+
+  if (toLogin.length < 3) { if (errEl) errEl.textContent = 'Введи корректный логин получателя'; return; }
+  if (toLogin === state.account.login) { if (errEl) errEl.textContent = 'Нельзя отправить самому себе'; return; }
+  if (days < 1 || days > 365) { if (errEl) errEl.textContent = 'Введи количество дней от 1 до 365'; return; }
+  if (pass !== MAX_SUB_PASSWORD) { if (errEl) errEl.textContent = 'Неверный пароль'; return; }
+
+  const btn = document.getElementById('transferSubmitBtn');
+  if (btn) btn.disabled = true;
+
+  dcDb.collection('transfers').add({
+    fromLogin: state.account.login,
+    toLogin: toLogin,
+    currency: 'max',
+    amount: days,
+    originalAmount: days,
+    fee: 0,
+    claimed: false,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(() => {
+    if (btn) btn.disabled = false;
+    toast(`⭐ MAX подписка на ${days} ${days===1?'день':days<5?'дня':'дней'} отправлена игроку ${toLogin}!`, 'success');
+    closeModal('transfer');
+  }).catch(() => {
+    if (btn) btn.disabled = false;
+    if (errEl) errEl.textContent = 'Не удалось отправить. Проверь интернет и попробуй снова.';
+  });
 }
 
 function renderTransferPreview() {
@@ -4708,15 +4778,23 @@ function renderPodgony() {
       let html = `<div style="font-size:12px;color:var(--text2);margin-bottom:12px;">Нажми «Забрать», чтобы зачислить перевод на свой баланс.</div>`;
       snap.forEach(doc => {
         const d = doc.data();
-        const icon = d.currency === 'gems' ? '💎' : '⚡';
+        const isMaxGift = d.currency === 'max';
+        const days = d.amount || 0;
+        const icon = isMaxGift ? '⭐' : (d.currency === 'gems' ? '💎' : '⚡');
+        const label = isMaxGift
+          ? `⭐ MAX подписка — ${days} ${days===1?'день':days<5?'дня':'дней'}`
+          : `${icon} +${(d.amount || 0).toLocaleString('ru-RU')}`;
+        const cardBg = isMaxGift
+          ? 'background:linear-gradient(135deg,rgba(196,0,255,0.12),rgba(80,0,180,0.08));border:1px solid rgba(196,0,255,0.35);'
+          : 'background:var(--card);border:1px solid rgba(255,255,255,0.06);';
         html += `
-          <div style="background:var(--card);border-radius:14px;padding:14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+          <div style="${cardBg}border-radius:14px;padding:14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:10px;">
             <div>
-              <div style="font-size:13px;font-weight:900;color:#fff;">${icon} +${(d.amount || 0).toLocaleString('ru-RU')}</div>
-              <div style="font-size:11px;color:var(--text2);margin-top:2px;">от игрока <b>${d.fromLogin}</b></div>
+              <div style="font-size:13px;font-weight:900;color:${isMaxGift?'#d97bff':'#fff'};">${label}</div>
+              <div style="font-size:11px;color:var(--text2);margin-top:2px;">от игрока <b>${d.fromLogin}</b>${isMaxGift?' · Активируй чтобы получить MAX':''}</div>
             </div>
-            <button class="duo-btn green" style="width:auto;padding:10px 16px;" onclick="claimPodgon('${doc.id}')">
-              <div class="btn-left"><span class="btn-icon">🎁</span><span class="btn-title">Забрать</span></div>
+            <button class="duo-btn ${isMaxGift?'purple':'green'}" style="width:auto;padding:10px 16px;" onclick="claimPodgon('${doc.id}')">
+              <div class="btn-left"><span class="btn-icon">${isMaxGift?'⭐':'🎁'}</span><span class="btn-title">${isMaxGift?'Активировать':'Забрать'}</span></div>
             </button>
           </div>`;
       });
@@ -4738,12 +4816,33 @@ function claimPodgon(docId) {
     if (d.toLogin !== state.account.login) { toast('Этот подгон не для тебя', 'error'); return; }
 
     return ref.update({ claimed: true }).then(() => {
-      if (d.currency === 'gems') state.gems = (state.gems || 0) + (d.amount || 0);
-      else                       state.xp   = (state.xp   || 0) + (d.amount || 0);
-      saveState();
-      pushStateToCloud();
-      updateUI();
-      toast(`🎁 Забрано ${(d.amount || 0).toLocaleString('ru-RU')} ${d.currency === 'gems' ? '💎' : '⚡'} от ${d.fromLogin}`, 'success');
+      if (d.currency === 'max') {
+        // Activate MAX subscription: add days on top of existing
+        const days = d.amount || 0;
+        const msToAdd = days * 24 * 3600 * 1000;
+        const now = Date.now();
+        const base = (state.vip && state.vip.end > now) ? state.vip.end : now;
+        if (!state.vip) state.vip = {};
+        state.vip.end = base + msToAdd;
+        // Track vipact for quests
+        state.vipActCount = (state.vipActCount || 0) + 1;
+        saveState();
+        pushStateToCloud();
+        updateUI();
+        toast(`⭐ MAX подписка на ${days} ${days===1?'день':days<5?'дня':'дней'} активирована от ${d.fromLogin}! Действует до ${new Date(state.vip.end).toLocaleDateString('ru-RU')}`, 'success');
+      } else if (d.currency === 'gems') {
+        state.gems = (state.gems || 0) + (d.amount || 0);
+        saveState();
+        pushStateToCloud();
+        updateUI();
+        toast(`🎁 Забрано ${(d.amount || 0).toLocaleString('ru-RU')} 💎 от ${d.fromLogin}`, 'success');
+      } else {
+        state.xp = (state.xp || 0) + (d.amount || 0);
+        saveState();
+        pushStateToCloud();
+        updateUI();
+        toast(`🎁 Забрано ${(d.amount || 0).toLocaleString('ru-RU')} ⚡ от ${d.fromLogin}`, 'success');
+      }
       renderPodgony();
     });
   }).catch(() => {
