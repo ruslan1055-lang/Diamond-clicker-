@@ -4232,8 +4232,7 @@ function claimTask(id) {
 
   // Give +2 🎀 to Battle Pass for each completed task
   if (state.battlePassSeen) {
-    bpEnsureState();
-    state.battlePass.ribbons = (state.battlePass.ribbons || 0) + 2;
+    bpAddRibbons(2);
     setTimeout(() => toast('🎀 +2 ленты в Баттл Пасс!', 'success'), 1200);
   }
 
@@ -10013,14 +10012,18 @@ const BP_FLOORS = [
   { floor:30, reward:'💜 Фиолетовый сундук: 1000💎 +850⚡ + ПОДПИСКА', gems:1000, xp:850, type:'chest_special', color:'#c77dff', label:'Фиолетовый' },
 ];
 
-// Ribbons required per tier
+// ── NEW: Per-floor ribbon system ──────────────────────────────────
+// Each floor requires its OWN ribbon count (not cumulative).
+// bpAddRibbons() fills current floor first, overflow goes to next.
+
+// Ribbons required PER FLOOR (each floor independently)
 function bpRibbonsForFloor(f) {
   if (f <= 5)  return 5;
-  if (f <= 10) return 10;
-  if (f <= 15) return 15;
-  if (f <= 20) return 20;
-  if (f <= 25) return 25;
-  return 35;
+  if (f <= 10) return 8;
+  if (f <= 15) return 12;
+  if (f <= 20) return 16;
+  if (f <= 25) return 22;
+  return 30;
 }
 
 function bpMultiplier() {
@@ -10030,9 +10033,41 @@ function bpMultiplier() {
   return 1;
 }
 
+// How many ribbons are collected FOR floor f
+function bpFloorRibbons(f) {
+  if (!state.battlePass || !state.battlePass.floorRibbons) return 0;
+  return state.battlePass.floorRibbons[f] || 0;
+}
+
+// Floor unlocked when it has enough ribbons collected for it
 function bpFloorUnlocked(f) {
-  const ribbons = (state.battlePass && state.battlePass.ribbons) || 0;
-  return ribbons >= bpRibbonsForFloor(f);
+  return bpFloorRibbons(f) >= bpRibbonsForFloor(f);
+}
+
+// Returns the lowest floor that is not yet filled (active floor)
+function bpCurrentFloor() {
+  for (let f = 1; f <= 30; f++) {
+    if (!bpFloorUnlocked(f)) return f;
+  }
+  return null; // all floors unlocked
+}
+
+// Add ribbons to active floor, overflow cascades to next floors
+function bpAddRibbons(amount) {
+  bpEnsureState();
+  const bp = state.battlePass;
+  if (!bp.floorRibbons) bp.floorRibbons = {};
+  bp.ribbons = (bp.ribbons || 0) + amount; // total counter for display
+  let remaining = amount;
+  for (let f = 1; f <= 30 && remaining > 0; f++) {
+    const required = bpRibbonsForFloor(f);
+    const have = bp.floorRibbons[f] || 0;
+    if (have >= required) continue;
+    const canAdd = required - have;
+    const adding = Math.min(canAdd, remaining);
+    bp.floorRibbons[f] = have + adding;
+    remaining -= adding;
+  }
 }
 
 function bpFloorClaimed(f) {
@@ -10051,7 +10086,7 @@ function bpClaimTaskReward(taskId) {
   if (bp.bpTaskDone[taskId]) { toast('Уже получено!', ''); return; }
   if (!state.taskDone[taskId]) { toast('Задание ещё не выполнено!', 'error'); return; }
   bp.bpTaskDone[taskId] = true;
-  bp.ribbons = (bp.ribbons || 0) + 2;
+  bpAddRibbons(2);
 
   // If all 3 bp tasks claimed, generate new set
   const allClaimed = (bp.bpTaskIds || []).every(id => bp.bpTaskDone[id]);
@@ -10073,9 +10108,12 @@ function bpClaimTaskReward(taskId) {
 function bpClaimFloorPass(f, passTypeToClaim) {
   if (!state.battlePass) { toast('Нет активного пасса', 'error'); return; }
   const bp = state.battlePass;
-  const ribbons = bp.ribbons || 0;
-  const required = bpRibbonsForFloor(f);
-  if (ribbons < required) { toast(`Нужно ещё ${required - ribbons} 🎀!`, 'error'); return; }
+  if (!bpFloorUnlocked(f)) {
+    const have = bpFloorRibbons(f);
+    const required = bpRibbonsForFloor(f);
+    toast(`Нужно ещё ${required - have} 🎀 для этого этажа!`, 'error');
+    return;
+  }
 
   const arrKey = passTypeToClaim === 'ultra' ? 'claimedUltra'
                : passTypeToClaim === 'golden' ? 'claimedGolden' : 'claimedNormal';
@@ -10182,6 +10220,7 @@ function bpEnsureState() {
   if (!Array.isArray(state.battlePass.claimedNormal)) state.battlePass.claimedNormal = [];
   if (!Array.isArray(state.battlePass.claimedGolden)) state.battlePass.claimedGolden = [];
   if (!Array.isArray(state.battlePass.claimedUltra)) state.battlePass.claimedUltra = [];
+  if (typeof state.battlePass.floorRibbons !== 'object' || !state.battlePass.floorRibbons) state.battlePass.floorRibbons = {};
 }
 
 function bpCompleteTask(idx) {
@@ -10189,7 +10228,7 @@ function bpCompleteTask(idx) {
   const t = state.battlePass.tasks[idx];
   if (!t || t.done) return;
   t.done = true;
-  state.battlePass.ribbons = (state.battlePass.ribbons || 0) + 2;
+  bpAddRibbons(2);
   // Check if all 3 done -> reset tasks (new event)
   const allDone = state.battlePass.tasks.every(x => x.done);
   if (allDone) {
@@ -10231,7 +10270,18 @@ function renderBattlePass() {
     <div style="font-size:36px;margin-bottom:6px;filter:drop-shadow(0 0 12px rgba(199,125,255,0.8));">🎀</div>
     <div style="font-size:20px;font-weight:900;color:#c77dff;text-shadow:0 0 20px rgba(199,125,255,0.6);margin-bottom:4px;">БАТТЛ ПАСС</div>
     <div style="display:inline-block;padding:4px 14px;border-radius:20px;background:${pc.bg};border:1px solid ${pc.border};font-size:12px;font-weight:900;color:${pc.color};margin-bottom:10px;">${pc.label}</div>
-    <div style="font-size:15px;font-weight:900;color:#fff;">🎀 ${ribbons} лент собрано</div>
+    ${(() => {
+      const cur = bpCurrentFloor();
+      if (!cur) return `<div style="font-size:14px;font-weight:900;color:#00e676;">🎉 Все этажи пройдены!</div>`;
+      const have = bpFloorRibbons(cur);
+      const need = bpRibbonsForFloor(cur);
+      const pct = Math.floor(have / need * 100);
+      return `<div style="font-size:12px;color:rgba(255,255,255,0.55);margin-bottom:6px;">Текущий этаж: <b style="color:#c77dff;">${cur}</b></div>
+      <div style="font-size:13px;font-weight:900;color:#fff;margin-bottom:6px;">🎀 ${have} / ${need} лент</div>
+      <div style="height:8px;border-radius:8px;background:rgba(255,255,255,0.1);overflow:hidden;margin:0 4px;">
+        <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#7b2fff,#c77dff);border-radius:8px;transition:width 0.4s;box-shadow:0 0 8px rgba(199,125,255,0.6);"></div>
+      </div>`;
+    })()}
   </div>`;
 
   // ── Pass upgrade buttons ─────────────────────────────────────────
@@ -10276,8 +10326,7 @@ function renderBattlePass() {
 
   for (let f = 1; f <= 30; f++) {
     const fl = BP_FLOORS[f - 1];
-    const required = bpRibbonsForFloor(f);
-    const unlocked = ribbons >= required;
+    const unlocked = bpFloorUnlocked(f);
 
     // Normal claimed
     const claimedNormal = bp.claimedNormal && bp.claimedNormal.includes(f);
@@ -10358,7 +10407,7 @@ function renderBattlePass() {
           <span style="font-size:20px;">${icon}</span>
           <span style="font-size:8px;font-weight:900;color:rgba(255,255,255,0.35);">${labelText}</span>
           <div style="display:flex;flex-direction:column;align-items:center;">${valHtml}</div>
-          <span style="font-size:8px;color:rgba(255,255,255,0.3);">🔒 ${required}🎀</span>
+          <span style="font-size:8px;color:rgba(255,255,255,0.3);">🔒 ${floorNeed}🎀</span>
         </div>`;
       }
 
@@ -10370,9 +10419,21 @@ function renderBattlePass() {
       </div>`;
     }
 
+    const floorHave = bpFloorRibbons(f);
+    const floorNeed = bpRibbonsForFloor(f);
+    const floorPct  = Math.min(100, Math.floor(floorHave / floorNeed * 100));
+    const isCurrent = !unlocked && (f === bpCurrentFloor());
+
     html += `<div style="display:grid;grid-template-columns:28px 1fr 1fr 1fr;gap:0 6px;margin-bottom:6px;align-items:center;">
-      <div style="text-align:center;">
-        <span style="font-size:9px;font-weight:900;color:rgba(255,255,255,0.3);">${f}</span>
+      <div style="text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px;">
+        <span style="font-size:9px;font-weight:900;color:${unlocked?'#00e676':isCurrent?'#c77dff':'rgba(255,255,255,0.3)'};">${f}</span>
+        ${isCurrent
+          ? `<div style="width:20px;height:3px;border-radius:3px;background:rgba(255,255,255,0.1);overflow:hidden;"><div style="height:100%;width:${floorPct}%;background:#c77dff;border-radius:3px;"></div></div>
+             <span style="font-size:7px;color:rgba(199,125,255,0.7);font-weight:900;">${floorHave}/${floorNeed}</span>`
+          : unlocked
+            ? `<span style="font-size:9px;">✅</span>`
+            : `<span style="font-size:7px;color:rgba(255,255,255,0.2);">${floorNeed}🎀</span>`
+        }
       </div>
       ${rewardCard(claimedNormal, true, valNormal, `bpClaimFloorPass(${f},'normal')`, fl.type,
           'rgba(255,255,255,0.18)', 'rgba(255,255,255,0.05)', '',
