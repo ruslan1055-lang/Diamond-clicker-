@@ -2611,6 +2611,10 @@ body.vip-theme-16 ::selection { background: rgba(200,150,255,0.35); }
       </span>
     </button>
   </div>
+  <button class="nav-btn" onclick="openModal('battlepass')" id="battlepassNavBtn" style="background:linear-gradient(160deg,#7b2fff,#c77dff);border-color:rgba(199,125,255,0.5);box-shadow:0 4px 0 #3a0080,0 6px 18px rgba(150,0,255,0.35);color:#fff;position:relative;">
+    <span class="nav-icon">🎀</span>Баттл Пасс
+    <span id="battlepassDot" style="display:none;position:absolute;top:6px;right:8px;width:8px;height:8px;background:#ff4655;border-radius:50%;box-shadow:0 0 6px rgba(255,70,85,0.9);"></span>
+  </button>
 </div>
 
 <!-- LEAGUE MODAL -->
@@ -2623,6 +2627,20 @@ body.vip-theme-16 ::selection { background: rgba(200,150,255,0.35); }
     </div>
     <div class="modal-body" id="leagueBody" style="padding-bottom:24px;">
       <div style="text-align:center;padding:40px 0;color:var(--text2);">Загрузка лиги...</div>
+    </div>
+  </div>
+</div>
+
+<!-- BATTLE PASS MODAL -->
+<div class="modal-overlay" id="modal-battlepass">
+  <div class="modal" style="border-top-color:rgba(199,125,255,0.5);box-shadow:0 -10px 50px rgba(0,0,0,0.9),0 -2px 0 rgba(150,0,255,0.5);">
+    <div class="modal-handle" style="background:rgba(199,125,255,0.4);"></div>
+    <div class="modal-header" style="border-bottom-color:rgba(199,125,255,0.2);">
+      <span class="modal-title" style="background:linear-gradient(135deg,#c77dff,#7b2fff,#ff6ec7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">🎀 Баттл Пасс</span>
+      <button class="modal-close" onclick="closeModal('battlepass')" style="border-color:rgba(199,125,255,0.3);color:rgba(199,125,255,0.7);">✕</button>
+    </div>
+    <div class="modal-body" id="battlepassBody">
+      <!-- filled by JS -->
     </div>
   </div>
 </div>
@@ -8000,6 +8018,7 @@ function openModal(id) {
   if (id === 'withdraw-offer') renderWithdrawOffer();
   if (id === 'transfer')      renderTransfer();
   if (id === 'podgony')       renderPodgony();
+  if (id === 'battlepass')    setTimeout(renderBattlePass, 50);
   const overlay = document.getElementById('modal-' + id);
   overlay.classList.remove('closing');
   overlay.classList.add('active');
@@ -9914,6 +9933,475 @@ setTimeout(()=>{
     </div>
   </div>
 </div>
+
+<script>
+// ============================================================
+//  BATTLE PASS
+// ============================================================
+const BP_GOLDEN_COST = 75000;
+const BP_ULTRA_COST  = 100000;
+
+const BP_FLOORS = [
+  { floor:1,  reward:'150 💎',  gems:150,  xp:0,   type:'gems' },
+  { floor:2,  reward:'180 ⚡',  gems:0,    xp:180,  type:'xp' },
+  { floor:3,  reward:'🔴 Красный сундук: 100💎 +50⚡', gems:100, xp:50, type:'chest', color:'#ff4655', label:'Красный' },
+  { floor:4,  reward:'250 💎',  gems:250,  xp:0,   type:'gems' },
+  { floor:5,  reward:'🌼 Тема: Одуванчики', gems:0, xp:0, type:'theme', themeId:'bp-dandelion', label:'Одуванчики' },
+  { floor:6,  reward:'350 💎',  gems:350,  xp:0,   type:'gems' },
+  { floor:7,  reward:'335 ⚡',  gems:0,    xp:335,  type:'xp' },
+  { floor:8,  reward:'🟢 Зелёный сундук: 120💎 +80⚡', gems:120, xp:80, type:'chest', color:'#00e676', label:'Зелёный' },
+  { floor:9,  reward:'450 💎',  gems:450,  xp:0,   type:'gems' },
+  { floor:10, reward:'♟️ Тема: Шахматы', gems:0, xp:0, type:'theme', themeId:'bp-chess', label:'Шахматы' },
+  { floor:11, reward:'500 💎',  gems:500,  xp:0,   type:'gems' },
+  { floor:12, reward:'650 ⚡',  gems:0,    xp:650,  type:'xp' },
+  { floor:13, reward:'🟡 Жёлтый сундук: 200💎 +120⚡', gems:200, xp:120, type:'chest', color:'#ffe566', label:'Жёлтый' },
+  { floor:14, reward:'600 💎',  gems:600,  xp:0,   type:'gems' },
+  { floor:15, reward:'550 ⚡',  gems:0,    xp:550,  type:'xp' },
+  { floor:16, reward:'700 💎',  gems:700,  xp:0,   type:'gems' },
+  { floor:17, reward:'650 ⚡',  gems:0,    xp:650,  type:'xp' },
+  { floor:18, reward:'🔵 Синий сундук: 320💎 +225⚡', gems:320, xp:225, type:'chest', color:'#00c8ff', label:'Синий' },
+  { floor:19, reward:'800 💎',  gems:800,  xp:0,   type:'gems' },
+  { floor:20, reward:'650 ⚡',  gems:0,    xp:650,  type:'xp' },
+  { floor:21, reward:'950 💎',  gems:950,  xp:0,   type:'gems' },
+  { floor:22, reward:'800 ⚡',  gems:0,    xp:800,  type:'xp' },
+  { floor:23, reward:'1100 💎', gems:1100, xp:0,   type:'gems' },
+  { floor:24, reward:'950 ⚡',  gems:0,    xp:950,  type:'xp' },
+  { floor:25, reward:'🩵 Голубой сундук: 400💎 +325⚡', gems:400, xp:325, type:'chest', color:'#7df9ff', label:'Голубой' },
+  { floor:26, reward:'1250 💎', gems:1250, xp:0,   type:'gems' },
+  { floor:27, reward:'1100 ⚡', gems:0,    xp:1100, type:'xp' },
+  { floor:28, reward:'🌷 Тема: Тюльпаны', gems:0, xp:0, type:'theme', themeId:'bp-tulip', label:'Тюльпаны' },
+  { floor:29, reward:'1350 💎', gems:1350, xp:0,   type:'gems' },
+  { floor:30, reward:'💜 Фиолетовый сундук: 1000💎 +850⚡ + ПОДПИСКА', gems:1000, xp:850, type:'chest_special', color:'#c77dff', label:'Фиолетовый' },
+];
+
+// Ribbons required per tier
+function bpRibbonsForFloor(f) {
+  if (f <= 5)  return 5;
+  if (f <= 10) return 10;
+  if (f <= 15) return 15;
+  if (f <= 20) return 20;
+  if (f <= 25) return 25;
+  return 35;
+}
+
+function bpMultiplier() {
+  if (!state.battlePass) return 1;
+  if (state.battlePass.passType === 'ultra') return 3;
+  if (state.battlePass.passType === 'golden') return 2;
+  return 1;
+}
+
+function bpFloorUnlocked(f) {
+  const ribbons = (state.battlePass && state.battlePass.ribbons) || 0;
+  return ribbons >= bpRibbonsForFloor(f);
+}
+
+function bpFloorClaimed(f) {
+  if (!state.battlePass) return false;
+  const arr = (state.battlePass.passType === 'ultra') ? state.battlePass.claimedUltra :
+              (state.battlePass.passType === 'golden') ? state.battlePass.claimedGolden :
+              state.battlePass.claimedNormal;
+  return arr && arr.includes(f);
+}
+
+// Claim task ribbon reward (tied to real TASKS_LIST completion)
+function bpClaimTaskReward(taskId) {
+  bpEnsureState();
+  const bp = state.battlePass;
+  if (!bp.bpTaskDone) bp.bpTaskDone = {};
+  if (bp.bpTaskDone[taskId]) { toast('Уже получено!', ''); return; }
+  if (!state.taskDone[taskId]) { toast('Задание ещё не выполнено!', 'error'); return; }
+  bp.bpTaskDone[taskId] = true;
+  bp.ribbons = (bp.ribbons || 0) + 2;
+
+  // If all 3 bp tasks claimed, generate new set
+  const allClaimed = (bp.bpTaskIds || []).every(id => bp.bpTaskDone[id]);
+  if (allClaimed) {
+    setTimeout(() => {
+      bp.bpTaskIds = null;
+      bp.bpTaskDone = {};
+      saveState();
+      renderBattlePass();
+      toast('🎀 Все задания выполнены! Новые задания появились!', 'success');
+    }, 800);
+  }
+
+  saveState(); updateUI(); renderBattlePass();
+  toast(`+2 🎀 получено! Всего: ${bp.ribbons} 🎀`, 'success');
+}
+
+// Claim floor reward for a specific pass type
+function bpClaimFloorPass(f, passTypeToClaim) {
+  if (!state.battlePass) { toast('Нет активного пасса', 'error'); return; }
+  const bp = state.battlePass;
+  const ribbons = bp.ribbons || 0;
+  const required = bpRibbonsForFloor(f);
+  if (ribbons < required) { toast(`Нужно ещё ${required - ribbons} 🎀!`, 'error'); return; }
+
+  const arrKey = passTypeToClaim === 'ultra' ? 'claimedUltra'
+               : passTypeToClaim === 'golden' ? 'claimedGolden' : 'claimedNormal';
+  if (!bp[arrKey]) bp[arrKey] = [];
+  if (bp[arrKey].includes(f)) { toast('Уже получено!', ''); return; }
+  bp[arrKey].push(f);
+
+  const fl = BP_FLOORS[f - 1];
+  const mult = passTypeToClaim === 'ultra' ? 3 : passTypeToClaim === 'golden' ? 2 : 1;
+
+  if (fl.type === 'gems') {
+    const amt = fl.gems * mult;
+    state.gems = (state.gems || 0) + amt;
+    state.totalGems = (state.totalGems || 0) + amt;
+    toast(`🎀 Получено ${amt} 💎!`, 'success');
+  } else if (fl.type === 'xp') {
+    const amt = fl.xp * mult;
+    state.xp = (state.xp || 0) + amt;
+    toast(`🎀 Получено ${amt} ⚡!`, 'success');
+  } else if (fl.type === 'chest') {
+    const g = fl.gems * mult, x = fl.xp * mult;
+    state.gems = (state.gems || 0) + g;
+    state.totalGems = (state.totalGems || 0) + g;
+    state.xp = (state.xp || 0) + x;
+    toast(`🎀 Сундук открыт! +${g}💎 +${x}⚡`, 'success');
+  } else if (fl.type === 'chest_special') {
+    const g = fl.gems * mult, x = fl.xp * mult;
+    state.gems = (state.gems || 0) + g;
+    state.totalGems = (state.totalGems || 0) + g;
+    state.xp = (state.xp || 0) + x;
+    if (passTypeToClaim === 'ultra') {
+      const ms = 30 * 24 * 3600 * 1000;
+      const now = Date.now();
+      if (!state.diamondMagnate) state.diamondMagnate = { end: null, dayIndex: 0, lastClaimDate: null, claimed: [] };
+      const base = (state.diamondMagnate.end && state.diamondMagnate.end > now) ? state.diamondMagnate.end : now;
+      state.diamondMagnate.end = base + ms;
+      toast(`💜 ФИНАЛ! +${g}💎 +${x}⚡ + Diamond Magnate на 30 дней!`, 'success');
+    } else {
+      const ms = 3 * 24 * 3600 * 1000;
+      const now = Date.now();
+      if (!state.vip) state.vip = {};
+      const base = (state.vip.end && state.vip.end > now) ? state.vip.end : now;
+      state.vip.end = base + ms;
+      toast(`💜 ФИНАЛ! +${g}💎 +${x}⚡ + MAX подписка на 3 дня!`, 'success');
+    }
+  } else if (fl.type === 'theme') {
+    if (!state.unlockedBpThemes) state.unlockedBpThemes = [];
+    if (!state.unlockedBpThemes.includes(fl.themeId)) state.unlockedBpThemes.push(fl.themeId);
+    toast(`🎀 Тема "${fl.label}" разблокирована!`, 'success');
+  }
+
+  saveState(); updateUI(); renderBattlePass();
+}
+
+// Legacy alias kept for safety
+function bpClaimFloor(f) { bpClaimFloorPass(f, state.battlePass ? state.battlePass.passType : 'normal'); }
+
+// Auto-complete all pending tasks when a pass is purchased
+function bpBuyGolden() {
+  const xp = Math.floor(state.xp || 0);
+  if (xp < BP_GOLDEN_COST) { toast(`Нужно ещё ${(BP_GOLDEN_COST - xp).toLocaleString('ru-RU')} ⚡`, 'error'); return; }
+  if (!state.battlePass) state.battlePass = { passType: 'normal', ribbons: 0, claimedNormal: [], claimedGolden: [], claimedUltra: [], tasks: null, tasksDoneToday: 0 };
+  state.xp -= BP_GOLDEN_COST;
+  state.battlePass.passType = 'golden';
+  saveState(); updateUI(); renderBattlePass();
+  toast('🥇 Golden Pass активирован!', 'success');
+}
+function bpBuyUltra() {
+  const xp = Math.floor(state.xp || 0);
+  if (xp < BP_ULTRA_COST) { toast(`Нужно ещё ${(BP_ULTRA_COST - xp).toLocaleString('ru-RU')} ⚡`, 'error'); return; }
+  if (!state.battlePass) state.battlePass = { passType: 'normal', ribbons: 0, claimedNormal: [], claimedGolden: [], claimedUltra: [], tasks: null, tasksDoneToday: 0 };
+  state.xp -= BP_ULTRA_COST;
+  state.battlePass.passType = 'ultra';
+  saveState(); updateUI(); renderBattlePass();
+  toast('💎 Ultra Pass активирован!', 'success');
+}
+
+// Tasks system: 3 tasks, each gives 2 ribbons. On event reset.
+const BP_TASKS_POOL = [
+  { id:'click50', desc:'Сделай 50 кликов', type:'click', goal:50 },
+  { id:'click100', desc:'Сделай 100 кликов', type:'click', goal:100 },
+  { id:'earn500', desc:'Заработай 500 💎', type:'earn', goal:500 },
+  { id:'earn1000', desc:'Заработай 1000 💎', type:'earn', goal:1000 },
+  { id:'spend300', desc:'Потрать 300 💎', type:'spend', goal:300 },
+  { id:'open1chest', desc:'Открой 1 сундук', type:'chest', goal:1 },
+  { id:'visit3', desc:'Зайди в игру 3 раза', type:'visit', goal:3 },
+  { id:'league1', desc:'Сделай 1 клик в лиге', type:'leagueclick', goal:1 },
+];
+
+function bpGenTasks() {
+  const pool = [...BP_TASKS_POOL];
+  const shuffled = pool.sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, 3).map(t => ({ ...t, progress: 0, done: false }));
+}
+
+function bpEnsureState() {
+  if (!state.battlePass) {
+    state.battlePass = { passType: 'normal', ribbons: 0, claimedNormal: [], claimedGolden: [], claimedUltra: [], tasks: null, taskEventId: 0 };
+  }
+  if (!state.battlePass.tasks || !Array.isArray(state.battlePass.tasks) || state.battlePass.tasks.length === 0) {
+    state.battlePass.tasks = bpGenTasks();
+  }
+  if (typeof state.battlePass.ribbons !== 'number') state.battlePass.ribbons = 0;
+  if (!Array.isArray(state.battlePass.claimedNormal)) state.battlePass.claimedNormal = [];
+  if (!Array.isArray(state.battlePass.claimedGolden)) state.battlePass.claimedGolden = [];
+  if (!Array.isArray(state.battlePass.claimedUltra)) state.battlePass.claimedUltra = [];
+}
+
+function bpCompleteTask(idx) {
+  bpEnsureState();
+  const t = state.battlePass.tasks[idx];
+  if (!t || t.done) return;
+  t.done = true;
+  state.battlePass.ribbons = (state.battlePass.ribbons || 0) + 2;
+  // Check if all 3 done -> reset tasks (new event)
+  const allDone = state.battlePass.tasks.every(x => x.done);
+  if (allDone) {
+    setTimeout(() => {
+      state.battlePass.tasks = bpGenTasks();
+      saveState();
+      renderBattlePass();
+      toast('🎀 Все задания выполнены! Новые задания появились!', 'success');
+    }, 800);
+  }
+  saveState(); updateUI(); renderBattlePass();
+  toast(`+2 🎀 получено! Всего: ${state.battlePass.ribbons} 🎀`, 'success');
+}
+
+function renderBattlePass() {
+  const body = document.getElementById('battlepassBody');
+  if (!body) return;
+  bpEnsureState();
+  const bp = state.battlePass;
+  const passType = bp.passType || 'normal';
+  const ribbons = bp.ribbons || 0;
+  const xp = Math.floor(state.xp || 0);
+  const hasGolden = passType === 'golden' || passType === 'ultra';
+  const hasUltra  = passType === 'ultra';
+
+  const passColors = {
+    normal: { bg: 'rgba(255,255,255,0.06)', border: 'rgba(255,255,255,0.15)', label: '⚪ Обычный пасс', color: '#ccc' },
+    golden: { bg: 'rgba(255,200,0,0.08)',   border: 'rgba(255,200,0,0.4)',    label: '🥇 Golden Pass',  color: '#ffe566' },
+    ultra:  { bg: 'rgba(199,125,255,0.08)', border: 'rgba(199,125,255,0.5)', label: '💎 Ultra Pass',   color: '#c77dff' },
+  };
+  const pc = passColors[passType];
+
+  let html = '';
+
+  // ── Header ──────────────────────────────────────────────────────
+  html += `
+  <div style="background:linear-gradient(160deg,rgba(50,0,100,0.9),rgba(20,0,50,0.95));border:1.5px solid rgba(199,125,255,0.4);border-radius:20px;padding:18px 16px 14px;margin-bottom:14px;text-align:center;position:relative;overflow:hidden;">
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% -20%,rgba(199,125,255,0.2),transparent 60%);pointer-events:none;"></div>
+    <div style="font-size:36px;margin-bottom:6px;filter:drop-shadow(0 0 12px rgba(199,125,255,0.8));">🎀</div>
+    <div style="font-size:20px;font-weight:900;color:#c77dff;text-shadow:0 0 20px rgba(199,125,255,0.6);margin-bottom:4px;">БАТТЛ ПАСС</div>
+    <div style="display:inline-block;padding:4px 14px;border-radius:20px;background:${pc.bg};border:1px solid ${pc.border};font-size:12px;font-weight:900;color:${pc.color};margin-bottom:10px;">${pc.label}</div>
+    <div style="font-size:15px;font-weight:900;color:#fff;">🎀 ${ribbons} лент собрано</div>
+  </div>`;
+
+  // ── Pass upgrade buttons ─────────────────────────────────────────
+  if (passType === 'normal') {
+    html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+      <button onclick="bpBuyGolden()" style="padding:11px 8px;border-radius:14px;border:1.5px solid rgba(255,200,0,0.45);background:linear-gradient(160deg,rgba(255,200,0,0.1),rgba(80,50,0,0.5));color:#ffe566;font-family:'Nunito',sans-serif;font-weight:900;font-size:12px;cursor:pointer;-webkit-tap-highlight-color:transparent;">
+        🥇 Golden Pass<br><span style="font-size:10px;color:rgba(255,200,0,0.65);">75 000 ⚡ · ×2 наград</span>
+        ${xp < BP_GOLDEN_COST ? `<br><span style="font-size:9px;color:rgba(255,100,100,0.7);">Нужно ${(BP_GOLDEN_COST-xp).toLocaleString('ru-RU')} ⚡</span>` : '<br><span style="font-size:9px;color:#00e676;">✅ Доступно!</span>'}
+      </button>
+      <button onclick="bpBuyUltra()" style="padding:11px 8px;border-radius:14px;border:1.5px solid rgba(199,125,255,0.5);background:linear-gradient(160deg,rgba(199,125,255,0.1),rgba(50,0,80,0.5));color:#c77dff;font-family:'Nunito',sans-serif;font-weight:900;font-size:12px;cursor:pointer;-webkit-tap-highlight-color:transparent;">
+        💎 Ultra Pass<br><span style="font-size:10px;color:rgba(199,125,255,0.65);">100 000 ⚡ · ×3 наград</span>
+        ${xp < BP_ULTRA_COST ? `<br><span style="font-size:9px;color:rgba(255,100,100,0.7);">Нужно ${(BP_ULTRA_COST-xp).toLocaleString('ru-RU')} ⚡</span>` : '<br><span style="font-size:9px;color:#00e676;">✅ Доступно!</span>'}
+      </button>
+    </div>`;
+  } else if (passType === 'golden') {
+    html += `<div style="margin-bottom:12px;">
+      <button onclick="bpBuyUltra()" style="width:100%;padding:11px 8px;border-radius:14px;border:1.5px solid rgba(199,125,255,0.5);background:linear-gradient(160deg,rgba(199,125,255,0.1),rgba(50,0,80,0.5));color:#c77dff;font-family:'Nunito',sans-serif;font-weight:900;font-size:13px;cursor:pointer;-webkit-tap-highlight-color:transparent;">
+        💎 Улучшить до Ultra Pass · 100 000 ⚡ · ×3 наград
+        ${xp < BP_ULTRA_COST ? `<span style="font-size:10px;color:rgba(255,100,100,0.7);"> (нужно ещё ${(BP_ULTRA_COST-xp).toLocaleString('ru-RU')} ⚡)</span>` : '<span style="font-size:10px;color:#00e676;"> ✅ Доступно!</span>'}
+      </button>
+    </div>`;
+  }
+
+  // ── Tasks section (tied to real TASKS_LIST) ───────────────────────
+  // Pick up to 3 incomplete tasks from TASKS_LIST
+  const bpTaskIds = (bp.bpTaskIds && bp.bpTaskIds.length === 3) ? bp.bpTaskIds : null;
+  let bpTasks;
+  if (bpTaskIds) {
+    bpTasks = bpTaskIds.map(id => TASKS_LIST.find(t => t.id === id)).filter(Boolean);
+  } else {
+    // Pick first 3 incomplete tasks
+    bpTasks = TASKS_LIST.filter(t => !state.taskDone[t.id]).slice(0, 3);
+    if (bpTasks.length < 3) {
+      // Fill with done tasks if not enough pending
+      const done = TASKS_LIST.filter(t => state.taskDone[t.id]);
+      bpTasks = [...bpTasks, ...done].slice(0, 3);
+    }
+    bp.bpTaskIds = bpTasks.map(t => t.id);
+    // Ensure bpTaskDone map exists
+    if (!bp.bpTaskDone) bp.bpTaskDone = {};
+  }
+  if (!bp.bpTaskDone) bp.bpTaskDone = {};
+
+  html += `<div style="margin-bottom:16px;">
+    <div style="font-size:11px;font-weight:900;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;">🗒️ Задания (+2🎀 за каждое)</div>`;
+
+  bpTasks.forEach((t) => {
+    const realDone = !!state.taskDone[t.id];
+    const bpClaimed = !!bp.bpTaskDone[t.id];
+    const prog = Math.min(Number(state.taskProgress[t.id] || 0), t.goal);
+    const pct = Math.floor(prog / t.goal * 100);
+    const canClaim = realDone && !bpClaimed;
+
+    let bg = bpClaimed ? 'rgba(0,230,120,0.07)' : realDone ? 'rgba(199,125,255,0.07)' : 'rgba(255,255,255,0.04)';
+    let border = bpClaimed ? 'rgba(0,230,120,0.3)' : realDone ? 'rgba(199,125,255,0.35)' : 'rgba(255,255,255,0.08)';
+    let nameColor = bpClaimed ? '#00e676' : '#fff';
+    let statusIcon = bpClaimed ? '✅' : realDone ? '🎁' : '📌';
+
+    html += `<div style="background:${bg};border:1px solid ${border};border-radius:12px;padding:11px 13px;margin-bottom:7px;display:flex;align-items:center;gap:10px;">
+      <div style="font-size:20px;">${t.icon}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12px;font-weight:900;color:${nameColor};">${statusIcon} ${t.name}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.45);margin-top:1px;">${t.desc}</div>
+        ${!bpClaimed ? `<div style="margin-top:5px;height:4px;border-radius:4px;background:rgba(255,255,255,0.08);overflow:hidden;"><div style="height:100%;width:${pct}%;background:${realDone?'#00e676':'#c77dff'};border-radius:4px;transition:width 0.3s;"></div></div>
+        <div style="font-size:9px;color:rgba(255,255,255,0.3);margin-top:2px;">${Math.floor(prog).toLocaleString('ru-RU')} / ${t.goal.toLocaleString('ru-RU')}</div>` : ''}
+      </div>
+      ${bpClaimed
+        ? '<span style="font-size:11px;color:#00e676;font-weight:900;flex-shrink:0;">+2 🎀</span>'
+        : canClaim
+          ? `<button onclick="bpClaimTaskReward('${t.id}')" style="padding:7px 12px;border-radius:10px;border:none;background:linear-gradient(160deg,#7b2fff,#c77dff);color:#fff;font-family:'Nunito',sans-serif;font-size:11px;font-weight:900;cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent;box-shadow:0 2px 8px rgba(150,0,255,0.4);">+2 🎀</button>`
+          : `<span style="font-size:10px;color:rgba(255,255,255,0.25);flex-shrink:0;">🔒</span>`
+      }
+    </div>`;
+  });
+  html += `</div>`;
+
+  // ── Floors: card-style per-row layout ────────────────────────────
+  html += `
+  <div style="font-size:11px;font-weight:900;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:2px;margin-bottom:12px;">🏢 30 Этажей наград</div>
+  <div style="display:grid;grid-template-columns:28px 1fr 1fr 1fr;gap:0 6px;margin-bottom:10px;">
+    <div></div>
+    <div style="text-align:center;font-size:10px;font-weight:900;color:#ccc;padding:6px 2px;background:rgba(255,255,255,0.07);border-radius:10px 10px 0 0;">⚪ Обычный</div>
+    <div style="text-align:center;font-size:10px;font-weight:900;color:${hasGolden?'#ffe566':'rgba(255,200,0,0.45)'};padding:6px 2px;background:rgba(255,200,0,0.08);border-radius:10px 10px 0 0;border:1px solid ${hasGolden?'rgba(255,220,0,0.45)':'rgba(255,200,0,0.15)'};border-bottom:none;box-shadow:${hasGolden?'0 0 10px rgba(255,200,0,0.2)':'none'};">🥇 Golden</div>
+    <div style="text-align:center;font-size:10px;font-weight:900;color:${hasUltra?'#e8a0ff':'rgba(199,125,255,0.45)'};padding:6px 2px;background:rgba(199,125,255,0.08);border-radius:10px 10px 0 0;border:1px solid ${hasUltra?'rgba(220,100,255,0.5)':'rgba(199,125,255,0.15)'};border-bottom:none;box-shadow:${hasUltra?'0 0 10px rgba(200,80,255,0.25)':'none'};">💎 Ultra</div>
+  </div>`;
+
+  for (let f = 1; f <= 30; f++) {
+    const fl = BP_FLOORS[f - 1];
+    const required = bpRibbonsForFloor(f);
+    const unlocked = ribbons >= required;
+
+    // Normal claimed
+    const claimedNormal = bp.claimedNormal && bp.claimedNormal.includes(f);
+    const claimedGolden = bp.claimedGolden && bp.claimedGolden.includes(f);
+    const claimedUltra  = bp.claimedUltra  && bp.claimedUltra.includes(f);
+
+    // Icon per type
+    function floorIcon(type, color) {
+      if (type === 'gems') return '💎';
+      if (type === 'xp') return '⚡';
+      if (type === 'theme') return '🎨';
+      if (type === 'chest' || type === 'chest_special') {
+        if (color === '#ff4655') return '🔴';
+        if (color === '#00e676') return '🟢';
+        if (color === '#ffe566') return '🟡';
+        if (color === '#00c8ff') return '🔵';
+        if (color === '#7df9ff') return '🩵';
+        if (color === '#c77dff') return '🟣';
+        return '📦';
+      }
+      return '🎁';
+    }
+
+    // Label per type
+    function floorLabel(type, label) {
+      if (type === 'gems') return 'Алмазы';
+      if (type === 'xp') return 'Энергия';
+      if (type === 'theme') return 'Тема';
+      if (type === 'chest' || type === 'chest_special') return label + ' сундук';
+      return '';
+    }
+
+    // Value line per tier
+    function floorValue(type, gems, xp, mult, label) {
+      if (type === 'gems') return `${gems * mult} 💎`;
+      if (type === 'xp') return `${xp * mult} ⚡`;
+      if (type === 'theme') return label;
+      if (type === 'chest' || type === 'chest_special') return `${gems * mult} ⚡ +\n${xp * mult} 💎`;
+      return '';
+    }
+
+    const icon = floorIcon(fl.type, fl.color);
+    const labelText = floorLabel(fl.type, fl.label);
+    const valNormal = floorValue(fl.type, fl.gems, fl.xp, 1, fl.label);
+    const valGolden = floorValue(fl.type, fl.gems, fl.xp, 2, fl.label);
+    const valUltra  = floorValue(fl.type, fl.gems, fl.xp, 3, fl.label);
+
+    // Divider every 5 floors
+    if (f > 1 && (f-1) % 5 === 0) {
+      html += `<div style="grid-column:1/-1;height:1px;background:linear-gradient(90deg,transparent,rgba(199,125,255,0.3),transparent);margin:6px 0;"></div>`;
+    }
+
+    // Helper: render one reward card
+    function rewardCard(claimed, hasPass, val, claimFn, type, borderStyle, bgStyle, glowStyle, claimedColor, btnGrad, lockText) {
+      const isLocked = !unlocked;
+      const opacity = (!hasPass || (isLocked && !claimed)) ? '0.45' : '1';
+
+      if (claimed) {
+        return `<div style="background:${bgStyle};border:1.5px solid ${claimedColor};border-radius:12px;padding:8px 5px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:72px;box-shadow:0 0 8px ${claimedColor}44;">
+          <span style="font-size:20px;">${icon}</span>
+          <span style="font-size:9px;font-weight:900;color:${claimedColor};">✅ Получено</span>
+        </div>`;
+      }
+      if (!hasPass) {
+        return `<div style="background:rgba(255,255,255,0.03);border:1.5px solid rgba(255,255,255,0.08);border-radius:12px;padding:8px 5px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:72px;opacity:0.5;">
+          <span style="font-size:18px;">🔒</span>
+          <span style="font-size:8px;color:rgba(255,255,255,0.3);font-weight:900;">${lockText}</span>
+        </div>`;
+      }
+
+      const valLines = val.split('\n');
+      const valHtml = valLines.length > 1
+        ? `<span style="font-size:9px;font-weight:900;color:#fff;line-height:1.3;">${valLines[0]}</span><span style="font-size:9px;font-weight:900;color:rgba(255,255,255,0.7);line-height:1.3;">+ ${valLines[1]}</span>`
+        : `<span style="font-size:11px;font-weight:900;color:#fff;line-height:1.2;">${val}</span>`;
+
+      if (isLocked) {
+        return `<div style="background:${bgStyle};border:1.5px solid ${borderStyle};border-radius:12px;padding:8px 5px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:72px;opacity:0.5;${glowStyle}">
+          <span style="font-size:20px;">${icon}</span>
+          <span style="font-size:8px;font-weight:900;color:rgba(255,255,255,0.35);">${labelText}</span>
+          <div style="display:flex;flex-direction:column;align-items:center;">${valHtml}</div>
+          <span style="font-size:8px;color:rgba(255,255,255,0.3);">🔒 ${required}🎀</span>
+        </div>`;
+      }
+
+      return `<div style="background:${bgStyle};border:1.5px solid ${borderStyle};border-radius:12px;padding:8px 5px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:72px;${glowStyle}">
+        <span style="font-size:20px;">${icon}</span>
+        <span style="font-size:8px;font-weight:900;color:rgba(255,255,255,0.5);">${labelText}</span>
+        <div style="display:flex;flex-direction:column;align-items:center;">${valHtml}</div>
+        <button onclick="${claimFn}" style="margin-top:2px;padding:3px 10px;border-radius:8px;border:none;background:${btnGrad};color:#fff;font-family:'Nunito',sans-serif;font-size:8px;font-weight:900;cursor:pointer;-webkit-tap-highlight-color:transparent;box-shadow:0 2px 6px rgba(0,0,0,0.4);">Забрать</button>
+      </div>`;
+    }
+
+    html += `<div style="display:grid;grid-template-columns:28px 1fr 1fr 1fr;gap:0 6px;margin-bottom:6px;align-items:center;">
+      <div style="text-align:center;">
+        <span style="font-size:9px;font-weight:900;color:rgba(255,255,255,0.3);">${f}</span>
+      </div>
+      ${rewardCard(claimedNormal, true, valNormal, `bpClaimFloorPass(${f},'normal')`, fl.type,
+          'rgba(255,255,255,0.18)', 'rgba(255,255,255,0.05)', '',
+          '#00e676', 'linear-gradient(135deg,#1a6e40,#00b85c)', '')}
+      ${rewardCard(claimedGolden, hasGolden, valGolden, `bpClaimFloorPass(${f},'golden')`, fl.type,
+          hasGolden ? 'rgba(255,220,0,0.7)' : 'rgba(255,200,0,0.2)',
+          'rgba(255,200,0,0.07)',
+          hasGolden ? 'box-shadow:0 0 10px rgba(255,200,0,0.35),0 0 20px rgba(255,200,0,0.15);' : '',
+          '#ffe566', 'linear-gradient(135deg,#7a5500,#c89000)', 'Купи Golden')}
+      ${rewardCard(claimedUltra, hasUltra, valUltra, `bpClaimFloorPass(${f},'ultra')`, fl.type,
+          hasUltra ? 'rgba(220,100,255,0.75)' : 'rgba(199,125,255,0.2)',
+          'rgba(199,125,255,0.07)',
+          hasUltra ? 'box-shadow:0 0 10px rgba(200,80,255,0.4),0 0 22px rgba(180,50,255,0.2);' : '',
+          '#e8a0ff', 'linear-gradient(135deg,#4a006e,#9b00d0)', 'Купи Ultra')}
+    </div>`;
+  }
+
+  html += `<div style="height:12px;"></div>`;
+
+  body.innerHTML = html;
+}
+
+// renderBattlePass is called directly from openModal above
+</script>
 
 <script>
 function activatePromoFromNews(code) {
