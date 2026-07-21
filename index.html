@@ -368,6 +368,87 @@ body.perf-hint  .click-hint               { animation: none !important; opacity:
 .nav-btn.settings { background:linear-gradient(160deg,#2a2a3e,#18183a); border-color:rgba(150,150,255,0.18); box-shadow:0 4px 0 #0a0a20,0 6px 18px rgba(80,80,200,0.2); color:#aab; }
 .nav-btn.notif    { background:linear-gradient(160deg,#1a1a2e,#0f0f1f); border-color:rgba(200,180,255,0.18); box-shadow:0 4px 0 #050510,0 6px 18px rgba(120,80,220,0.2); color:#b8a0e8; }
 
+/* ===== DIAMOND TOURNAMENT CIRCLE BUTTON ===== */
+.dt-circle-wrap {
+  display: flex; align-items: center; justify-content: center;
+  grid-column: span 4;
+  padding: 6px 0 2px;
+}
+.dt-circle-btn {
+  position: relative;
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a0a3a 0%, #0d0520 100%);
+  border: 2.5px solid rgba(120,60,255,0.7);
+  cursor: pointer;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 1px;
+  box-shadow:
+    0 0 0 4px rgba(100,0,255,0.12),
+    0 0 18px rgba(120,60,255,0.55),
+    0 0 36px rgba(80,0,200,0.25),
+    0 4px 0 #12003a;
+  transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.18s;
+  -webkit-tap-highlight-color: transparent;
+  animation: dtCirclePulse 2.8s ease-in-out infinite;
+  overflow: visible;
+}
+.dt-circle-btn:active {
+  transform: scale(0.88);
+  box-shadow: 0 0 10px rgba(120,60,255,0.4), 0 1px 0 #12003a;
+}
+@keyframes dtCirclePulse {
+  0%,100% { box-shadow: 0 0 0 4px rgba(100,0,255,0.12), 0 0 18px rgba(120,60,255,0.55), 0 0 36px rgba(80,0,200,0.25), 0 4px 0 #12003a; }
+  50%     { box-shadow: 0 0 0 6px rgba(100,0,255,0.22), 0 0 28px rgba(150,80,255,0.8),  0 0 60px rgba(120,0,255,0.4),  0 4px 0 #12003a; }
+}
+.dt-circle-ring {
+  position: absolute; inset: -5px; border-radius: 50%;
+  background: conic-gradient(from 0deg, rgba(100,60,255,0), rgba(180,100,255,0.9), rgba(60,0,200,0.9), rgba(180,100,255,0.9), rgba(100,60,255,0));
+  animation: dtRingRotate 3s linear infinite;
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), white calc(100% - 2px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 2px), white calc(100% - 2px));
+  pointer-events: none;
+}
+@keyframes dtRingRotate { to { transform: rotate(360deg); } }
+.dt-circle-icon { font-size: 22px; line-height: 1; filter: drop-shadow(0 0 8px rgba(180,100,255,0.9)); }
+.dt-circle-label {
+  font-family: 'Nunito', sans-serif; font-size: 7.5px; font-weight: 900;
+  color: #d4aaff; letter-spacing: 0.3px; text-transform: uppercase;
+  text-shadow: 0 0 8px rgba(180,100,255,0.7); white-space: nowrap;
+  text-align: center; line-height: 1.2;
+}
+.dt-timer-badge {
+  position: absolute; top: -6px; right: -6px;
+  background: linear-gradient(135deg, #ff4655, #cc0020);
+  border: 2px solid var(--bg); border-radius: 100px;
+  font-size: 7px; font-weight: 900; color: #fff;
+  padding: 2px 5px; white-space: nowrap;
+  box-shadow: 0 0 8px rgba(255,50,80,0.7);
+  animation: pulse 1.5s infinite;
+  pointer-events: none;
+}
+
+/* ===== TOURNAMENT MODAL STYLES ===== */
+.dt-player-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; border-radius: 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  margin-bottom: 7px;
+  transition: background 0.15s;
+}
+.dt-player-row.me {
+  background: rgba(120,60,255,0.12);
+  border-color: rgba(150,80,255,0.4);
+  box-shadow: 0 0 12px rgba(120,60,255,0.15);
+}
+.dt-rank-badge {
+  font-size: 16px; font-weight: 900; min-width: 28px; text-align: center;
+}
+.dt-score { font-size: 13px; font-weight: 900; color: #ffe566; text-shadow: 0 0 8px rgba(255,229,102,0.5); }
+.dt-player-name { font-size: 12px; font-weight: 800; color: rgba(255,255,255,0.85); }
+
 /* ===== CUSTOM CONFIRM DIALOG ===== */
 #customConfirm {
   position: fixed; inset: 0; z-index: 99998;
@@ -2588,10 +2669,6 @@ body.vip-theme-16 ::selection { background: rgba(200,150,255,0.35); }
   <button class="nav-btn settings" onclick="openModal('settings')">
     <span class="nav-icon">⚙️</span>Настройки
   </button>
-  <button class="nav-btn league-nav-btn" onclick="openModal('league')" id="leagueNavBtn">
-    <span class="nav-icon">🏆</span>Лига
-    <span class="league-dot" id="leagueDot" style="display:none;"></span>
-  </button>
   <button class="nav-btn quest-rainbow" onclick="openQuestModal()">
     <span class="nav-icon">🗺️</span>Квесты
   </button>
@@ -2615,18 +2692,27 @@ body.vip-theme-16 ::selection { background: rgba(200,150,255,0.35); }
     <span class="nav-icon">🎀</span>Баттл Пасс
     <span id="battlepassDot" style="display:none;position:absolute;top:6px;right:8px;width:8px;height:8px;background:#ff4655;border-radius:50%;box-shadow:0 0 6px rgba(255,70,85,0.9);"></span>
   </button>
-</div>
 
-<!-- LEAGUE MODAL -->
-<div class="modal-overlay" id="modal-league">
-  <div class="modal" id="leagueModal" style="border-top-color:rgba(205,127,50,0.6);box-shadow:0 -10px 50px rgba(0,0,0,0.8),0 -2px 0 rgba(205,127,50,0.4);">
-    <div class="modal-handle" style="background:rgba(205,127,50,0.4);"></div>
-    <div class="modal-header" style="border-bottom-color:rgba(205,127,50,0.2);">
-      <span class="modal-title" id="leagueModalTitle" style="background:linear-gradient(135deg,#cd7f32,#e8a855);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">🏆 Лига</span>
-      <button class="modal-close" onclick="closeModal('league')" style="border-color:rgba(205,127,50,0.3);color:rgba(220,160,60,0.7);">✕</button>
+  <!-- DIAMOND TOURNAMENT CIRCLE BUTTON -->
+  <div class="dt-circle-wrap">
+    <button class="dt-circle-btn" onclick="openTournament()" aria-label="Алмазный турнир">
+      <div class="dt-circle-ring"></div>
+      <span class="dt-circle-icon">💎</span>
+      <span class="dt-circle-label">Алмазный<br>турнир</span>
+      <span class="dt-timer-badge" id="dtTimerBadge">24ч</span>
+    </button>
+  </div>
+</div>
+<!-- DIAMOND TOURNAMENT MODAL -->
+<div class="modal-overlay" id="modal-tournament">
+  <div class="modal" style="border-top-color:rgba(120,60,255,0.6);box-shadow:0 -10px 50px rgba(0,0,0,0.9),0 -2px 0 rgba(100,0,255,0.5);">
+    <div class="modal-handle" style="background:rgba(150,80,255,0.4);"></div>
+    <div class="modal-header" style="border-bottom-color:rgba(120,60,255,0.25);">
+      <span class="modal-title" style="background:linear-gradient(135deg,#d4aaff,#7b2fff,#ffe566);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">💎 Алмазный турнир</span>
+      <button class="modal-close" onclick="closeModal('tournament')" style="border-color:rgba(150,80,255,0.3);color:rgba(180,120,255,0.7);">✕</button>
     </div>
-    <div class="modal-body" id="leagueBody" style="padding-bottom:24px;">
-      <div style="text-align:center;padding:40px 0;color:var(--text2);">Загрузка лиги...</div>
+    <div class="modal-body" id="tournamentBody">
+      <!-- filled by JS -->
     </div>
   </div>
 </div>
@@ -2866,6 +2952,7 @@ body.vip-theme-16 ::selection { background: rgba(200,150,255,0.35); }
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
+  if (typeof firebase !== 'undefined') {
   var firebaseConfig = {
     apiKey: "AIzaSyDfjCmE_t8xz0fTQuQOyMnKtdcNrU3ErVU",
     authDomain: "diamond-clicker-4edcf.firebaseapp.com",
@@ -2877,6 +2964,7 @@ body.vip-theme-16 ::selection { background: rgba(200,150,255,0.35); }
   firebase.initializeApp(firebaseConfig);
   var dcAuth = firebase.auth();
   var dcDb   = firebase.firestore();
+  }
 </script>
 
 <script>
@@ -3210,6 +3298,8 @@ function defaultState() {
     prgramExchanged:  0,   // суммарно потрачено 💎 на обмен (для статистики/заданий)
     exchangeCount:    0,   // количество совершённых обменов
     exchangeHistory:  [],  // история обменов 💎 → PRGRAM
+    dtScore:   null,  // { tid: 'YYYY-MM-DD', val: number } — очки за текущий день турнира
+    dtClaimed: false, // забрал ли игрок награду за текущий день
   };
 }
 
@@ -3487,6 +3577,7 @@ function pushStateToCloud() {
 
 // Срабатывает: при запуске страницы (восстановление сессии), сразу после
 // входа и сразу после регистрации.
+if (typeof dcAuth !== 'undefined' && dcAuth) {
 dcAuth.onAuthStateChanged(function(user) {
   if (!user) return; // гостевой режим — ничего не трогаем
 
@@ -3503,6 +3594,7 @@ dcAuth.onAuthStateChanged(function(user) {
     }
   });
 });
+}
 
 function _continueAuthFlow(user) {
   const username = (user.email || '').split('@')[0];
@@ -4154,6 +4246,9 @@ function handleDiamondTap(e) {
     const xpGain = 1 * getXpMultiplier();
     state.xp = parseFloat((state.xp + xpGain).toFixed(4));
     state.leagueScore = parseFloat(((state.leagueScore || 0) + xpGain).toFixed(4));
+
+    // Турнир: начисляем реальные очки за клик
+    dtAddScore(power);
 
     incrementTaskProgress('clicks', 1);
     incrementTaskProgress('gems', power);
@@ -8046,6 +8141,7 @@ function openModal(id) {
   if (id === 'withdraw-offer') renderWithdrawOffer();
   if (id === 'transfer')      renderTransfer();
   if (id === 'podgony')       renderPodgony();
+  if (id === 'tournament')    { renderTournament(); if (window._dtInterval) clearInterval(window._dtInterval); window._dtInterval = setInterval(() => { if (document.getElementById('modal-tournament').classList.contains('active')) { renderTournament(); updateDtTimerBadge(); } else { clearInterval(window._dtInterval); } }, 1000); }
   if (id === 'battlepass') {
     if (!state.battlePassSeen) {
       // Show warning popup first time
@@ -9414,498 +9510,6 @@ function claimCashbackChest() {
 </div>
 
 
-<script>
-// ============================================================
-//  LEAGUE SYSTEM — lobby + real-time, per-group timer
-// ============================================================
-const LEAGUES = [
-  { id:'bronze',   name:'Бронзовая',  emoji:'🥉', color:'#cd7f32', glow:'rgba(205,127,50,0.7)',  grad:'linear-gradient(135deg,#cd7f32,#f0c060)' },
-  { id:'silver',   name:'Серебряная', emoji:'🥈', color:'#c0c0c0', glow:'rgba(200,200,200,0.7)',  grad:'linear-gradient(135deg,#aaa,#e8e8e8)' },
-  { id:'gold',     name:'Золотая',    emoji:'🥇', color:'#f5c518', glow:'rgba(245,197,24,0.8)',   grad:'linear-gradient(135deg,#f5c518,#ffe566)' },
-  { id:'platinum', name:'Платиновая', emoji:'💎', color:'#00e5ff', glow:'rgba(0,229,255,0.8)',    grad:'linear-gradient(135deg,#00c8ff,#80ffea)' },
-  { id:'diamond',  name:'Алмазная',   emoji:'💠', color:'#d070ff', glow:'rgba(180,80,255,0.8)',   grad:'linear-gradient(135deg,#a855f7,#f0a0ff)' },
-];
-const LEAGUE_SEASON_MS = 2*24*60*60*1000; // длительность сезона ПОСЛЕ старта
-const LEAGUE_SIZE = 30;
-const PROMOTE_COUNT = 3;
-const RELEGATE_COUNT = 3;
-const MIN_PLAYERS_TO_START = 3;
-
-let _leagueTimer = null;
-let _leagueUnsub = null;
-let _leagueMetaUnsub = null;
-
-function formatCountdown(ms) {
-  if(ms<=0) return '0ч 00м 00с';
-  const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000);
-  return h+'ч '+String(m).padStart(2,'0')+'м '+String(s).padStart(2,'0')+'с';
-}
-function getMyLeagueIndex() { return Math.max(0,Math.min(4,state.leagueIndex||0)); }
-
-// Найти/создать группу-лобби, ожидающую игроков (без привязки к глобальному сезону)
-async function _assignGroup() {
-  if (!state.account||!state.account.uid) return null;
-  const leagueIdx = getMyLeagueIndex();
-  const leagueId = LEAGUES[leagueIdx].id;
-  const uid = state.account.uid;
-
-  // Уже привязан к актуальной (не завершённой) группе?
-  if (state.leagueGroupId && state.leagueGroupLeague === leagueId) {
-    const docId = leagueId+'_'+state.leagueGroupId;
-    const groupSnap = await dcDb.collection('league_groups').doc(docId).get().catch(()=>null);
-    if (groupSnap && groupSnap.exists) {
-      const g = groupSnap.data();
-      if (!g.finished) return docId;
-    }
-    // Группа не найдена или завершена — назначаем заново
-    state.leagueGroupId = null;
-  }
-
-  const metaRef = dcDb.collection('league_meta').doc(leagueId);
-
-  try {
-    let groupId = null;
-    await dcDb.runTransaction(async tx => {
-      const meta = await tx.get(metaRef);
-      let openGroupId = null;
-      if (meta.exists) openGroupId = meta.data().openGroupId || null;
-
-      if (openGroupId) {
-        const groupRef = dcDb.collection('league_groups').doc(leagueId+'_'+openGroupId);
-        const groupSnap = await tx.get(groupRef);
-        if (groupSnap.exists) {
-          const g = groupSnap.data();
-          if (!g.started && !g.finished && (g.count||0) < LEAGUE_SIZE) {
-            groupId = openGroupId;
-            tx.update(groupRef, { count: (g.count||0)+1 });
-            return;
-          }
-        }
-      }
-
-      // Создаём новую группу
-      const newId = String(Date.now());
-      groupId = newId;
-      tx.set(dcDb.collection('league_groups').doc(leagueId+'_'+newId), {
-        leagueId, count: 1, started: false, finished: false,
-        createdAt: Date.now(), startedAt: null, endsAt: null,
-      });
-      tx.set(metaRef, { openGroupId: newId }, { merge: true });
-    });
-
-    state.leagueGroupId = groupId;
-    state.leagueGroupLeague = leagueId;
-    if (state.leagueScore === undefined) state.leagueScore = 0;
-    saveState();
-    return leagueId+'_'+groupId;
-  } catch(e) {
-    console.warn('League assign error', e);
-    return null;
-  }
-}
-
-async function showLobbyPicker() {
-  if (!state.account||!state.account.uid) return;
-  const leagueIdx = getMyLeagueIndex();
-  const leagueId = LEAGUES[leagueIdx].id;
-  const body = document.getElementById('leagueBody');
-  if (!body) return;
-
-  body.innerHTML = `<div style="text-align:center;padding:40px 20px;">
-    <div style="font-size:32px;margin-bottom:12px;">🔍</div>
-    <div style="font-size:13px;color:var(--text2);">Ищем доступные лобби...</div>
-  </div>`;
-
-  try {
-    const snap = await dcDb.collection('league_groups')
-      .where('leagueId','==',leagueId)
-      .where('finished','==',false)
-      .limit(50)
-      .get();
-
-    let groups = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    // Сортировка: сначала ждущие игроков, потом по количеству
-    groups.sort((a,b) => {
-      if (a.started !== b.started) return a.started ? 1 : -1;
-      return (b.count||0) - (a.count||0);
-    });
-
-    const L = LEAGUES[leagueIdx];
-    let rows = '';
-    groups.forEach(g => {
-      const groupId = g.id.split('_').slice(1).join('_');
-      const isMine = state.leagueGroupId === groupId;
-      const full = (g.count||0) >= LEAGUE_SIZE;
-      rows += `<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;margin-bottom:8px;background:${isMine?'rgba(255,255,255,0.1)':'rgba(255,255,255,0.04)'};border:1.5px solid ${isMine?L.color+'66':'rgba(255,255,255,0.08)'};">
-        <span style="font-size:20px;">${g.started ? '🏁' : '⏳'}</span>
-        <div style="flex:1;">
-          <div style="font-size:13px;font-weight:800;color:#fff;">${g.started ? 'Сезон идёт' : 'Ожидание'} ${isMine?'<span style="font-size:10px;opacity:0.6;">(твоё)</span>':''}</div>
-          <div style="font-size:11px;color:var(--text2);">${g.count||0}/${LEAGUE_SIZE} игроков</div>
-        </div>
-        ${isMine ? '<span style="font-size:11px;color:#00e676;font-weight:800;">Ты тут</span>' :
-          full ? '<span style="font-size:11px;color:#ff4460;font-weight:800;">Заполнено</span>' :
-          `<button onclick="joinSpecificLobby('${groupId}')" style="padding:8px 14px;border-radius:10px;border:none;background:${L.grad};color:#000;font-size:12px;font-weight:900;cursor:pointer;">Войти</button>`}
-      </div>`;
-    });
-
-    body.innerHTML = `
-      <div style="text-align:center;padding:8px 0 16px;">
-        <div style="font-size:18px;font-weight:900;color:#fff;">${L.emoji} Все лобби лиги "${L.name}"</div>
-        <div style="font-size:11px;color:var(--text2);margin-top:4px;">Найдено ${groups.length} ${groups.length===1?'лобби':'лобби'}</div>
-      </div>
-      ${rows || `<div style="text-align:center;padding:30px;color:var(--text2);">Лобби не найдено</div>`}
-      <button onclick="openLeagueModal()" style="width:100%;margin-top:12px;padding:11px;border-radius:12px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);color:#fff;font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;cursor:pointer;">← Назад в моё лобби</button>
-    `;
-  } catch(e) {
-    console.warn('Lobby list error', e);
-    body.innerHTML = `<div style="text-align:center;padding:30px;color:var(--text2);">Не удалось загрузить список лобби</div>
-      <button onclick="openLeagueModal()" style="width:100%;margin-top:12px;padding:11px;border-radius:12px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);color:#fff;font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;cursor:pointer;">← Назад</button>`;
-  }
-}
-
-async function joinSpecificLobby(targetGroupId) {
-  if (!state.account||!state.account.uid) return;
-  const leagueIdx = getMyLeagueIndex();
-  const leagueId = LEAGUES[leagueIdx].id;
-  const uid = state.account.uid;
-
-  // Покинуть текущую группу если есть
-  if (state.leagueGroupId && state.leagueGroupLeague) {
-    const oldDocId = state.leagueGroupLeague+'_'+state.leagueGroupId;
-    try {
-      await dcDb.collection('league_scores').doc(oldDocId+'_'+uid).delete();
-      const oldRef = dcDb.collection('league_groups').doc(oldDocId);
-      await dcDb.runTransaction(async tx => {
-        const snap = await tx.get(oldRef);
-        if (snap.exists) tx.update(oldRef, { count: Math.max(0, (snap.data().count||1)-1) });
-      });
-    } catch(e) { console.warn('Leave old lobby error', e); }
-  }
-
-  // Присоединиться к новой
-  const targetDocId = leagueId+'_'+targetGroupId;
-  try {
-    await dcDb.runTransaction(async tx => {
-      const ref = dcDb.collection('league_groups').doc(targetDocId);
-      const snap = await tx.get(ref);
-      if (!snap.exists) throw new Error('Лобби больше не существует');
-      const g = snap.data();
-      if ((g.count||0) >= LEAGUE_SIZE) throw new Error('Лобби уже заполнено');
-      tx.update(ref, { count: (g.count||0)+1 });
-    });
-
-    state.leagueGroupId = targetGroupId;
-    state.leagueGroupLeague = leagueId;
-    state.leagueScore = 0;
-    saveState();
-    toast('✅ Перешёл в новое лобби!', 'success');
-    openLeagueModal();
-  } catch(e) {
-    toast('❌ ' + (e.message || 'Не удалось войти'), 'error');
-    showLobbyPicker();
-  }
-}
-
-async function resetMyLeague() {
-  if (!state.account||!state.account.uid) return;
-  if (!confirm('Вернуться в бронзовую лигу и начать заново?')) return;
-
-  // Удалить себя из текущей группы (если есть)
-  if (state.leagueGroupId && state.leagueGroupLeague) {
-    const groupDocId = state.leagueGroupLeague+'_'+state.leagueGroupId;
-    try {
-      await dcDb.collection('league_scores').doc(groupDocId+'_'+state.account.uid).delete();
-      // Уменьшить счётчик группы
-      const groupRef = dcDb.collection('league_groups').doc(groupDocId);
-      await dcDb.runTransaction(async tx => {
-        const snap = await tx.get(groupRef);
-        if (snap.exists) {
-          const g = snap.data();
-          tx.update(groupRef, { count: Math.max(0, (g.count||1)-1) });
-        }
-      });
-    } catch(e) { console.warn('Reset league cleanup error', e); }
-  }
-
-  state.leagueIndex = 0;
-  state.leagueGroupId = null;
-  state.leagueGroupLeague = null;
-  state.leagueScore = 0;
-  saveState();
-  pushStateToCloud();
-
-  toast('🥉 Возвращён в бронзовую лигу!', 'success');
-  closeModal('league');
-  setTimeout(() => openModal('league'), 300);
-}
-
-async function pushLeagueScore() {
-  if (!state.account||!state.account.uid) return;
-  const groupDocId = await _assignGroup();
-  if (!groupDocId) return;
-  const uid = state.account.uid;
-  dcDb.collection('league_scores').doc(groupDocId+'_'+uid).set({
-    uid,
-    name: state.account.displayName || state.account.login || 'Игрок',
-    score: Math.floor(state.leagueScore||0),
-    leagueIdx: getMyLeagueIndex(),
-    groupDocId,
-    updatedAt: Date.now(),
-  },{merge:true}).catch(e=>console.warn('League push',e));
-}
-
-// Подписка на группу (метаданные: started/endsAt/count) + подписка на игроков
-async function subscribeLeague(onUpdate) {
-  if (_leagueUnsub) { _leagueUnsub(); _leagueUnsub=null; }
-  if (_leagueMetaUnsub) { _leagueMetaUnsub(); _leagueMetaUnsub=null; }
-  if (!state.account||!state.account.uid) return;
-
-  const groupDocId = await _assignGroup();
-  if (!groupDocId) return;
-
-  let latestGroup = null;
-  let latestPlayers = [];
-
-  function emit() {
-    if (!latestGroup) return;
-    onUpdate({ group: latestGroup, players: latestPlayers, leagueIdx: getMyLeagueIndex() });
-  }
-
-  _leagueMetaUnsub = dcDb.collection('league_groups').doc(groupDocId).onSnapshot(async snap => {
-    if (!snap.exists) return;
-    const g = snap.data();
-    latestGroup = g;
-
-    // Если набралось минимум игроков и группа ещё не стартовала — запустить таймер
-    if (!g.started && (g.count||0) >= MIN_PLAYERS_TO_START) {
-      const startedAt = Date.now();
-      const endsAt = startedAt + LEAGUE_SEASON_MS;
-      dcDb.collection('league_groups').doc(groupDocId).update({
-        started: true, startedAt, endsAt
-      }).catch(()=>{});
-    }
-
-    // Если сезон закончился — обработать переход (только один раз, у первого кто увидит)
-    if (g.started && g.endsAt && Date.now() >= g.endsAt && !g.finished) {
-      _finishGroupSeason(groupDocId, g);
-    }
-
-    emit();
-  }, e => console.warn('Group meta error', e));
-
-  _leagueUnsub = dcDb.collection('league_scores')
-    .where('groupDocId','==',groupDocId)
-    .onSnapshot(snap => {
-      let players = snap.docs.map(d=>d.data());
-      players.sort((a,b)=>(b.score||0)-(a.score||0));
-      latestPlayers = players.slice(0, LEAGUE_SIZE);
-      emit();
-    }, e => console.warn('League players error', e));
-}
-
-async function _finishGroupSeason(groupDocId, g) {
-  try {
-    const groupRef = dcDb.collection('league_groups').doc(groupDocId);
-    // Атомарно пометить как finished, чтобы только один клиент это сделал
-    let didFinish = false;
-    await dcDb.runTransaction(async tx => {
-      const fresh = await tx.get(groupRef);
-      if (!fresh.exists) return;
-      const fd = fresh.data();
-      if (fd.finished) return;
-      tx.update(groupRef, { finished: true });
-      didFinish = true;
-    });
-    if (!didFinish) return;
-
-    // Если МОЯ группа — применить результат к себе
-    if (state.leagueGroupId && (g.leagueId+'_'+state.leagueGroupId) === groupDocId) {
-      const snap = await dcDb.collection('league_scores').where('groupDocId','==',groupDocId).limit(LEAGUE_SIZE).get();
-      let players = snap.docs.map(d=>d.data());
-      players.sort((a,b)=>(b.score||0)-(a.score||0));
-      const myRank = players.findIndex(p=>p.uid===state.account.uid)+1;
-      const total = players.length;
-      const oldIdx = getMyLeagueIndex();
-      let newIdx = oldIdx;
-      if (myRank>0&&myRank<=PROMOTE_COUNT&&oldIdx<4) newIdx=oldIdx+1;
-      else if (myRank>0&&myRank>total-RELEGATE_COUNT&&oldIdx>0) newIdx=oldIdx-1;
-
-      state.leagueIndex=newIdx; state.leagueGroupId=null; state.leagueGroupLeague=null; state.leagueScore=0;
-      saveState(); pushStateToCloud();
-
-      if (newIdx>oldIdx) toast('🎉 Повышение в '+LEAGUES[newIdx].name+' лигу!','success');
-      else if (newIdx<oldIdx) toast('⬇️ Вылет в '+LEAGUES[newIdx].name+' лигу','');
-      else toast('🏆 Сезон лиги завершён!','');
-    }
-  } catch(e) { console.warn('Finish season error', e); }
-}
-
-function renderLeagueModal(data) {
-  const body = document.getElementById('leagueBody');
-  const titleEl = document.getElementById('leagueModalTitle');
-  if (!body) return;
-
-  if (!state.account||!state.account.uid) {
-    body.innerHTML = `<div style="text-align:center;padding:50px 20px;">
-      <div style="font-size:48px;margin-bottom:12px;">🏆</div>
-      <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:6px;">Войди в аккаунт</div>
-      <div style="font-size:12px;color:var(--text2);">чтобы участвовать в лигах</div>
-    </div>`;
-    return;
-  }
-
-  if (!data || !data.group) {
-    body.innerHTML = `<div style="text-align:center;padding:50px 20px;">
-      <div style="font-size:36px;margin-bottom:12px;">⏳</div>
-      <div style="font-size:13px;color:var(--text2);">Загружаем лигу...</div>
-    </div>`;
-    return;
-  }
-
-  const L = LEAGUES[data.leagueIdx];
-  const myUid = state.account.uid;
-  const players = data.players;
-  const myRank = players.findIndex(p=>p.uid===myUid)+1;
-  const total = players.length;
-  const g = data.group;
-
-  if (titleEl) titleEl.innerHTML = L.emoji+' '+L.name+' лига';
-  const modal = document.getElementById('leagueModal');
-  if (modal) { modal.style.borderTopColor=L.color+'cc'; modal.style.boxShadow='0 -10px 60px rgba(0,0,0,0.9), 0 -2px 0 '+L.color+'66'; }
-
-  // ===== ЛОББИ (ждём игроков) =====
-  if (!g.started) {
-    let waitRows = '';
-    players.forEach((p,i) => {
-      const isMe = p.uid===myUid;
-      waitRows += `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:14px;margin-bottom:6px;background:${isMe?'rgba(255,255,255,0.1)':'rgba(255,255,255,0.03)'};border:1.5px solid ${isMe?L.color+'66':'rgba(255,255,255,0.06)'};">
-        <span style="font-size:16px;">👤</span>
-        <span style="flex:1;font-size:13px;font-weight:800;color:#fff;">${p.name||'Игрок'}${isMe?' <span style="font-size:10px;opacity:0.6;">(ты)</span>':''}</span>
-        <span style="font-size:11px;color:#00e676;font-weight:800;">✓ готов</span>
-      </div>`;
-    });
-    const need = Math.max(0, MIN_PLAYERS_TO_START - total);
-
-    body.innerHTML = `
-      <div style="text-align:center;padding:24px 16px 16px;background:linear-gradient(180deg,${L.color}18 0%,transparent 100%);border-radius:16px;margin-bottom:14px;">
-        <div style="font-size:64px;filter:drop-shadow(0 0 20px ${L.glow});opacity:0.7;">${L.emoji}</div>
-        <div style="font-size:20px;font-weight:900;background:${L.grad};-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin:6px 0 10px;">${L.name} лига</div>
-        <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,200,0,0.12);border:1px solid rgba(255,200,0,0.3);border-radius:20px;padding:8px 18px;">
-          <span style="width:8px;height:8px;background:#ffd700;border-radius:50%;animation:adDotPulse 1s ease-in-out infinite;"></span>
-          <span style="font-size:13px;font-weight:800;color:#ffd700;">Ожидание игроков · ${total}/${MIN_PLAYERS_TO_START}+</span>
-        </div>
-        ${need>0?`<div style="font-size:11px;color:var(--text2);margin-top:8px;">Нужно ещё ${need} ${need===1?'игрок':'игрока'} чтобы начать сезон</div>`:`<div style="font-size:11px;color:#00e676;margin-top:8px;">Сейчас начнётся! ⏱️</div>`}
-      </div>
-      <div style="font-size:10px;font-weight:800;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;padding-left:4px;">В лобби · ${total} ${total===1?'игрок':'игроков'}</div>
-      ${waitRows}
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.3);margin-top:16px;">🔴 Обновляется автоматически — оставайся здесь</div>
-      <div style="display:flex;gap:8px;margin-top:14px;">
-        <button onclick="showLobbyPicker()" style="flex:1;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.7);font-family:'Nunito',sans-serif;font-size:11px;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent;">🔀 Другое лобби</button>
-        <button onclick="resetMyLeague()" style="flex:1;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.35);font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;">🥉 В бронзу</button>
-      </div>
-    `;
-    if(_leagueTimer) clearInterval(_leagueTimer);
-    return;
-  }
-
-  // ===== АКТИВНЫЙ СЕЗОН =====
-  const timeLeft = (g.endsAt||0) - Date.now();
-  let rows = '';
-  players.forEach((p,i) => {
-    const rank=i+1, isMe=p.uid===myUid;
-    const isTop=rank<=PROMOTE_COUNT;
-    const isBot=rank>total-RELEGATE_COUNT&&total>=PROMOTE_COUNT+RELEGATE_COUNT&&data.leagueIdx>0;
-    const medal=rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'';
-    let bg='rgba(255,255,255,0.03)',border='rgba(255,255,255,0.06)';
-    if(isMe){bg='rgba(255,255,255,0.1)';border=L.color+'66';}
-    else if(isTop){bg='rgba(0,200,80,0.08)';border='rgba(0,230,120,0.3)';}
-    else if(isBot){bg='rgba(255,40,70,0.07)';border='rgba(255,50,80,0.25)';}
-    rows+=`<div style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:14px;margin-bottom:6px;background:${bg};border:1.5px solid ${border};${isMe?'box-shadow:0 2px 12px '+L.color+'33;':''}">
-      <span style="font-size:14px;font-weight:900;width:22px;text-align:center;color:${isTop?'#00e676':isBot?'#ff4460':'var(--text2)'};">${medal||rank}</span>
-      <span style="flex:1;font-size:13px;font-weight:800;color:${isMe?'#fff':'rgba(255,255,255,0.85)'};">${p.name||'Игрок'}${isMe?' <span style="font-size:10px;opacity:0.6;">(ты)</span>':''}</span>
-      <span style="font-size:13px;font-weight:900;color:${isTop?'#ffe566':isBot?'#ff6680':'rgba(255,255,255,0.7)'};">⚡ ${(p.score||0).toLocaleString()}</span>
-    </div>`;
-    if(rank===PROMOTE_COUNT&&total>PROMOTE_COUNT)
-      rows+=`<div style="text-align:center;font-size:10px;font-weight:800;color:rgba(255,255,255,0.2);letter-spacing:1px;padding:4px 0;">· · · УДЕРЖАНИЕ · · ·</div>`;
-    if(data.leagueIdx>0&&rank===total-RELEGATE_COUNT&&total>PROMOTE_COUNT+RELEGATE_COUNT)
-      rows+=`<div style="text-align:center;font-size:10px;font-weight:800;color:rgba(255,80,80,0.35);letter-spacing:1px;padding:4px 0;">· · · ОПАСНАЯ ЗОНА · · ·</div>`;
-  });
-
-  const nextL=data.leagueIdx<4?LEAGUES[data.leagueIdx+1]:null;
-  const prevL=data.leagueIdx>0?LEAGUES[data.leagueIdx-1]:null;
-
-  body.innerHTML=`
-    <div style="position:relative;text-align:center;padding:20px 16px 16px;background:linear-gradient(180deg,${L.color}18 0%,transparent 100%);border-radius:16px;margin-bottom:12px;">
-      <div style="font-size:64px;filter:drop-shadow(0 0 20px ${L.glow});animation:leagueBadgePulse 2.5s ease-in-out infinite;">${L.emoji}</div>
-      <div style="font-size:20px;font-weight:900;background:${L.grad};-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin:6px 0 2px;">${L.name} лига</div>
-      <div style="font-size:11px;color:var(--text2);margin-bottom:10px;">До конца сезона: <span id="leagueCountdown" style="color:#fff;font-weight:900;">${formatCountdown(timeLeft)}</span></div>
-      <div style="display:inline-flex;gap:8px;align-items:center;background:rgba(0,0,0,0.35);border-radius:20px;padding:7px 16px;border:1px solid ${L.color}33;">
-        <span style="font-size:12px;color:var(--text2);">Твои ⚡:</span>
-        <span style="font-size:15px;font-weight:900;color:#ffe566;">${Math.floor(state.leagueScore||0).toLocaleString()}</span>
-        ${myRank>0?`<span style="font-size:11px;color:var(--text2);">· место <b style="color:#fff">${myRank}</b>/${total}</span>`:''}
-      </div>
-      <div style="margin-top:6px;font-size:10px;color:rgba(255,255,255,0.3);">🔴 Обновляется в реальном времени</div>
-    </div>
-    <div style="display:flex;gap:8px;margin-bottom:12px;">
-      ${nextL?`<div style="flex:1;background:rgba(0,200,80,0.1);border:1px solid rgba(0,200,80,0.3);border-radius:10px;padding:8px;text-align:center;">
-        <div style="font-size:9px;color:#00e676;font-weight:800;letter-spacing:1px;">⬆️ ТОП-${PROMOTE_COUNT} →</div>
-        <div style="font-size:11px;color:#fff;font-weight:800;margin-top:2px;">${nextL.emoji} ${nextL.name}</div>
-      </div>`:`<div style="flex:1;background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.3);border-radius:10px;padding:8px;text-align:center;font-size:11px;color:#ffd700;font-weight:800;">👑 Высшая лига!</div>`}
-      ${prevL?`<div style="flex:1;background:rgba(255,50,80,0.08);border:1px solid rgba(255,50,80,0.25);border-radius:10px;padding:8px;text-align:center;">
-        <div style="font-size:9px;color:#ff4460;font-weight:800;letter-spacing:1px;">⬇️ ПОСЛЕДНИЕ ${RELEGATE_COUNT} →</div>
-        <div style="font-size:11px;color:#fff;font-weight:800;margin-top:2px;">${prevL.emoji} ${prevL.name}</div>
-      </div>`:''}
-    </div>
-    <div style="font-size:10px;font-weight:800;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;padding-left:4px;">Таблица · ${total}/${LEAGUE_SIZE} игроков</div>
-    ${rows}
-    <div style="display:flex;gap:8px;margin-top:16px;">
-      <button onclick="showLobbyPicker()" style="flex:1;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.7);font-family:'Nunito',sans-serif;font-size:11px;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent;">🔀 Другое лобби</button>
-      <button onclick="resetMyLeague()" style="flex:1;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.35);font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;">🥉 В бронзу</button>
-    </div>
-  `;
-
-  if(_leagueTimer) clearInterval(_leagueTimer);
-  _leagueTimer=setInterval(()=>{
-    const el=document.getElementById('leagueCountdown');
-    if(!el){clearInterval(_leagueTimer);return;}
-    el.textContent=formatCountdown((g.endsAt||0)-Date.now());
-  },1000);
-}
-
-async function openLeagueModal() {
-  _origOpenModal('league');
-  renderLeagueModal(null);
-  await pushLeagueScore();
-  subscribeLeague(data => renderLeagueModal(data));
-}
-
-const _origCloseModal = closeModal;
-window.closeModal = function(id) {
-  if (id==='league') {
-    if (_leagueUnsub) { _leagueUnsub(); _leagueUnsub=null; }
-    if (_leagueMetaUnsub) { _leagueMetaUnsub(); _leagueMetaUnsub=null; }
-  }
-  _origCloseModal(id);
-};
-
-const _origOpenModal = openModal;
-window.openModal = function(id) {
-  if (id==='league') { openLeagueModal(); return; }
-  _origOpenModal(id);
-};
-
-setInterval(()=>{ if(state.account&&state.account.uid) pushLeagueScore(); },60000);
-
-setTimeout(()=>{
-  if(state.account&&state.account.uid){
-    if(!state.leagueIndex) state.leagueIndex=0;
-    if(state.leagueScore===undefined) state.leagueScore=0;
-    pushLeagueScore();
-  }
-},3000);
-</script>
-
-
 <!-- NEWS MODAL -->
 <div class="modal-overlay" id="modal-news">
   <div class="modal" style="border-top-color:rgba(199,125,255,0.5);box-shadow:0 -10px 50px rgba(0,0,0,0.8),0 -2px 0 rgba(199,125,255,0.4);">
@@ -10477,6 +10081,369 @@ function bpConfirmFirstOpen() {
 </script>
 
 <script>
+// ============================================================
+//  DIAMOND TOURNAMENT — реальный Firebase-лидерборд
+// ============================================================
+
+// Турнир — глобальный 24-часовой цикл, одинаковый для всех.
+// tournamentId = "YYYY-MM-DD" по UTC, меняется каждые сутки.
+// Счёт — реальные алмазы, заработанные кликами за эту сессию турнира.
+
+const DT_DURATION = 24 * 3600 * 1000;
+
+// Текущий ID турнира (UTC-дата)
+function dtTournamentId() {
+  const d = new Date();
+  return d.getUTCFullYear() + '-' +
+    String(d.getUTCMonth() + 1).padStart(2, '0') + '-' +
+    String(d.getUTCDate()).padStart(2, '0');
+}
+
+// Сколько мс осталось до конца текущего UTC-суток
+function dtMsUntilReset() {
+  const now = Date.now();
+  const d = new Date(now);
+  const nextMidnightUTC = Date.UTC(
+    d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1
+  );
+  return Math.max(0, nextMidnightUTC - now);
+}
+
+function dtTimeLeft() {
+  const left = dtMsUntilReset();
+  if (left <= 0) return '00:00:00';
+  const h = Math.floor(left / 3600000);
+  const m = Math.floor((left % 3600000) / 60000);
+  const s = Math.floor((left % 60000) / 1000);
+  return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+}
+
+function dtIsFinished() {
+  // Турнир никогда не «завершён» — он всегда активен (сбрасывается в полночь UTC).
+  // Но если игрок уже забрал награду за сегодня — показываем статус "получено".
+  return false;
+}
+
+// Накопленные очки за текущий турнир (сбрасываются при смене tournamentId)
+function dtMyScore() {
+  if (!state.dtScore) return 0;
+  if (state.dtScore.tid !== dtTournamentId()) return 0;
+  return state.dtScore.val || 0;
+}
+
+// Вызывается из handleDiamondTap — добавляет реальные очки за клик
+function dtAddScore(gemsEarned) {
+  if (!state.account) return; // гости не участвуют — нет uid для Firebase
+  const tid = dtTournamentId();
+  if (!state.dtScore || state.dtScore.tid !== tid) {
+    // Новый день — сброс
+    state.dtScore = { tid, val: 0 };
+    state.dtClaimed = false;
+  }
+  state.dtScore.val = parseFloat(((state.dtScore.val || 0) + gemsEarned).toFixed(4));
+  // Дебаунс записи в Firebase — не чаще раза в 5 сек
+  dtScheduleFirebaseWrite();
+}
+
+let _dtWriteTimer = null;
+function dtScheduleFirebaseWrite() {
+  if (_dtWriteTimer) return;
+  _dtWriteTimer = setTimeout(() => {
+    _dtWriteTimer = null;
+    dtWriteToFirebase();
+  }, 5000);
+}
+
+function dtWriteToFirebase() {
+  if (!state.account || !state.account.uid) return;
+  if (typeof dcDb === 'undefined' || !dcDb) return;
+  const score = dtMyScore();
+  const cp = getClickPower();
+  const mult = getXpMultiplier();
+  const tid = dtTournamentId();
+  dcDb.collection('tournament_scores').doc(state.account.uid).set({
+    login:        state.account.login || 'Игрок',
+    score:        score,
+    clickPower:   parseFloat(cp.toFixed(6)),
+    multiplier:   parseFloat(mult.toFixed(4)),
+    tournamentId: tid,
+    updatedAt:    firebase.firestore.FieldValue.serverTimestamp(),
+  }, { merge: false }).catch(() => {});
+}
+
+// Кэш лидерборда
+let _dtBoard = [];
+let _dtBoardLoading = false;
+let _dtBoardTid = '';
+
+function dtFetchLeaderboard(callback) {
+  if (typeof dcDb === 'undefined' || !dcDb) {
+    callback([]);
+    return;
+  }
+  const tid = dtTournamentId();
+  _dtBoardLoading = true;
+  dcDb.collection('tournament_scores')
+    .where('tournamentId', '==', tid)
+    .orderBy('score', 'desc')
+    .limit(50)
+    .get()
+    .then(snap => {
+      _dtBoardLoading = false;
+      _dtBoardTid = tid;
+      const myUid = state.account ? state.account.uid : null;
+      const rows = [];
+      snap.forEach(doc => {
+        const d = doc.data();
+        rows.push({
+          uid:   doc.id,
+          name:  d.login || 'Игрок',
+          score: d.score || 0,
+          isMe:  doc.id === myUid,
+        });
+      });
+      // Если текущий игрок есть в аккаунте, убедимся что он есть в списке
+      // (мог не записать ещё — добавляем из локального state)
+      if (myUid && !rows.find(r => r.uid === myUid) && dtMyScore() > 0) {
+        rows.push({
+          uid:   myUid,
+          name:  state.account.login || 'Ты',
+          score: dtMyScore(),
+          isMe:  true,
+        });
+        rows.sort((a, b) => b.score - a.score);
+      }
+      _dtBoard = rows;
+      callback(rows);
+    })
+    .catch(() => {
+      _dtBoardLoading = false;
+      callback(_dtBoard); // вернуть кэш при ошибке
+    });
+}
+
+function dtRewardForRank(rank, total) {
+  if (rank === 1) return 5000;
+  if (rank === 2) return 3000;
+  if (rank === 3) return 2000;
+  if (rank <= Math.ceil(total * 0.3)) return 1000;
+  if (rank <= Math.ceil(total * 0.6)) return 500;
+  return 200;
+}
+
+function openTournament() {
+  // Сброс кэша если поменялся день
+  if (_dtBoardTid !== dtTournamentId()) _dtBoard = [];
+
+  // Показываем модалку сразу с загрузочным состоянием
+  renderTournament(true);
+  const overlay = document.getElementById('modal-tournament');
+  overlay.classList.remove('closing');
+  overlay.classList.add('active');
+
+  // Грузим реальные данные
+  dtFetchLeaderboard(() => renderTournament(false));
+
+  // Таймер: каждую секунду обновляем таймер, каждые 15 сек — перезагружаем борд
+  if (window._dtInterval) clearInterval(window._dtInterval);
+  let _dtRefreshTick = 0;
+  window._dtInterval = setInterval(() => {
+    if (!document.getElementById('modal-tournament').classList.contains('active')) {
+      clearInterval(window._dtInterval);
+      return;
+    }
+    updateDtTimerBadge();
+    // Обновляем только таймер в DOM без перерисовки всего
+    const timerEl = document.getElementById('dtCountdown');
+    if (timerEl) timerEl.textContent = dtTimeLeft();
+    // Каждые 15 сек перечитываем борд
+    _dtRefreshTick++;
+    if (_dtRefreshTick % 15 === 0) {
+      dtFetchLeaderboard(() => renderTournament(false));
+    }
+  }, 1000);
+}
+
+function updateDtTimerBadge() {
+  const badge = document.getElementById('dtTimerBadge');
+  if (!badge) return;
+  const left = dtMsUntilReset();
+  if (left <= 0) { badge.textContent = '24ч'; return; }
+  const h = Math.floor(left / 3600000);
+  const m = Math.floor((left % 3600000) / 60000);
+  badge.textContent = h > 0 ? h + 'ч' : m + 'м';
+}
+
+function dtClaimReward() {
+  const tid = dtTournamentId();
+  if (state.dtClaimed && state.dtScore && state.dtScore.tid === tid) {
+    toast('Награда за сегодня уже получена!', 'error'); return;
+  }
+  const myUid = state.account ? state.account.uid : null;
+  const board = _dtBoard.length ? _dtBoard : [];
+  const myIdx = board.findIndex(r => r.isMe || r.uid === myUid);
+  const rank = myIdx >= 0 ? myIdx + 1 : board.length + 1;
+  const total = Math.max(board.length, 1);
+  const reward = dtRewardForRank(rank, total);
+  const myScore = dtMyScore();
+
+  state.gems = parseFloat((state.gems + reward).toFixed(4));
+  state.totalGems = parseFloat(((state.totalGems || 0) + reward).toFixed(4));
+  state.dtClaimed = true;
+  saveState();
+  updateUI();
+
+  toast('🏆 Место ' + rank + ' из ' + total + ' — +' + reward.toLocaleString('ru-RU') + ' 💎!', 'success');
+
+  tgSend(
+    '━━━━━━━━━━━━━━━━━━━━\n' +
+    '💎🏆 <b>АЛМАЗНЫЙ ТУРНИР</b> 🏆💎\n' +
+    '━━━━━━━━━━━━━━━━━━━━\n\n' +
+    '👤 Игрок: <b>' + (state.account ? state.account.login : 'Гость') + '</b>\n' +
+    '📅 Турнир: <b>' + tid + '</b>\n' +
+    '🏅 Место: <b>' + rank + ' из ' + total + '</b>\n' +
+    '💎 Награда: <b>+' + reward.toLocaleString('ru-RU') + ' алмазов</b>\n' +
+    '⚡ Очки: <b>' + myScore.toLocaleString('ru-RU') + '</b>\n\n' +
+    '━━━━━━━━━━━━━━━━━━━━\n' +
+    '🏆 <i>Diamond Clicker</i>'
+  );
+
+  renderTournament(false);
+}
+
+function renderTournament(loading) {
+  const body = document.getElementById('tournamentBody');
+  if (!body) return;
+
+  const tid = dtTournamentId();
+  const timeLeft = dtTimeLeft();
+  const myUid  = state.account ? state.account.uid : null;
+  const myScore = dtMyScore();
+  const cp   = getClickPower();
+  const mult = getXpMultiplier();
+  const board = _dtBoard;
+  const myIdx = board.findIndex(r => r.isMe || r.uid === myUid);
+  const myRank = myIdx >= 0 ? myIdx + 1 : (board.length + 1);
+  const total  = Math.max(board.length, 1);
+  const rewardPreview = dtRewardForRank(myRank, total);
+  const alreadyClaimed = state.dtClaimed && state.dtScore && state.dtScore.tid === tid;
+  const rankEmoji = r => r === 1 ? '🥇' : r === 2 ? '🥈' : r === 3 ? '🥉' : '#' + r;
+  const isGuest = !state.account;
+
+  body.innerHTML = `
+    <!-- Header -->
+    <div style="background:linear-gradient(160deg,rgba(80,20,180,0.18),rgba(40,0,100,0.12));border:1.5px solid rgba(150,80,255,0.35);border-radius:20px;padding:18px 16px 14px;margin-bottom:14px;text-align:center;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:-30px;left:50%;transform:translateX(-50%);width:200px;height:100px;background:radial-gradient(ellipse,rgba(120,60,255,0.2),transparent 70%);pointer-events:none;filter:blur(10px);"></div>
+      <div style="font-size:40px;filter:drop-shadow(0 0 16px rgba(180,100,255,0.9));">💎</div>
+      <div style="font-size:17px;font-weight:900;background:linear-gradient(135deg,#d4aaff,#7b2fff,#ffe566);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin:4px 0 2px;">АЛМАЗНЫЙ ТУРНИР</div>
+      <div style="font-size:10px;color:rgba(180,120,255,0.6);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">Сбрасывается каждые сутки · UTC</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.25);margin-bottom:12px;">Цикл: ${tid}</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:900;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;">До сброса</div>
+      <div id="dtCountdown" style="font-size:28px;font-weight:900;color:#d4aaff;text-shadow:0 0 20px rgba(180,100,255,0.7);font-variant-numeric:tabular-nums;">${timeLeft}</div>
+    </div>
+
+    ${isGuest ? `
+    <!-- Guest warning -->
+    <div style="background:rgba(255,170,0,0.08);border:1.5px solid rgba(255,170,0,0.3);border-radius:16px;padding:14px 16px;margin-bottom:14px;text-align:center;">
+      <div style="font-size:22px;margin-bottom:6px;">🔒</div>
+      <div style="font-size:13px;font-weight:900;color:#ffaa00;">Войди в аккаунт</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;">Только зарегистрированные игроки участвуют в турнире и появляются в таблице</div>
+    </div>
+    ` : `
+    <!-- My stats -->
+    <div style="background:rgba(120,60,255,0.08);border:1.5px solid rgba(150,80,255,0.35);border-radius:16px;padding:14px 16px;margin-bottom:14px;box-shadow:0 0 14px rgba(120,60,255,0.1);">
+      <div style="font-size:10px;font-weight:900;color:rgba(180,120,255,0.6);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;">⚡ Твои показатели</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;">
+        <div style="background:rgba(255,255,255,0.04);border-radius:12px;padding:10px 6px;">
+          <div style="font-size:16px;font-weight:900;color:#00c8ff;">${cp.toFixed(2)}</div>
+          <div style="font-size:9px;color:rgba(255,255,255,0.35);font-weight:800;text-transform:uppercase;margin-top:2px;">Клик</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.04);border-radius:12px;padding:10px 6px;">
+          <div style="font-size:16px;font-weight:900;color:#ff9c00;">×${mult}</div>
+          <div style="font-size:9px;color:rgba(255,255,255,0.35);font-weight:800;text-transform:uppercase;margin-top:2px;">Множитель</div>
+        </div>
+        <div style="background:rgba(255,229,102,0.07);border:1px solid rgba(255,229,102,0.2);border-radius:12px;padding:10px 6px;">
+          <div style="font-size:16px;font-weight:900;color:#ffe566;text-shadow:0 0 10px rgba(255,229,102,0.5);">${myScore.toLocaleString('ru-RU')}</div>
+          <div style="font-size:9px;color:rgba(255,229,102,0.5);font-weight:800;text-transform:uppercase;margin-top:2px;">Очки</div>
+        </div>
+      </div>
+      <div style="margin-top:10px;padding:8px 12px;background:rgba(150,80,255,0.08);border:1px solid rgba(150,80,255,0.2);border-radius:10px;display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:12px;color:rgba(255,255,255,0.55);">Твоё место</span>
+        <span style="font-size:16px;font-weight:900;color:#d4aaff;text-shadow:0 0 12px rgba(180,100,255,0.6);">${myScore > 0 ? rankEmoji(myRank) : '—'}</span>
+      </div>
+      <div style="margin-top:8px;padding:7px 12px;background:rgba(255,229,102,0.05);border-radius:10px;display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:11px;color:rgba(255,229,102,0.5);">Ожидаемая награда</span>
+        <span style="font-size:14px;font-weight:900;color:#ffe566;">${myScore > 0 ? '+' + rewardPreview.toLocaleString('ru-RU') + ' 💎' : '—'}</span>
+      </div>
+    </div>
+    `}
+
+    <!-- Leaderboard -->
+    <div style="font-size:10px;font-weight:900;color:rgba(180,120,255,0.5);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+      <span>🏆</span> Таблица лидеров
+      ${loading ? '<span style="font-size:9px;color:rgba(180,120,255,0.4);font-weight:700;letter-spacing:0;">⏳ загрузка...</span>' : ''}
+      <span style="flex:1;height:1px;background:linear-gradient(90deg,rgba(150,80,255,0.25),transparent);display:block;"></span>
+    </div>
+
+    ${loading && board.length === 0 ? `
+      <div style="text-align:center;padding:24px 0;color:rgba(255,255,255,0.25);font-size:13px;">
+        <div style="font-size:28px;margin-bottom:8px;animation:pulse 1.5s infinite;">⏳</div>
+        Загружаем игроков...
+      </div>
+    ` : board.length === 0 ? `
+      <div style="text-align:center;padding:24px 0;">
+        <div style="font-size:28px;margin-bottom:8px;">💤</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.3);">Пока никто не кликал сегодня.<br>Будь первым!</div>
+      </div>
+    ` : board.map((p, i) => {
+      const r = i + 1;
+      const isMe = p.isMe || p.uid === myUid;
+      return `<div class="dt-player-row ${isMe ? 'me' : ''}">
+        <div class="dt-rank-badge">${rankEmoji(r)}</div>
+        <div style="flex:1;min-width:0;overflow:hidden;">
+          <div class="dt-player-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}${isMe ? ' <span style="font-size:10px;color:rgba(180,120,255,0.7);font-weight:900;">(ты)</span>' : ''}</div>
+        </div>
+        <div class="dt-score">${p.score.toLocaleString('ru-RU')} 💎</div>
+      </div>`;
+    }).join('')}
+
+    <!-- Prize table -->
+    <div style="margin-top:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:12px 14px;">
+      <div style="font-size:10px;font-weight:900;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;">💰 Призы за места</div>
+      ${[
+        {label:'🥇 1 место',   gem:'5 000 💎'},
+        {label:'🥈 2 место',   gem:'3 000 💎'},
+        {label:'🥉 3 место',   gem:'2 000 💎'},
+        {label:'Топ 30%',     gem:'1 000 💎'},
+        {label:'Топ 60%',     gem:'500 💎'},
+        {label:'Остальные',   gem:'200 💎'},
+      ].map(r => `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
+        <span style="font-size:11px;color:rgba(255,255,255,0.45);">${r.label}</span>
+        <span style="font-size:11px;font-weight:900;color:#ffe566;">${r.gem}</span>
+      </div>`).join('')}
+    </div>
+
+    <!-- Claim / hint -->
+    <div style="margin-top:14px;">
+      ${!isGuest && myScore > 0 && !alreadyClaimed ? `
+        <button onclick="dtClaimReward()" style="width:100%;padding:14px;border-radius:16px;border:none;background:linear-gradient(160deg,#5a00cc,#9b00ff);color:#fff;font-family:'Nunito',sans-serif;font-weight:900;font-size:15px;cursor:pointer;box-shadow:0 4px 0 #2a0055,0 6px 20px rgba(120,0,255,0.45);-webkit-tap-highlight-color:transparent;display:flex;align-items:center;justify-content:center;gap:10px;">
+          <span style="font-size:20px;">🏆</span> Забрать награду: +${rewardPreview.toLocaleString('ru-RU')} 💎
+        </button>
+      ` : alreadyClaimed ? `
+        <div style="text-align:center;padding:14px;background:rgba(0,230,118,0.06);border:1px solid rgba(0,230,118,0.2);border-radius:14px;font-size:13px;font-weight:900;color:#00e676;">✅ Награда за сегодня получена!</div>
+      ` : `
+        <div style="text-align:center;padding:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;">
+          <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:800;">💎 Кликай по алмазу — очки начисляются автоматически!</div>
+        </div>
+      `}
+    </div>
+  `;
+}
+
+// Обновляем таймер кнопки каждую минуту
+setInterval(updateDtTimerBadge, 60000);
+updateDtTimerBadge();
+
 function activatePromoFromNews(code) {
   closeModal('news');
   setTimeout(() => {
