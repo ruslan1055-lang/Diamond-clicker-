@@ -23,6 +23,17 @@
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* === TG MINI APP PERF: изолируем каждый слой, предотвращаем лишние репейнты === */
+#bg-anim, .diamond-ring, .diamond-glow, .modal, .bottom-nav, .topbar {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+/* Запрещаем highlight при тапе глобально */
+* { -webkit-tap-highlight-color: transparent; }
+
 button, a, input, select, textarea {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
@@ -77,8 +88,10 @@ body {
   z-index: 0;
   animation: bgShift 14s ease-in-out infinite alternate;
   transition: opacity 0.4s;
+  will-change: opacity;
 }
-@keyframes bgShift { 0%{opacity:0.6;transform:scale(1)} 100%{opacity:1;transform:scale(1.06)} }
+/* Убран scale() — он вызывает перерисовку всей страницы в TG WebView */
+@keyframes bgShift { 0%{opacity:0.6} 100%{opacity:1} }
 
 
 
@@ -148,9 +161,9 @@ body.perf-hint  .click-hint               { animation: none !important; opacity:
 
 /* ===== TOP BAR ===== */
 .topbar {
-  background: rgba(6,11,20,0.88);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  background: rgba(6,11,20,0.96);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   padding: 11px 14px 9px;
   padding-top: calc(11px + env(safe-area-inset-top, 0px));
   display: flex;
@@ -211,7 +224,7 @@ body.perf-hint  .click-hint               { animation: none !important; opacity:
 .bank-bar-label { font-size: 10px; font-weight: 800; color: var(--text3); text-transform: uppercase; letter-spacing: 1.5px; }
 .bank-bar-val   { font-size: 11px; font-weight: 900; color: var(--yellow); text-shadow: 0 0 8px rgba(255,229,102,0.4); }
 .bank-track { height: 4px; background: rgba(255,255,255,0.07); border-radius: 2px; overflow: hidden; }
-.bank-fill  { height: 4px; background: linear-gradient(90deg, #00c8ff, #00e676); border-radius: 2px; transition: width 0.7s cubic-bezier(.4,0,.2,1), background .5s; box-shadow: 0 0 10px rgba(0,200,255,0.45); }
+.bank-fill  { height: 4px; background: linear-gradient(90deg, #00c8ff, #00e676); border-radius: 2px; transition: width 0.7s cubic-bezier(.4,0,.2,1), background .5s; will-change: width; }
 
 /* ===== MAIN CLICK AREA ===== */
 .main-area {
@@ -227,7 +240,7 @@ body.perf-hint  .click-hint               { animation: none !important; opacity:
   top: 5%; left: 50%; transform: translateX(-50%);
   pointer-events: none;
 }
-@keyframes orb1 { 0%{opacity:0.4;transform:translateX(-60%) scale(0.8)} 100%{opacity:1;transform:translateX(-40%) scale(1.25)} }
+@keyframes orb1 { 0%{opacity:0.4;transform:translateX(-50%)} 100%{opacity:1;transform:translateX(-50%)} }
 
 .click-hint {
   font-size: 10px; font-weight: 800; color: var(--text3);
@@ -235,7 +248,7 @@ body.perf-hint  .click-hint               { animation: none !important; opacity:
   margin-bottom: 26px;
   animation: breathe 3s ease-in-out infinite;
 }
-@keyframes breathe { 0%,100%{opacity:0.28;letter-spacing:3.5px} 50%{opacity:0.75;letter-spacing:4.5px} }
+@keyframes breathe { 0%,100%{opacity:0.28} 50%{opacity:0.75} }
 
 /* ===== DIAMOND ===== */
 .diamond-wrap {
@@ -248,6 +261,7 @@ body.perf-hint  .click-hint               { animation: none !important; opacity:
   animation: ringRotate 3.5s linear infinite;
   -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), white calc(100% - 2px));
   mask: radial-gradient(farthest-side, transparent calc(100% - 2px), white calc(100% - 2px));
+  will-change: transform;
 }
 @keyframes ringRotate { to { transform: rotate(360deg); } }
 
@@ -260,8 +274,10 @@ body.perf-hint  .click-hint               { animation: none !important; opacity:
   animation: glowPulse 2.5s ease-in-out infinite;
   pointer-events: none;
   filter: blur(10px);
+  will-change: opacity;
 }
-@keyframes glowPulse { 0%,100%{transform:scale(0.85);opacity:0.65} 50%{transform:scale(1.18);opacity:1} }
+/* Убраны scale() в glowPulse — заменены на opacity-only для GPU-слоя без репейнта */
+@keyframes glowPulse { 0%,100%{opacity:0.55} 50%{opacity:1} }
 
 #diamondBtn {
   width: 190px; height: 190px;
@@ -269,18 +285,16 @@ body.perf-hint  .click-hint               { animation: none !important; opacity:
   position: relative; z-index: 5;
   user-select: none; -webkit-tap-highlight-color: transparent;
   display: flex; align-items: center; justify-content: center;
+  /* drop-shadow заменён на статичный filter без анимации — переход только по transform */
   filter:
-    drop-shadow(0 0 28px rgba(0,200,255,0.75))
-    drop-shadow(0 0 55px rgba(0,80,255,0.35))
-    drop-shadow(0 10px 22px rgba(0,0,0,0.65));
-  transition: transform 0.1s cubic-bezier(0.34,1.56,0.64,1), filter 0.12s;
+    drop-shadow(0 0 22px rgba(0,200,255,0.65))
+    drop-shadow(0 0 44px rgba(0,80,255,0.28))
+    drop-shadow(0 8px 18px rgba(0,0,0,0.55));
+  transition: transform 0.1s cubic-bezier(0.34,1.56,0.64,1);
+  will-change: transform;
 }
 #diamondBtn:active {
   transform: scale(0.8) !important;
-  filter:
-    drop-shadow(0 0 70px rgba(255,255,255,0.95))
-    drop-shadow(0 0 35px rgba(0,200,255,1))
-    drop-shadow(0 0 90px rgba(150,0,255,0.8)) !important;
 }
 #diamondBtn svg { width: 100%; height: 100%; }
 
@@ -318,9 +332,9 @@ body.perf-hint  .click-hint               { animation: none !important; opacity:
 
 /* ===== BOTTOM NAV ===== */
 .bottom-nav {
-  background: rgba(6,11,20,0.92);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  background: rgba(6,11,20,0.97);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border-top: 1px solid rgba(255,255,255,0.07);
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -439,9 +453,9 @@ body.perf-hint  .click-hint               { animation: none !important; opacity:
 /* ===== MODAL ===== */
 .modal-overlay {
   display: flex; position: fixed; inset: 0;
-  background: rgba(0,0,0,0.72);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+  background: rgba(0,0,0,0.78);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
   z-index: 100; align-items: flex-end; justify-content: center;
   opacity: 0; pointer-events: none; transition: opacity 0.22s ease;
 }
@@ -463,7 +477,7 @@ body.perf-hint  .click-hint               { animation: none !important; opacity:
   overscroll-behavior: contain;
   padding: 0 0 28px;
   padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px));
-  transform: translateY(100%);
+  transform: translateY(100%) translateZ(0);
   transition: transform 0.34s cubic-bezier(0.34,1.1,0.64,1);
   will-change: transform;
   box-shadow: 0 -10px 50px rgba(0,0,0,0.7), 0 -2px 0 rgba(0,200,255,0.12);
@@ -530,8 +544,8 @@ body.perf-hint  .click-hint               { animation: none !important; opacity:
   cursor: default;
 }
 @keyframes withdrawLockGlow {
-  0%   { box-shadow: 0 4px 0 #2a0055, 0 0 14px rgba(196,0,255,0.45), 0 0 28px rgba(196,0,255,0.2), inset 0 0 10px rgba(196,0,255,0.08); }
-  100% { box-shadow: 0 4px 0 #2a0055, 0 0 28px rgba(220,80,255,0.8), 0 0 55px rgba(196,0,255,0.45), inset 0 0 20px rgba(196,0,255,0.18); }
+  0%   { opacity: 0.8; }
+  100% { opacity: 1; }
 }
 .withdraw-lock-badge {
   display: inline-flex; align-items: center; gap: 5px;
@@ -544,8 +558,8 @@ body.perf-hint  .click-hint               { animation: none !important; opacity:
   white-space: nowrap;
 }
 @keyframes lockBadgePulse {
-  0%   { box-shadow: 0 0 6px rgba(196,0,255,0.3); }
-  100% { box-shadow: 0 0 18px rgba(196,0,255,0.7); }
+  0%   { opacity: 0.75; }
+  100% { opacity: 1; }
 }
 .duo-btn .btn-left { display:flex; align-items:center; gap:10px; text-align:left; }
 .duo-btn .btn-icon { font-size:22px; }
@@ -840,8 +854,8 @@ body.perf-hint  .click-hint               { animation: none !important; opacity:
 }
 .wd-btn-locked .wd-btn-icon { background: rgba(0,255,200,0.12); }
 @keyframes withdrawLockGlow {
-  0%   { box-shadow: 0 5px 0 #001208, 0 0 14px rgba(0,255,200,0.3), 0 0 30px rgba(0,200,255,0.12); border-color: rgba(0,255,200,0.4); }
-  100% { box-shadow: 0 5px 0 #001208, 0 0 30px rgba(0,255,200,0.7), 0 0 70px rgba(0,200,255,0.35); border-color: rgba(0,255,255,0.8); }
+  0%   { opacity: 0.75; }
+  100% { opacity: 1; }
 }
 /* Disabled button */
 .wd-btn-gray {
@@ -967,8 +981,8 @@ body.perf-hint  .click-hint               { animation: none !important; opacity:
   animation: taskReadyPulse 2.2s ease-in-out infinite;
 }
 @keyframes taskReadyPulse {
-  0%,100% { box-shadow: 0 0 0 1px rgba(0,230,120,0.15), 0 4px 24px rgba(0,200,80,0.18), inset 0 1px 0 rgba(0,255,120,0.12); }
-  50%     { box-shadow: 0 0 0 1px rgba(0,230,120,0.3),  0 6px 32px rgba(0,200,80,0.32), inset 0 1px 0 rgba(0,255,120,0.2); }
+  0%,100% { opacity: 0.85; }
+  50%     { opacity: 1; }
 }
 .task-card.tc-done {
   opacity: 0.45;
@@ -1068,8 +1082,8 @@ body.perf-hint  .click-hint               { animation: none !important; opacity:
   animation: btnReadyBounce 1.8s ease-in-out infinite;
 }
 @keyframes btnReadyBounce {
-  0%,100% { transform: translateY(0) scale(1); box-shadow: 0 4px 0 #004d20, 0 6px 20px rgba(0,230,120,0.4); }
-  50%     { transform: translateY(-2px) scale(1.05); box-shadow: 0 6px 0 #004d20, 0 10px 26px rgba(0,230,120,0.6); }
+  0%,100% { transform: translateY(0) scale(1); }
+  50%     { transform: translateY(-2px) scale(1.05); }
 }
 .task-btn.tbtn-done {
   background: rgba(255,255,255,0.06);
@@ -1151,8 +1165,8 @@ body.perf-hint  .click-hint               { animation: none !important; opacity:
   animation: bannerGlow 2s ease-in-out infinite alternate;
 }
 @keyframes bannerGlow {
-  0%   { box-shadow: 0 0 10px rgba(255,140,0,0.2); }
-  100% { box-shadow: 0 0 22px rgba(255,140,0,0.45); }
+  0%   { opacity: 0.8; }
+  100% { opacity: 1; }
 }
 .tasks-ready-banner span { font-size: 13px; font-weight: 900; color: #ffcc44; }
 .tasks-ready-dot {
@@ -1246,20 +1260,14 @@ body.perf-hint  .click-hint               { animation: none !important; opacity:
 }
 .vip-badge.active { display: inline-block; }
 @keyframes maxBadgeGlow {
-  0%  {
-    box-shadow: 0 0 6px rgba(0,255,200,0.5), 0 0 14px rgba(0,200,255,0.3), 0 0 28px rgba(100,0,255,0.15), inset 0 0 6px rgba(0,255,200,0.06);
-    border-color: rgba(0,255,200,0.55);
-  }
-  100%{
-    box-shadow: 0 0 16px rgba(0,255,200,0.9), 0 0 35px rgba(0,200,255,0.65), 0 0 60px rgba(100,0,255,0.4), inset 0 0 14px rgba(0,255,200,0.14);
-    border-color: rgba(0,255,255,0.95);
-  }
+  0%   { opacity: 0.75; }
+  100% { opacity: 1; }
 }
 
 /* MAX neon keyframe for icon pulse */
 @keyframes maxIconPulse {
-  0%,100%{ filter: drop-shadow(0 0 10px rgba(0,255,200,0.8)) drop-shadow(0 0 24px rgba(0,200,255,0.5)); }
-  50%    { filter: drop-shadow(0 0 20px rgba(0,255,200,1))    drop-shadow(0 0 50px rgba(100,0,255,0.6)); }
+  0%,100%{ opacity: 0.8; }
+  50%    { opacity: 1; }
 }
 /* MAX modal scan line overlay */
 @keyframes maxScanLine {
@@ -1273,8 +1281,8 @@ body.perf-hint  .click-hint               { animation: none !important; opacity:
 }
 /* MAX neon border pulse */
 @keyframes maxBorderPulse {
-  0%,100% { border-color: rgba(0,255,200,0.45); box-shadow: 0 0 10px rgba(0,255,200,0.3), 0 0 25px rgba(0,200,255,0.15); }
-  50%     { border-color: rgba(0,255,255,0.85); box-shadow: 0 0 22px rgba(0,255,200,0.7), 0 0 50px rgba(0,200,255,0.4), 0 0 80px rgba(100,0,255,0.2); }
+  0%,100% { opacity: 0.75; }
+  50%     { opacity: 1; }
 }
 /* MAX perk hover glow */
 @keyframes maxPerkShine {
@@ -2010,7 +2018,7 @@ body.vip-theme-16 ::selection { background: rgba(200,150,255,0.35); }
   animation: lsBlobDrift var(--d) ease-in-out infinite alternate;
   animation-delay: var(--delay);
 }
-@keyframes lsBlobDrift { 0%{opacity:0.18;transform:scale(0.85) rotate(0deg)} 100%{opacity:0.38;transform:scale(1.1) rotate(8deg)} }
+@keyframes lsBlobDrift { 0%{opacity:0.18;transform:rotate(0deg)} 100%{opacity:0.38;transform:rotate(8deg)} }
 
 /* Sun glow behind the scene */
 .ls-sun-glow {
@@ -2020,7 +2028,7 @@ body.vip-theme-16 ::selection { background: rgba(200,150,255,0.35); }
   pointer-events: none;
   animation: lsGlowPulse 4s ease-in-out infinite;
 }
-@keyframes lsGlowPulse { 0%,100%{transform:translateX(-50%) scale(0.9);opacity:0.7} 50%{transform:translateX(-50%) scale(1.08);opacity:1} }
+@keyframes lsGlowPulse { 0%,100%{transform:translateX(-50%);opacity:0.7} 50%{transform:translateX(-50%);opacity:1} }
 
 /* KEPLER letters, painted one by one with a gouache brush */
 .ls-kepler {
@@ -2266,16 +2274,16 @@ body.vip-theme-16 ::selection { background: rgba(200,150,255,0.35); }
 .chest-card.cashback .chest-card-price{color:#ff8080;letter-spacing:0.2px;}
 .chest-card.cashback .chest-card-badge{background:rgba(255,60,80,0.2);color:#ff8080;}
 @keyframes cashbackIdleGlow{
-  from{box-shadow:0 4px 18px rgba(255,30,60,0.22),0 0 24px rgba(200,0,0,0.16);}
-  to{box-shadow:0 4px 20px rgba(255,50,80,0.32),0 0 30px rgba(220,40,60,0.28);}
+  from{opacity:0.8;}
+  to{opacity:1;}
 }
 .chest-card.cashback.ready{
   border-color:rgba(100,255,150,0.65);
   animation:cashbackReadyGlow 1.6s ease-in-out infinite alternate;
 }
 @keyframes cashbackReadyGlow{
-  from{box-shadow:0 4px 18px rgba(80,255,140,0.25),0 0 22px rgba(0,255,120,0.18);}
-  to{box-shadow:0 4px 24px rgba(80,255,140,0.45),0 0 34px rgba(0,255,120,0.35);}
+  from{opacity:0.8;}
+  to{opacity:1;}
 }
 .chest-card.cashback.ready .chest-card-name,
 .chest-card.cashback.ready .chest-card-price{color:#69ff9a;}
@@ -2287,12 +2295,12 @@ body.vip-theme-16 ::selection { background: rgba(200,150,255,0.35); }
 .chest-card.storm .chest-card-name{color:#ffe566;}
 .chest-card.storm .chest-card-price{color:#ffd700;}
 .chest-card.storm .chest-card-badge{background:rgba(255,200,0,0.2);color:#ffe566;}
-@keyframes stormChestGlow{0%{box-shadow:0 4px 16px rgba(255,180,0,0.2),0 0 20px rgba(255,140,0,0.1);}100%{box-shadow:0 4px 28px rgba(255,220,0,0.5),0 0 40px rgba(255,180,0,0.3);}}
+@keyframes stormChestGlow{0%{opacity:0.8;}100%{opacity:1;}}
 .chest-card.ultra_storm{border-color:rgba(120,80,255,0.7);box-shadow:0 4px 20px rgba(100,50,255,0.3),0 0 35px rgba(80,0,255,0.15);animation:ultraStormGlow 2s ease-in-out infinite alternate;}
 .chest-card.ultra_storm .chest-card-name{color:#c77dff;}
 .chest-card.ultra_storm .chest-card-price{color:#a855f7;}
 .chest-card.ultra_storm .chest-card-badge{background:rgba(120,80,255,0.25);color:#c77dff;}
-@keyframes ultraStormGlow{0%{box-shadow:0 4px 16px rgba(100,50,255,0.25),0 0 20px rgba(80,0,255,0.12);}100%{box-shadow:0 4px 30px rgba(150,80,255,0.6),0 0 50px rgba(100,0,255,0.35),0 0 15px rgba(200,100,255,0.4);}}
+@keyframes ultraStormGlow{0%{opacity:0.8;}100%{opacity:1;}}
 .cashback-counter-label{font-size:9px;font-weight:800;color:rgba(255,150,150,0.65);margin-top:5px;text-align:center;letter-spacing:0.2px;}
 .chest-card.cashback.ready .cashback-counter-label{color:rgba(100,255,150,0.85);}
 
@@ -2866,17 +2874,27 @@ body.vip-theme-16 ::selection { background: rgba(200,150,255,0.35); }
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
-  var firebaseConfig = {
-    apiKey: "AIzaSyDfjCmE_t8xz0fTQuQOyMnKtdcNrU3ErVU",
-    authDomain: "diamond-clicker-4edcf.firebaseapp.com",
-    projectId: "diamond-clicker-4edcf",
-    storageBucket: "diamond-clicker-4edcf.firebasestorage.app",
-    messagingSenderId: "28298480948",
-    appId: "1:28298480948:web:cf68a6b1d4ea28d3672961"
-  };
-  firebase.initializeApp(firebaseConfig);
-  var dcAuth = firebase.auth();
-  var dcDb   = firebase.firestore();
+  var dcAuth = null;
+  var dcDb   = null;
+  try {
+    var firebaseConfig = {
+      apiKey: "AIzaSyDfjCmE_t8xz0fTQuQOyMnKtdcNrU3ErVU",
+      authDomain: "diamond-clicker-4edcf.firebaseapp.com",
+      projectId: "diamond-clicker-4edcf",
+      storageBucket: "diamond-clicker-4edcf.firebasestorage.app",
+      messagingSenderId: "28298480948",
+      appId: "1:28298480948:web:cf68a6b1d4ea28d3672961"
+    };
+    if (typeof firebase !== 'undefined') {
+      firebase.initializeApp(firebaseConfig);
+      dcAuth = firebase.auth();
+      dcDb   = firebase.firestore();
+    } else {
+      console.warn('Firebase SDK не загрузился — облачные аккаунты недоступны');
+    }
+  } catch(e) {
+    console.warn('Ошибка инициализации Firebase:', e);
+  }
 </script>
 
 <script>
@@ -3487,7 +3505,7 @@ function pushStateToCloud() {
 
 // Срабатывает: при запуске страницы (восстановление сессии), сразу после
 // входа и сразу после регистрации.
-dcAuth.onAuthStateChanged(function(user) {
+if (dcAuth && typeof dcAuth.onAuthStateChanged === 'function') dcAuth.onAuthStateChanged(function(user) {
   if (!user) return; // гостевой режим — ничего не трогаем
 
   // Принудительно обновляем токен — если аккаунт disabled, Firebase
