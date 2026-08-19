@@ -1198,19 +1198,56 @@ body.perf-hint  .click-hint               { animation: none !important; opacity:
 @keyframes toastOut { from{opacity:1} to{opacity:0;transform:translateX(-50%) translateY(-8px)} }
 
 /* ===== ACCOUNT ===== */
-.welcome-screen { text-align:center; padding:14px 0; }
-.welcome-avatar { font-size:54px; margin-bottom:10px; filter:drop-shadow(0 0 18px rgba(0,200,255,0.4)); }
-.welcome-title  { font-size:20px; font-weight:900; color:var(--green); text-shadow:0 0 14px rgba(0,200,80,0.4); }
-.welcome-sub    { font-size:13px; color:var(--text2); margin-top:5px; }
+.welcome-screen { text-align:center; padding:10px 0; }
+.welcome-avatar-wrap {
+  position:relative; display:inline-block; margin-bottom:14px;
+}
+.welcome-avatar {
+  font-size:62px;
+  display:inline-block;
+  filter:drop-shadow(0 0 22px rgba(0,200,255,0.55)) drop-shadow(0 0 8px rgba(100,180,255,0.4));
+  animation:avatarFloat 3.5s ease-in-out infinite;
+}
+@keyframes avatarFloat {
+  0%,100% { transform:translateY(0px); }
+  50%      { transform:translateY(-6px); }
+}
+.welcome-avatar-ring {
+  position:absolute; inset:-8px; border-radius:50%;
+  border:2px solid rgba(0,200,255,0.3);
+  box-shadow:0 0 20px rgba(0,200,255,0.2), inset 0 0 20px rgba(0,200,255,0.05);
+  animation:ringPulse 2.5s ease-in-out infinite;
+}
+@keyframes ringPulse {
+  0%,100% { opacity:0.5; transform:scale(1); }
+  50%      { opacity:1;   transform:scale(1.06); }
+}
+.welcome-title {
+  font-size:22px; font-weight:900;
+  background:linear-gradient(135deg,#00e676,#00c8ff);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  margin-bottom:4px;
+  filter:drop-shadow(0 0 12px rgba(0,220,120,0.3));
+}
+.welcome-sub {
+  font-size:14px; color:var(--text2); margin-top:4px;
+  background:rgba(255,255,255,0.06); border-radius:100px;
+  padding:4px 16px; display:inline-block;
+  border:1px solid rgba(255,255,255,0.1);
+  letter-spacing:0.5px;
+}
 .logout-btn {
   margin-top:16px; width:100%;
-  background:linear-gradient(160deg,#ff3a48,#cc0018); color:#fff;
-  border:none; box-shadow:0 4px 0 #7a0010,0 8px 22px rgba(255,50,80,0.18);
+  background:linear-gradient(160deg,rgba(255,58,72,0.18),rgba(180,0,20,0.12));
+  color:rgba(255,100,110,0.9);
+  border:1.5px solid rgba(255,58,72,0.3);
+  box-shadow:0 2px 12px rgba(255,50,80,0.1), inset 0 1px 0 rgba(255,255,255,0.04);
   border-radius:14px; padding:13px;
   font-family:'Nunito',sans-serif; font-weight:900; font-size:14px;
-  cursor:pointer; transition:transform 0.1s, filter 0.1s;
+  cursor:pointer; transition:transform 0.12s, filter 0.12s, box-shadow 0.12s;
 }
-.logout-btn:active { transform:translateY(3px); filter:brightness(0.82); }
+.logout-btn:active { transform:translateY(2px); filter:brightness(0.82); }
+.logout-btn:hover  { box-shadow:0 4px 18px rgba(255,50,80,0.22), inset 0 1px 0 rgba(255,255,255,0.06); }
 
 /* ===== SETTINGS TOGGLE ===== */
   display: flex; align-items: center; justify-content: space-between;
@@ -2125,140 +2162,184 @@ body.free-theme-19 ::selection { background: rgba(255,255,255,0.3); }
 .level-up-popup .lup-reward{ font-size: 22px; font-weight: 900; color: var(--blue); text-shadow: 0 0 14px rgba(0,200,255,0.7); }
 
 /* ===== LOADING SCREEN ===== */
+/* ===== ЗАСТАВКА: Diamond Clicker — космический стиль ===== */
 #loading-screen {
   position: fixed; inset: 0; z-index: 99999;
-  background: linear-gradient(180deg, #bfe4ff 0%, #eaf6ff 28%, #fef9ec 48%, #eef7d8 70%, #c3ecae 100%);
+  background: radial-gradient(ellipse 120% 120% at 50% 60%, #0a0f2e 0%, #060b18 55%, #000408 100%);
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   gap: 0; overflow: hidden;
-  transition: opacity 0.7s ease, visibility 0.7s ease;
+  transition: opacity 0.9s ease, visibility 0.9s ease;
 }
 #loading-screen.hide {
   opacity: 0; visibility: hidden; pointer-events: none;
 }
 
-/* Soft painterly blobs scattered over the field */
+/* Звёздный фон */
 #loading-screen .ls-stars {
   position: absolute; inset: 0; overflow: hidden; pointer-events: none;
 }
 #loading-screen .ls-star {
-  position: absolute; border-radius: 48% 52% 55% 45% / 50% 45% 55% 50%;
-  filter: blur(22px);
-  animation: lsBlobDrift var(--d) ease-in-out infinite alternate;
-  animation-delay: var(--delay);
+  position: absolute;
+  width: var(--sz, 2px); height: var(--sz, 2px);
+  border-radius: 50%;
+  background: #fff;
+  opacity: 0;
+  animation: lsStarTwinkle var(--d, 3s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
 }
-@keyframes lsBlobDrift { 0%{opacity:0.18;transform:rotate(0deg)} 100%{opacity:0.38;transform:rotate(8deg)} }
+@keyframes lsStarTwinkle {
+  0%,100% { opacity: 0; transform: scale(0.6); }
+  50%     { opacity: var(--op, 0.8); transform: scale(1); }
+}
 
-/* Sun glow behind the scene */
+/* Большое ядро свечения позади алмаза */
 .ls-sun-glow {
-  position: absolute; top: 8%; left: 50%; transform: translateX(-50%);
-  width: 280px; height: 280px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,229,150,0.55) 0%, rgba(255,229,150,0.0) 70%);
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -52%);
+  width: 340px; height: 340px; border-radius: 50%;
+  background: radial-gradient(circle,
+    rgba(0,200,255,0.18) 0%,
+    rgba(80,0,255,0.12) 40%,
+    transparent 70%);
   pointer-events: none;
-  animation: lsGlowPulse 4s ease-in-out infinite;
+  animation: lsGlowPulse 3.5s ease-in-out infinite;
+  filter: blur(18px);
 }
-@keyframes lsGlowPulse { 0%,100%{transform:translateX(-50%);opacity:0.7} 50%{transform:translateX(-50%);opacity:1} }
+@keyframes lsGlowPulse {
+  0%,100% { opacity: 0.6; transform: translate(-50%, -52%) scale(0.96); }
+  50%     { opacity: 1;   transform: translate(-50%, -52%) scale(1.06); }
+}
 
-/* KEPLER letters, painted one by one with a gouache brush */
+/* Вращающееся кольцо вокруг алмаза */
+.ls-diamond-ring {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -52%);
+  width: 220px; height: 220px; border-radius: 50%;
+  background: conic-gradient(from 0deg,
+    rgba(0,200,255,0) 0%,
+    rgba(0,200,255,0.8) 20%,
+    rgba(150,0,255,0.8) 50%,
+    rgba(0,200,255,0.8) 80%,
+    rgba(0,200,255,0) 100%);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), white calc(100% - 2px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 2px), white calc(100% - 2px));
+  animation: lsRingRotate 3s linear infinite;
+  pointer-events: none;
+  z-index: 3;
+  opacity: 0;
+  transition: opacity 0.6s;
+}
+.ls-diamond-ring.show { opacity: 1; }
+@keyframes lsRingRotate { to { transform: translate(-50%, -52%) rotate(360deg); } }
+
+/* Гигантский алмаз */
+.ls-big-diamond {
+  position: relative; z-index: 4;
+  font-size: 96px; line-height: 1;
+  margin-bottom: -8px;
+  opacity: 0; transform: scale(0.3) translateY(30px);
+  filter:
+    drop-shadow(0 0 30px rgba(0,200,255,0.7))
+    drop-shadow(0 0 60px rgba(80,0,255,0.4))
+    drop-shadow(0 12px 24px rgba(0,0,0,0.8));
+  transition: none;
+}
+.ls-big-diamond.show {
+  animation: lsDiamondAppear 0.9s cubic-bezier(.34,1.3,.64,1) forwards;
+}
+@keyframes lsDiamondAppear {
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.ls-big-diamond.idle {
+  opacity: 1;
+  animation: lsDiamondFloat 3.5s ease-in-out infinite;
+}
+@keyframes lsDiamondFloat {
+  0%,100% { transform: translateY(0px); filter: drop-shadow(0 0 30px rgba(0,200,255,0.7)) drop-shadow(0 0 60px rgba(80,0,255,0.4)) drop-shadow(0 12px 24px rgba(0,0,0,0.8)); }
+  50%     { transform: translateY(-12px); filter: drop-shadow(0 0 44px rgba(0,200,255,0.9)) drop-shadow(0 0 80px rgba(120,0,255,0.5)) drop-shadow(0 18px 28px rgba(0,0,0,0.7)); }
+}
+
+/* Название игры */
 .ls-kepler {
-  position: relative; z-index: 2;
-  display: flex; gap: 2px;
-  margin-bottom: 26px;
+  position: relative; z-index: 5;
+  display: flex; gap: 0px;
+  margin-top: 20px;
+  margin-bottom: 6px;
 }
 .ls-letter {
   --c: #fff;
   position: relative;
-  width: 13vw; height: 17vw;
-  max-width: 52px; max-height: 66px;
-  min-width: 38px; min-height: 48px;
   display: flex; align-items: center; justify-content: center;
-  font-size: clamp(34px, 11vw, 44px); font-weight: 900;
+  font-size: clamp(30px, 9vw, 40px); font-weight: 900;
   font-family: 'Nunito', sans-serif;
-  transform: rotate(var(--r, 0deg));
-}
-/* Faint pencil sketch of the letter, visible before it's painted */
-.ls-letter-sketch {
-  position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center;
+  letter-spacing: 2px;
   color: transparent;
-  -webkit-text-stroke: 1.5px rgba(70,55,30,0.16);
+  -webkit-text-stroke: 1px rgba(0,200,255,0.2);
 }
-/* Colored gouache fill, revealed left-to-right as the brush passes */
+.ls-letter-sketch { display: none; }
 .ls-letter-fill {
   position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center;
   color: var(--c);
-  filter: drop-shadow(0 3px 4px rgba(40,30,10,0.18));
-  clip-path: inset(0 100% 0 0);
+  filter: drop-shadow(0 0 8px var(--c)) drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+  opacity: 0; transform: translateY(12px);
 }
 .ls-letter.show .ls-letter-fill {
-  animation: lsPaintReveal 0.62s cubic-bezier(.3,.1,.2,1) forwards;
+  animation: lsLetterFadeIn 0.5s cubic-bezier(.34,1.4,.64,1) forwards;
 }
-@keyframes lsPaintReveal {
-  to { clip-path: inset(0 0% 0 0); }
+@keyframes lsLetterFadeIn {
+  to { opacity: 1; transform: translateY(0); }
 }
-/* The brush sweeping across to paint the letter */
-.ls-brush {
-  position: absolute; top: 50%; left: -8%;
-  font-size: 1.4em; line-height: 1;
-  transform: translate(-50%, -50%) rotate(-38deg);
-  opacity: 0; pointer-events: none;
-  filter: drop-shadow(0 3px 4px rgba(0,0,0,0.25));
-}
-.ls-letter.show .ls-brush {
-  animation: lsBrushSweep 0.62s cubic-bezier(.3,.1,.2,1) forwards;
-}
-@keyframes lsBrushSweep {
-  0%   { left: -8%;  opacity: 0; transform: translate(-50%,-50%) rotate(-38deg) translateY(0); }
-  8%   { opacity: 1; }
-  50%  { transform: translate(-50%,-50%) rotate(-28deg) translateY(-7px); }
-  92%  { opacity: 1; }
-  100% { left: 108%; opacity: 0; transform: translate(-50%,-50%) rotate(-38deg) translateY(0); }
-}
+.ls-brush { display: none; }
 
-/* Welcome message lighting up */
+/* Подзаголовок */
 .ls-welcome {
-  position: relative; z-index: 2;
-  font-size: 30px; font-weight: 900; letter-spacing: 2px;
-  background: linear-gradient(135deg, #ff9d4d, #ffd43b, #69db7c, #4dabf7, #b197fc);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 34px;
-  opacity: 0; transform: scale(0.6) translateY(8px);
+  position: relative; z-index: 5;
+  font-size: 11px; font-weight: 900; letter-spacing: 4px;
+  text-transform: uppercase;
+  color: rgba(0,200,255,0.5);
+  margin-bottom: 40px;
+  opacity: 0;
 }
 .ls-welcome.show {
-  animation: lsWelcomeIn 0.8s cubic-bezier(.34,1.56,.64,1) forwards, lsWelcomeGlow 1.6s 0.8s ease-in-out infinite;
+  animation: lsWelcomeIn 0.7s 0.2s ease forwards;
 }
 @keyframes lsWelcomeIn {
-  to { opacity: 1; transform: scale(1) translateY(0); }
+  to { opacity: 1; }
 }
 @keyframes lsWelcomeGlow {
-  0%,100% { filter: drop-shadow(0 0 6px rgba(255,200,90,0.35)); }
-  50%     { filter: drop-shadow(0 0 20px rgba(255,170,70,0.8)); }
+  0%,100% { color: rgba(0,200,255,0.5); }
+  50%     { color: rgba(0,200,255,0.9); text-shadow: 0 0 14px rgba(0,200,255,0.6); }
 }
 
-/* Progress bar */
+/* Прогресс-бар */
 .ls-bar-wrap {
-  width: 200px; position: relative; z-index: 2;
+  width: 220px; position: relative; z-index: 5;
 }
 .ls-bar-track {
-  height: 5px; background: rgba(60,40,10,0.10);
-  border-radius: 3px; overflow: hidden; margin-bottom: 14px;
+  height: 3px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 2px; overflow: hidden; margin-bottom: 12px;
+  box-shadow: 0 0 0 1px rgba(0,200,255,0.08);
 }
 .ls-bar-fill {
   height: 100%; width: 0%;
-  background: linear-gradient(90deg, #ff9d4d, #69db7c, #4dabf7);
-  border-radius: 3px;
-  box-shadow: 0 0 12px rgba(255,170,70,0.5);
+  background: linear-gradient(90deg, #00c8ff, #9b00ff, #00c8ff);
+  background-size: 200% 100%;
+  border-radius: 2px;
+  box-shadow: 0 0 10px rgba(0,200,255,0.6);
   transition: width 0.35s cubic-bezier(.4,0,.2,1);
+  animation: lsBarShimmer 2s linear infinite;
 }
+@keyframes lsBarShimmer { 0%{background-position:100%} 100%{background-position:-100%} }
 .ls-bar-text {
-  font-size: 11px; font-weight: 800; color: rgba(60,50,30,0.4);
-  text-align: center; letter-spacing: 1px;
+  font-size: 10px; font-weight: 800; color: rgba(0,200,255,0.35);
+  text-align: center; letter-spacing: 2px; text-transform: uppercase;
   min-height: 16px;
 }
 
-/* Particles burst on finish */
+/* Частицы финального взрыва */
 .ls-particle {
   position: absolute; border-radius: 50%; pointer-events: none;
   animation: lsParticleFly var(--dur) ease-out forwards;
@@ -2266,6 +2347,19 @@ body.free-theme-19 ::selection { background: rgba(255,255,255,0.3); }
 @keyframes lsParticleFly {
   0%   { transform: translate(0,0) scale(1); opacity: 1; }
   100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+}
+
+/* Мини-алмазы, летящие по фону */
+.ls-float-gem {
+  position: absolute; pointer-events: none; font-size: var(--fs, 14px);
+  opacity: 0;
+  animation: lsFloatGem var(--d, 8s) var(--delay, 0s) ease-in-out infinite;
+}
+@keyframes lsFloatGem {
+  0%   { opacity: 0; transform: translate(0, 0) rotate(0deg) scale(0.6); }
+  15%  { opacity: 0.3; }
+  85%  { opacity: 0.15; }
+  100% { opacity: 0; transform: translate(var(--tx, 0px), var(--ty, -120px)) rotate(180deg) scale(1.2); }
 }
 
 
@@ -2463,52 +2557,33 @@ body.free-theme-19 ::selection { background: rgba(255,255,255,0.3); }
 
 <!-- ===== LOADING SCREEN ===== -->
 <div id="loading-screen">
-  <!-- Painterly blobs -->
+  <!-- Звёздный фон + плавающие алмазики -->
   <div class="ls-stars" id="ls-stars"></div>
   <div class="ls-sun-glow"></div>
+  <div class="ls-diamond-ring" id="ls-diamond-ring"></div>
 
-  <!-- KEPLER painted letter by letter -->
+  <!-- Большой алмаз -->
+  <div class="ls-big-diamond" id="ls-big-diamond">💎</div>
+
+  <!-- Название: DIAMOND CLICKER по буквам -->
   <div class="ls-kepler" id="ls-kepler">
-    <span class="ls-letter" id="ls-l0" style="--c:#ff6b6b; --r:-6deg;">
-      <span class="ls-letter-sketch">K</span>
-      <span class="ls-letter-fill">K</span>
-      <span class="ls-brush">🖌️</span>
-    </span>
-    <span class="ls-letter" id="ls-l1" style="--c:#ff9d4d; --r:5deg;">
-      <span class="ls-letter-sketch">E</span>
-      <span class="ls-letter-fill">E</span>
-      <span class="ls-brush">🖌️</span>
-    </span>
-    <span class="ls-letter" id="ls-l2" style="--c:#fab005; --r:-5deg;">
-      <span class="ls-letter-sketch">P</span>
-      <span class="ls-letter-fill">P</span>
-      <span class="ls-brush">🖌️</span>
-    </span>
-    <span class="ls-letter" id="ls-l3" style="--c:#37b24d; --r:6deg;">
-      <span class="ls-letter-sketch">L</span>
-      <span class="ls-letter-fill">L</span>
-      <span class="ls-brush">🖌️</span>
-    </span>
-    <span class="ls-letter" id="ls-l4" style="--c:#1c7ed6; --r:-5deg;">
-      <span class="ls-letter-sketch">E</span>
-      <span class="ls-letter-fill">E</span>
-      <span class="ls-brush">🖌️</span>
-    </span>
-    <span class="ls-letter" id="ls-l5" style="--c:#9775fa; --r:5deg;">
-      <span class="ls-letter-sketch">R</span>
-      <span class="ls-letter-fill">R</span>
-      <span class="ls-brush">🖌️</span>
-    </span>
+    <span class="ls-letter" id="ls-l0" style="--c:#00e5ff;"><span class="ls-letter-sketch">D</span><span class="ls-letter-fill">D</span><span class="ls-brush"></span></span>
+    <span class="ls-letter" id="ls-l1" style="--c:#18cfff;"><span class="ls-letter-sketch">I</span><span class="ls-letter-fill">I</span><span class="ls-brush"></span></span>
+    <span class="ls-letter" id="ls-l2" style="--c:#30b9ff;"><span class="ls-letter-sketch">A</span><span class="ls-letter-fill">A</span><span class="ls-brush"></span></span>
+    <span class="ls-letter" id="ls-l3" style="--c:#58a0ff;"><span class="ls-letter-sketch">M</span><span class="ls-letter-fill">M</span><span class="ls-brush"></span></span>
+    <span class="ls-letter" id="ls-l4" style="--c:#8080ff;"><span class="ls-letter-sketch">O</span><span class="ls-letter-fill">O</span><span class="ls-brush"></span></span>
+    <span class="ls-letter" id="ls-l5" style="--c:#a860ff;"><span class="ls-letter-sketch">N</span><span class="ls-letter-fill">N</span><span class="ls-brush"></span></span>
+    <span class="ls-letter" id="ls-l6" style="--c:#c040ff; margin-left:8px;"><span class="ls-letter-sketch">D</span><span class="ls-letter-fill">D</span><span class="ls-brush"></span></span>
   </div>
 
-  <!-- Welcome -->
-  <div class="ls-welcome" id="ls-welcome">Welcome</div>
+  <!-- Подзаголовок -->
+  <div class="ls-welcome" id="ls-welcome">✦ C L I C K E R ✦</div>
 
   <div class="ls-bar-wrap">
     <div class="ls-bar-track">
       <div class="ls-bar-fill" id="ls-bar"></div>
     </div>
-    <div class="ls-bar-text" id="ls-text">Инициализация...</div>
+    <div class="ls-bar-text" id="ls-text">ИНИЦИАЛИЗАЦИЯ...</div>
   </div>
 </div>
 <div id="bg-anim"></div>
@@ -3357,6 +3432,7 @@ function defaultState() {
     prgramExchanged:  0,   // суммарно потрачено 💎 на обмен (для статистики/заданий)
     exchangeCount:    0,   // количество совершённых обменов
     exchangeHistory:  [],  // история обменов 💎 → PRGRAM
+    emojiStatus:      '',  // эмодзи-статус игрока (отображается рядом с совой/именем)
   };
 }
 
@@ -4706,36 +4782,80 @@ function renderLeagueBlock() {
   }
 }
 
+function toggleEmojiPicker() {
+  const block = document.getElementById('emojiPickerBlock');
+  if (!block) return;
+  block.style.display = block.style.display === 'none' ? 'block' : 'none';
+}
+
+function setEmojiStatus(emoji) {
+  state.emojiStatus = emoji;
+  saveState();
+  renderAccount();
+  // После рендера — показать пикер если просто выбрали эмодзи
+  if (emoji) {
+    setTimeout(() => {
+      const b = document.getElementById('emojiPickerBlock');
+      if (b) b.style.display = 'none';
+    }, 10);
+  }
+}
+
 function renderAccount() {
   const body = document.getElementById('accountBody');
   if (state.account) {
     body.innerHTML = `
       <div class="welcome-screen">
-        <div class="welcome-avatar">🦉</div>
+        <div class="welcome-avatar-wrap" style="position:relative;">
+          <div class="welcome-avatar-ring"></div>
+          <div class="welcome-avatar">🦉</div>
+          ${state.emojiStatus ? `<div id="owlStatusBadge" style="position:absolute;bottom:-4px;right:-4px;font-size:18px;line-height:1;filter:drop-shadow(0 1px 4px rgba(0,0,0,0.7));cursor:pointer;" onclick="toggleEmojiPicker()">${state.emojiStatus}</div>` : `<div id="owlStatusBadge" onclick="toggleEmojiPicker()" style="position:absolute;bottom:-4px;right:-4px;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,0.12);border:1.5px dashed rgba(255,255,255,0.3);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;color:rgba(255,255,255,0.4);">+</div>`}
+        </div>
         <div class="welcome-title">Добро пожаловать!</div>
-        <div class="welcome-sub">${state.account.login}</div>
-        <div style="margin-top:20px;background:var(--card);border-radius:14px;padding:14px;text-align:left;">
-          <div style="font-size:12px;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">Статистика</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-            <div style="background:var(--card2);border-radius:10px;padding:10px;text-align:center;">
-              <div style="font-size:20px;font-weight:900;color:var(--yellow)">${Math.floor(state.gems)}</div>
-              <div style="font-size:11px;color:var(--text2)">💎 Алмазов</div>
+        <div class="welcome-sub" style="display:flex;align-items:center;gap:5px;justify-content:center;">
+          <span>@${state.account.login}</span>
+          ${state.emojiStatus ? `<span id="nameStatusEmoji" style="font-size:16px;cursor:pointer;" onclick="toggleEmojiPicker()" title="Сменить статус">${state.emojiStatus}</span>` : `<span id="nameStatusEmoji" onclick="toggleEmojiPicker()" style="font-size:11px;color:rgba(255,255,255,0.3);cursor:pointer;border:1px dashed rgba(255,255,255,0.2);border-radius:8px;padding:1px 5px;">+ статус</span>`}
+        </div>
+
+        <!-- Emoji Status Picker -->
+        <div id="emojiPickerBlock" style="display:none;margin-top:10px;background:rgba(255,255,255,0.05);border-radius:16px;border:1px solid rgba(255,255,255,0.1);padding:12px 10px;">
+          <div style="font-size:10px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;font-weight:900;margin-bottom:8px;text-align:center;">Выбери статус</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:10px;">
+            ${['🔥','⚡','💎','👑','🚀','🎯','💪','🌟','😎','🤑','🏆','🎮','❤️','🌈','🦋','🐉','⚔️','🛡️','🎪','🍀','💀','👻','🤖','🧠','🦊','🐺','🦁','🐯','🌙','☀️'].map(em =>
+              `<button onclick="setEmojiStatus('${em}')" style="width:36px;height:36px;border-radius:10px;border:${state.emojiStatus===em?'2px solid rgba(0,200,255,0.7)':'1.5px solid rgba(255,255,255,0.08)'};background:${state.emojiStatus===em?'rgba(0,200,255,0.15)':'rgba(255,255,255,0.04)'};font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;-webkit-tap-highlight-color:transparent;">${em}</button>`
+            ).join('')}
+          </div>
+          ${state.emojiStatus ? `<button onclick="setEmojiStatus('')" style="width:100%;padding:7px;border-radius:10px;border:1px solid rgba(255,70,85,0.3);background:rgba(255,70,85,0.08);color:rgba(255,100,110,0.8);font-family:'Nunito',sans-serif;font-size:12px;font-weight:900;cursor:pointer;-webkit-tap-highlight-color:transparent;">✕ Убрать статус</button>` : ''}
+        </div>
+
+        <!-- Stats grid -->
+        <div style="margin-top:18px;background:linear-gradient(135deg,rgba(0,200,255,0.07),rgba(0,80,180,0.04));border-radius:18px;padding:16px;text-align:left;border:1px solid rgba(0,200,255,0.12);box-shadow:0 4px 20px rgba(0,0,0,0.2),inset 0 1px 0 rgba(255,255,255,0.05);">
+          <div style="font-size:11px;color:rgba(0,200,255,0.6);margin-bottom:12px;text-transform:uppercase;letter-spacing:1.5px;font-weight:900;">📊 Статистика</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div style="background:linear-gradient(135deg,rgba(255,229,102,0.1),rgba(255,180,0,0.05));border-radius:14px;padding:12px 10px;text-align:center;border:1px solid rgba(255,220,0,0.15);position:relative;overflow:hidden;">
+              <div style="position:absolute;inset:0;background:radial-gradient(ellipse at top,rgba(255,229,102,0.08),transparent 70%);pointer-events:none;"></div>
+              <div style="font-size:22px;font-weight:900;color:#ffe566;text-shadow:0 0 12px rgba(255,220,0,0.5);">${Math.floor(state.gems).toLocaleString()}</div>
+              <div style="font-size:10px;color:rgba(255,229,102,0.6);margin-top:3px;font-weight:800;">💎 Алмазов</div>
             </div>
-            <div style="background:var(--card2);border-radius:10px;padding:10px;text-align:center;">
-              <div style="font-size:20px;font-weight:900;color:var(--yellow)">${Math.floor(state.xp)}</div>
-              <div style="font-size:11px;color:var(--text2)">⚡ Опыта</div>
+            <div style="background:linear-gradient(135deg,rgba(0,230,120,0.1),rgba(0,150,80,0.05));border-radius:14px;padding:12px 10px;text-align:center;border:1px solid rgba(0,220,120,0.15);position:relative;overflow:hidden;">
+              <div style="position:absolute;inset:0;background:radial-gradient(ellipse at top,rgba(0,230,120,0.08),transparent 70%);pointer-events:none;"></div>
+              <div style="font-size:22px;font-weight:900;color:#00e676;text-shadow:0 0 12px rgba(0,220,100,0.5);">${Math.floor(state.xp).toLocaleString()}</div>
+              <div style="font-size:10px;color:rgba(0,230,120,0.6);margin-top:3px;font-weight:800;">⚡ Опыта</div>
             </div>
-            <div style="background:var(--card2);border-radius:10px;padding:10px;text-align:center;">
-              <div style="font-size:20px;font-weight:900;color:var(--blue)">${state.totalClicks}</div>
-              <div style="font-size:11px;color:var(--text2)">🖱️ Кликов</div>
+            <div style="background:linear-gradient(135deg,rgba(0,200,255,0.1),rgba(0,100,200,0.05));border-radius:14px;padding:12px 10px;text-align:center;border:1px solid rgba(0,200,255,0.15);position:relative;overflow:hidden;">
+              <div style="position:absolute;inset:0;background:radial-gradient(ellipse at top,rgba(0,200,255,0.08),transparent 70%);pointer-events:none;"></div>
+              <div style="font-size:22px;font-weight:900;color:#00c8ff;text-shadow:0 0 12px rgba(0,200,255,0.5);">${(state.totalClicks||0).toLocaleString()}</div>
+              <div style="font-size:10px;color:rgba(0,200,255,0.6);margin-top:3px;font-weight:800;">🖱️ Кликов</div>
             </div>
-            <div style="background:var(--card2);border-radius:10px;padding:10px;text-align:center;">
-              <div style="font-size:20px;font-weight:900;color:var(--green)">+${state.clickBonusPct.toFixed(2)}%</div>
-              <div style="font-size:11px;color:var(--text2)">🎯 Бонус</div>
+            <div style="background:linear-gradient(135deg,rgba(199,125,255,0.1),rgba(120,0,200,0.05));border-radius:14px;padding:12px 10px;text-align:center;border:1px solid rgba(199,125,255,0.15);position:relative;overflow:hidden;">
+              <div style="position:absolute;inset:0;background:radial-gradient(ellipse at top,rgba(199,125,255,0.08),transparent 70%);pointer-events:none;"></div>
+              <div style="font-size:22px;font-weight:900;color:#c77dff;text-shadow:0 0 12px rgba(180,80,255,0.5);">+${state.clickBonusPct.toFixed(2)}%</div>
+              <div style="font-size:10px;color:rgba(199,125,255,0.6);margin-top:3px;font-weight:800;">🎯 Бонус</div>
             </div>
           </div>
         </div>
-        <button class="logout-btn" onclick="logout()">Выйти из аккаунта</button>
+
+        <button class="logout-btn" onclick="logout()">🚪 Выйти из аккаунта</button>
 
         <!-- League Block -->
         <div style="margin-top:14px;" id="accountLeagueBlock"></div>
@@ -4745,26 +4865,31 @@ function renderAccount() {
           ${renderDailyRewards()}
         </div>
 
-        <!-- VIP Themes button — purple glow with star -->
+        <!-- VIP Themes button -->
         <div style="margin-top:14px;">
           <button onclick="openVipThemes()" style="
-            width:100%;padding:14px 16px;border-radius:16px;border:1.5px solid rgba(180,0,255,0.45);
-            background:linear-gradient(135deg,rgba(140,0,220,0.22),rgba(100,0,180,0.12));
+            width:100%;padding:14px 16px;border-radius:18px;
+            border:1.5px solid rgba(180,0,255,0.4);
+            background:linear-gradient(135deg,rgba(140,0,220,0.2),rgba(80,0,160,0.1));
             color:#fff;font-family:'Nunito',sans-serif;font-weight:900;font-size:14px;
             cursor:pointer;display:flex;align-items:center;justify-content:space-between;
-            box-shadow:0 0 18px rgba(140,0,220,0.28),0 4px 0 rgba(80,0,120,0.5),inset 0 1px 0 rgba(255,255,255,0.07);
+            box-shadow:0 0 24px rgba(140,0,220,0.2),0 4px 0 rgba(60,0,100,0.5),inset 0 1px 0 rgba(255,255,255,0.08);
             -webkit-tap-highlight-color:transparent;
-            position:relative;overflow:hidden;
+            position:relative;overflow:hidden;transition:box-shadow 0.2s;
           ">
-            <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.07) 0%,transparent 50%);pointer-events:none;border-radius:inherit;"></div>
-            <div style="display:flex;align-items:center;gap:10px;">
-              <span style="font-size:22px;filter:drop-shadow(0 0 8px rgba(200,100,255,0.9));animation:maxBadgeGlow 2s ease-in-out infinite alternate;">⭐</span>
+            <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.07) 0%,transparent 55%);pointer-events:none;border-radius:inherit;"></div>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,rgba(199,125,255,0.25),rgba(120,0,200,0.2));border:1px solid rgba(199,125,255,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <span style="font-size:20px;filter:drop-shadow(0 0 8px rgba(200,100,255,0.9));animation:maxBadgeGlow 2s ease-in-out infinite alternate;">⭐</span>
+              </div>
               <div style="text-align:left;">
-                <div style="font-size:13px;font-weight:900;background:linear-gradient(135deg,#e0aaff,#c77dff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Темы оформления</div>
-                <div style="font-size:10px;color:rgba(180,100,255,0.75);margin-top:1px;">${isVipActive() ? '✅ Все темы доступны' : '🆓 3 бесплатные + 👑 MAX темы'}</div>
+                <div style="font-size:13px;font-weight:900;background:linear-gradient(135deg,#e8b4ff,#c77dff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Темы оформления</div>
+                <div style="font-size:10px;color:rgba(180,100,255,0.65);margin-top:2px;">${isVipActive() ? '✅ Все темы доступны' : '🆓 3 бесплатные + 👑 MAX темы'}</div>
               </div>
             </div>
-            <span style="font-size:13px;color:rgba(180,100,255,0.8);font-weight:900;">→</span>
+            <div style="width:28px;height:28px;border-radius:50%;background:rgba(199,125,255,0.15);border:1px solid rgba(199,125,255,0.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <span style="font-size:12px;color:rgba(199,125,255,0.9);font-weight:900;">→</span>
+            </div>
           </button>
         </div>
       </div>`;
@@ -4772,21 +4897,32 @@ function renderAccount() {
   } else {
     const isLogin = _authMode === 'login';
     body.innerHTML = `
-      <p style="font-size:14px;color:var(--text2);margin-bottom:16px;line-height:1.6;">${isLogin
-        ? 'Войди в свой игровой аккаунт — прогресс хранится в облаке и доступен с любого устройства.'
-        : 'Придумай логин и пароль для игры. Никаких других данных не требуется.'}</p>
-
-      <div style="display:flex;gap:8px;margin-bottom:16px;">
-        <button onclick="switchAuthMode('login')" style="flex:1;padding:10px;border-radius:12px;cursor:pointer;font-family:'Nunito',sans-serif;font-weight:900;font-size:13px;
-          border:1.5px solid ${isLogin ? 'rgba(0,200,255,0.6)' : 'rgba(255,255,255,0.12)'};
-          background:${isLogin ? 'rgba(0,200,255,0.15)' : 'rgba(255,255,255,0.04)'};
-          color:${isLogin ? 'var(--blue)' : 'rgba(255,255,255,0.5)'};">Вход</button>
-        <button onclick="switchAuthMode('register')" style="flex:1;padding:10px;border-radius:12px;cursor:pointer;font-family:'Nunito',sans-serif;font-weight:900;font-size:13px;
-          border:1.5px solid ${!isLogin ? 'rgba(0,200,255,0.6)' : 'rgba(255,255,255,0.12)'};
-          background:${!isLogin ? 'rgba(0,200,255,0.15)' : 'rgba(255,255,255,0.04)'};
-          color:${!isLogin ? 'var(--blue)' : 'rgba(255,255,255,0.5)'};">Регистрация</button>
+      <!-- Auth header banner -->
+      <div style="text-align:center;padding:18px 0 14px;">
+        <div style="font-size:52px;margin-bottom:10px;filter:drop-shadow(0 0 18px rgba(0,200,255,0.45));">${isLogin ? '🔑' : '🦉'}</div>
+        <div style="font-size:18px;font-weight:900;background:linear-gradient(135deg,#00c8ff,#0080ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${isLogin ? 'Вход в аккаунт' : 'Регистрация'}</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:6px;line-height:1.5;max-width:260px;margin-left:auto;margin-right:auto;">${isLogin
+          ? 'Прогресс хранится в облаке и доступен с любого устройства.'
+          : 'Придумай логин и пароль. Никаких других данных не нужно.'}</div>
       </div>
 
+      <!-- Tab switcher -->
+      <div style="display:flex;gap:6px;margin-bottom:18px;background:rgba(255,255,255,0.04);border-radius:14px;padding:4px;border:1px solid rgba(255,255,255,0.07);">
+        <button onclick="switchAuthMode('login')" style="flex:1;padding:10px;border-radius:11px;cursor:pointer;font-family:'Nunito',sans-serif;font-weight:900;font-size:13px;transition:all 0.2s;
+          border:${isLogin ? '1.5px solid rgba(0,200,255,0.45)' : '1.5px solid transparent'};
+          background:${isLogin ? 'linear-gradient(135deg,rgba(0,200,255,0.2),rgba(0,120,220,0.12))' : 'transparent'};
+          color:${isLogin ? 'var(--blue)' : 'rgba(255,255,255,0.4)'};
+          box-shadow:${isLogin ? '0 0 12px rgba(0,200,255,0.15)' : 'none'};
+          -webkit-tap-highlight-color:transparent;">🔑 Вход</button>
+        <button onclick="switchAuthMode('register')" style="flex:1;padding:10px;border-radius:11px;cursor:pointer;font-family:'Nunito',sans-serif;font-weight:900;font-size:13px;transition:all 0.2s;
+          border:${!isLogin ? '1.5px solid rgba(0,200,255,0.45)' : '1.5px solid transparent'};
+          background:${!isLogin ? 'linear-gradient(135deg,rgba(0,200,255,0.2),rgba(0,120,220,0.12))' : 'transparent'};
+          color:${!isLogin ? 'var(--blue)' : 'rgba(255,255,255,0.4)'};
+          box-shadow:${!isLogin ? '0 0 12px rgba(0,200,255,0.15)' : 'none'};
+          -webkit-tap-highlight-color:transparent;">🦉 Регистрация</button>
+      </div>
+
+      <!-- Fields -->
       <input class="duo-input" id="authLogin" type="text" placeholder="Логин (буквы, цифры, _ . -)" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="20" style="margin-bottom:10px;">
       <input class="duo-input" id="authPassword" type="password" placeholder="Пароль (минимум 6 символов)" autocomplete="off" style="margin-bottom:${isLogin ? '4px' : '10px'};">
       ${!isLogin ? '<input class="duo-input" id="authPassword2" type="password" placeholder="Повтори пароль" autocomplete="off" style="margin-bottom:4px;">' : ''}
@@ -4796,7 +4932,7 @@ function renderAccount() {
         <div class="btn-left"><span class="btn-icon">${isLogin ? '🔑' : '🦉'}</span><span class="btn-title">${isLogin ? 'Войти' : 'Создать аккаунт'}</span></div>
         <span class="btn-cost">→</span>
       </button>
-      ${isLogin ? '<button onclick="doForgotPassword()" style="width:100%;margin-top:10px;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.4);font-family:\'Nunito\',sans-serif;font-size:12px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;">🔐 Забыл пароль</button>' : ''}`;
+      ${isLogin ? '<button onclick="doForgotPassword()" style="width:100%;margin-top:10px;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.02);color:rgba(255,255,255,0.35);font-family:\'Nunito\',sans-serif;font-size:12px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:color 0.2s;">🔐 Забыл пароль</button>' : ''}`;
     setTimeout(() => {
       const p2 = document.getElementById('authPassword2') || document.getElementById('authPassword');
       if (p2) p2.addEventListener('keydown', e => { if (e.key === 'Enter') (isLogin ? doLogin() : doRegister()); });
