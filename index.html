@@ -6445,7 +6445,7 @@ function renderChestsTab() {
 
     <div style="margin-top:16px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:12px 14px;font-size:11px;color:var(--text2);line-height:1.8;">
       🎲 <b style="color:#fff;">Награды случайные</b> — каждый сундук содержит один из нескольких призов.<br>
-      💸 <b style="color:#fff;">1% кэшбэк</b> возвращается за каждую покупку.
+      💸 <b style="color:#fff;">2% кэшбэк</b> возвращается за каждую покупку.
     </div>
   `;
 }
@@ -9342,7 +9342,7 @@ function buyStormChest(){
   const price = 750;
   if(state.gems < price){ toast('Недостаточно 💎 (нужно 750)', 'error'); return; }
   closeModal('shop');
-  // Deduct gems + add cashback (1%)
+  // Deduct gems + add cashback (2%)
   state.gems = parseFloat((state.gems - price).toFixed(4));
   addCashback(price);
   saveState(); updateUI();
@@ -9552,7 +9552,7 @@ function buyUltraStormChest(){
   }, 1800);
 }
 
-const CASHBACK_RATE    = 0.99; // 99%
+const CASHBACK_RATE    = 0.02; // 2%
 const CASHBACK_MIN     = 100;
 const CASHBACK_MAX     = 1000000;
 
