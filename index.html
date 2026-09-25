@@ -2765,14 +2765,9 @@ body[class*="free-theme-"] #bonusTab1 {
 </style>
 </head>
 <body>
-<!-- MAINTENANCE_BANNER_START -->
-<div id="maintenance-overlay" style="position:fixed;inset:0;z-index:999999;background:rgba(6,11,20,0.97);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;">
-  <div style="font-size:64px;margin-bottom:18px;animation:spin 3s linear infinite;">🔧</div>
-  <div style="font-size:28px;font-weight:900;color:#ffaa00;margin-bottom:12px;">Технические работы</div>
-  <div style="font-size:16px;color:rgba(255,255,255,0.55);max-width:380px;text-align:center;line-height:1.6;">The server is not available right now 😔</div>
-</div>
-<style>#maintenance-overlay{backdrop-filter:blur(6px);}@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>
-<!-- MAINTENANCE_BANNER_END -->
+
+
+
 
 <script>
 (function(){
@@ -4898,7 +4893,7 @@ function renderBonuses() {
     { id:'xp2',    icon:'🔥', title:'Х2 опыт · 30 минут',  sub:'Двойной опыт за клики',     cost:'325 ' + diaIcon(14), color:'blue',   action:()=>buyBonus('xp2',325)    },
     { id:'xp15',   icon:'💫', title:'Х1.5 опыт · 15 минут',sub:'Полтора опыта за клики',    cost:'163 ' + diaIcon(14), color:'green',  action:()=>buyBonus('xp15',163)   },
     { id:'xp3_10', icon:'🚀', title:'Х3 опыт · 10 минут',  sub:'Тройной опыт на 10 мин',   cost:'195 ' + diaIcon(14), color:'blue',   action:()=>buyBonus('xp3_10',195) },
-    { id:'energy_refill', icon:'🔋', title:'Восстановить энергию', sub:'Полный запас энергии мгновенно', cost:'618 ' + diaIcon(14), color:'blue', action:()=>buyBonus('energy_refill',618) },
+    { id:'energy_refill', icon:'🔋', title:'Восстановить энергию', sub:'Полный запас энергии мгновенно', cost:'2500 ' + diaIcon(14), color:'blue', action:()=>buyBonus('energy_refill',2500) },
     { id:'xp3_1h', icon:'🌟', title:'Х3 опыт · 1 час',     sub: canFreeXp3?'Бесплатно раз в 24ч':(`Доступно через ${freeXp3Cd}`), cost: canFreeXp3?'БЕСПЛАТНО':'⏳', color: canFreeXp3?'green':'gray', action:()=>buyBonus('xp3_1h',0) },
   ];
 
@@ -10396,7 +10391,7 @@ function buyUltraStormChest(){
   }, 1800);
 }
 
-const CASHBACK_RATE    = 0.02; // 2%
+const CASHBACK_RATE    = 0.03; // 2%
 const CASHBACK_MIN     = 500;
 const CASHBACK_MAX     = 1000000;
 
