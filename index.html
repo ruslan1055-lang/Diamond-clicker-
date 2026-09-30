@@ -13016,6 +13016,7 @@ function buyAutumnLeaf() {
   const COST=500;
   function render(){
     const b=$('swBtn'),sub=$('swSub'); if(!b) return;
+    if(!spinning&&state.swPending){state.melons=(state.melons||0)+state.swPending;state.swPending=0;try{saveState();}catch(e){}}
     refreshMelons();
     const xp=Math.floor(state.xp||0);
     b.disabled=spinning||xp<COST;
@@ -13039,9 +13040,11 @@ function buyAutumnLeaf() {
     rot=Math.ceil(rot/360)*360+target;
     $('swDisc').style.transform='rotate('+rot+'deg)';
     const prize=SEG[k].v;
-    state.melons=(state.melons||0)+prize;
+    state.swPending=prize;            // приз ждёт конца вращения
     try{saveState();}catch(e){}
     setTimeout(()=>{
+      state.melons=(state.melons||0)+prize; state.swPending=0;
+      try{saveState();}catch(e){}
       const r=$('mqReward'); r.textContent='+'+prize+' 🍉'; r.classList.remove('show'); void r.offsetWidth; r.classList.add('show');
       try{updateUI();}catch(e){}
       refreshMelons(); const c=document.querySelector('.mq-cur'); if(c){c.classList.remove('pop');void c.offsetWidth;c.classList.add('pop');}
