@@ -2844,7 +2844,7 @@ body[class*="free-theme-"] #bonusTab1 {
 <div class="bank-bar" id="energyBarSection" onclick="showEnergyDetail()" style="display:flex;align-items:center;gap:10px;cursor:pointer;">
   <div style="flex:1;">
     <div class="bank-bar-top">
-      <span class="bank-bar-label">⚡ Энергия</span>
+      <span class="bank-bar-label">🔋 Батарея</span>
       <span class="bank-bar-val" id="energyCount" style="color:#00e5ff;text-shadow:0 0 8px rgba(0,229,255,0.5);">500 / 500</span>
     </div>
     <div class="bank-track">
@@ -4532,8 +4532,8 @@ function showEnergyDetail() {
   overlay.innerHTML = `
     <div style="background:linear-gradient(180deg,rgba(0,15,35,0.99) 0%,rgba(0,5,20,0.99) 100%);border:1.5px solid rgba(0,229,255,0.4);border-radius:24px;padding:26px 20px 22px;max-width:360px;width:100%;box-shadow:0 0 40px rgba(0,200,255,0.18),0 24px 60px rgba(0,0,0,0.8);font-family:'Nunito',sans-serif;animation:energyDialogIn 0.32s cubic-bezier(0.34,1.3,0.64,1) both;">
       <div style="text-align:center;margin-bottom:18px;">
-        <div style="font-size:44px;margin-bottom:8px;filter:drop-shadow(0 0 16px rgba(0,229,255,0.8));">&#x26A1;</div>
-        <div style="font-size:20px;font-weight:900;background:linear-gradient(135deg,#00e5ff,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px;">Система Энергии</div>
+        <div style="font-size:44px;margin-bottom:8px;filter:drop-shadow(0 0 16px rgba(0,229,255,0.8));">🔋</div>
+        <div style="font-size:20px;font-weight:900;background:linear-gradient(135deg,#00e5ff,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px;">Система Батареи</div>
         <div style="font-size:11px;color:rgba(255,255,255,0.4);letter-spacing:1.5px;text-transform:uppercase;">Управляй своими тапами</div>
       </div>
       <div style="background:rgba(0,229,255,0.07);border:1px solid rgba(0,229,255,0.25);border-radius:16px;padding:14px 16px;margin-bottom:14px;text-align:center;">
@@ -4544,23 +4544,23 @@ function showEnergyDetail() {
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
         <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);border-radius:14px;padding:12px;text-align:center;">
           <div style="font-size:10px;color:rgba(255,255,255,0.35);font-weight:900;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">1 тап = расход</div>
-          <div style="font-size:22px;font-weight:900;color:#ff4655;text-shadow:0 0 10px rgba(255,50,80,0.6);">-1 &#x26A1;</div>
+          <div style="font-size:22px;font-weight:900;color:#ff4655;text-shadow:0 0 10px rgba(255,50,80,0.6);">-1 🔋</div>
         </div>
         <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);border-radius:14px;padding:12px;text-align:center;">
           <div style="font-size:10px;color:rgba(255,255,255,0.35);font-weight:900;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Пополнение</div>
-          <div style="font-size:22px;font-weight:900;color:#00e676;text-shadow:0 0 10px rgba(0,230,118,0.6);">+${regen} &#x26A1;<span style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.3);"> / 5с</span></div>
+          <div style="font-size:22px;font-weight:900;color:#00e676;text-shadow:0 0 10px rgba(0,230,118,0.6);">+${regen} 🔋<span style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.3);"> / 5с</span></div>
         </div>
       </div>
       <div style="border:1px solid ${vipColor};border-radius:14px;overflow:hidden;margin-bottom:18px;">
         <div style="display:grid;grid-template-columns:1fr 1fr;">
           <div style="padding:12px;border-right:1px solid rgba(255,255,255,0.07);text-align:center;${vipLabel1}">
             <div style="font-size:10px;color:rgba(255,255,255,0.3);font-weight:900;text-transform:uppercase;margin-bottom:8px;">Без MAX</div>
-            <div style="font-size:14px;font-weight:900;color:${vipC1};">500 &#x26A1;</div>
+            <div style="font-size:14px;font-weight:900;color:${vipC1};">500 🔋</div>
             <div style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:4px;">+1 / 5сек</div>
           </div>
           <div style="padding:12px;text-align:center;${vipLabel2}">
-            <div style="font-size:10px;color:${vipTC};font-weight:900;text-transform:uppercase;margin-bottom:8px;">${vipCheck}С MAX &#x26A1;</div>
-            <div style="font-size:14px;font-weight:900;color:${vipC2};${vipSh}">2000 &#x26A1;</div>
+            <div style="font-size:10px;color:${vipTC};font-weight:900;text-transform:uppercase;margin-bottom:8px;">${vipCheck}С MAX 🔋</div>
+            <div style="font-size:14px;font-weight:900;color:${vipC2};${vipSh}">2000 🔋</div>
             <div style="font-size:10px;color:${regenC};margin-top:4px;">+3 / 5сек</div>
           </div>
         </div>
@@ -4591,7 +4591,7 @@ function handleDiamondTap(e) {
       // No energy — show brief warning once per tap group
       if (t === 0) {
         const regen = getEnergyRegen();
-        toast('⚡ Нет энергии! Восстановление: +' + regen + ' каждые 5 сек', 'error');
+        toast('🔋 Нет батареи! Восстановление: +' + regen + ' каждые 5 сек', 'error');
       }
       break;
     }
@@ -4776,7 +4776,7 @@ function renderTasks() {
     { label: '👆 Клики',           types: ['clicks'] },
     { label: '💎 Алмазы',          types: ['gems']   },
     { label: '💸 Выводы',          types: ['withdraw', 'totalwd'] },
-    { label: '⚡ Энергия и бонусы', types: ['xpbuy','freexp'] },
+    { label: '🔋 Батарея и бонусы', types: ['xpbuy','freexp'] },
     { label: '🎁 Покупки бонусов',  types: ['bonusBuy'] },
     { label: '🛒 Магазин',         types: ['shopbuy','baseupg'] },
     { label: '📅 Ежедневные',       types: ['daily'] },
@@ -4893,7 +4893,7 @@ function renderBonuses() {
     { id:'xp2',    icon:'🔥', title:'Х2 опыт · 30 минут',  sub:'Двойной опыт за клики',     cost:'325 ' + diaIcon(14), color:'blue',   action:()=>buyBonus('xp2',325)    },
     { id:'xp15',   icon:'💫', title:'Х1.5 опыт · 15 минут',sub:'Полтора опыта за клики',    cost:'163 ' + diaIcon(14), color:'green',  action:()=>buyBonus('xp15',163)   },
     { id:'xp3_10', icon:'🚀', title:'Х3 опыт · 10 минут',  sub:'Тройной опыт на 10 мин',   cost:'195 ' + diaIcon(14), color:'blue',   action:()=>buyBonus('xp3_10',195) },
-    { id:'energy_refill', icon:'🔋', title:'Восстановить энергию', sub:'Полный запас энергии мгновенно', cost:'618 ' + diaIcon(14), color:'blue', action:()=>buyBonus('energy_refill',618) },
+    { id:'energy_refill', icon:'🔋', title:'Восстановить батарею', sub:'Полный запас батареи мгновенно', cost:'618 ' + diaIcon(14), color:'blue', action:()=>buyBonus('energy_refill',618) },
     { id:'xp3_1h', icon:'🌟', title:'Х3 опыт · 1 час',     sub: canFreeXp3?'Бесплатно раз в 24ч':(`Доступно через ${freeXp3Cd}`), cost: canFreeXp3?'БЕСПЛАТНО':'⏳', color: canFreeXp3?'green':'gray', action:()=>buyBonus('xp3_1h',0) },
   ];
 
@@ -4950,7 +4950,7 @@ function buyBonus(id, cost) {
     toast('Х3 XP на час активирован! 🌟', 'success');
   } else {
     state.gems -= cost; addCashback(cost);
-    if (id === 'energy_refill') { const max = getEnergyMax(); state.energy = max; updateEnergyBar(); toast('⚡ Энергия полностью восстановлена! (' + max + '/' + max + ')', 'success'); }
+    if (id === 'energy_refill') { const max = getEnergyMax(); state.energy = max; updateEnergyBar(); toast('🔋 Батарея полностью восстановлена! (' + max + '/' + max + ')', 'success'); }
     if (id === 'xp500')  { state.xp += 200; toast('Получено 200 ⚡!', 'success'); }
     if (id === 'xp2')    { state.bonuses.xp2_end    = now + 1800000; toast('Х2 XP на 30 мин! 🔥', 'success'); }
     if (id === 'xp15')   { state.bonuses.xp15_end   = now + 900000;  toast('Х1.5 XP на 15 мин! 💫', 'success'); }
@@ -6735,7 +6735,7 @@ function renderShop() {
           <div style="font-size:10px;color:var(--text2);">📈 бонус</div>
         </div>
       </div>
-      <div style="margin-top:10px;text-align:center;font-size:13px;font-weight:800;color:var(--yellow);">⚡ Твоя энергия: ${xp.toLocaleString('ru-RU')}</div>
+      <div style="margin-top:10px;text-align:center;font-size:13px;font-weight:800;color:var(--yellow);">⚡ Твои молнии: ${xp.toLocaleString('ru-RU')}</div>
     </div>
 
     <!-- Section: +1 base upgrade -->
@@ -7235,7 +7235,7 @@ function renderChestsTab() {
             <span style="font-size:8px;font-weight:900;padding:2px 7px;border-radius:6px;text-transform:uppercase;letter-spacing:0.5px;background:rgba(255,200,0,0.2);color:#ffe566;">Storm</span>
           </div>
           <div style="font-size:15px;font-weight:900;color:#ffe566;margin-bottom:3px;">Standart Storm</div>
-          <div style="font-size:11px;color:rgba(255,220,100,0.6);margin-bottom:8px;">×2 опыта · +энергия · бонусы</div>
+          <div style="font-size:11px;color:rgba(255,220,100,0.6);margin-bottom:8px;">×2 опыта · +батарея · бонусы</div>
           <div style="display:flex;align-items:center;justify-content:space-between;">
             <div style="font-size:16px;font-weight:900;color:#ffd700;">488 💎</div>
             <div style="font-size:11px;font-weight:800;color:${state.gems >= 488 ? '#00e676' : '#ff4655'};">${state.gems >= 488 ? '✅ Доступно' : '❌ Мало 💎'}</div>
@@ -7251,7 +7251,7 @@ function renderChestsTab() {
             <span style="font-size:8px;font-weight:900;padding:2px 7px;border-radius:6px;text-transform:uppercase;letter-spacing:0.5px;background:rgba(0,180,255,0.2);color:#7df9ff;">Medium</span>
           </div>
           <div style="font-size:15px;font-weight:900;color:#7df9ff;margin-bottom:3px;">Medium Storm</div>
-          <div style="font-size:11px;color:rgba(100,220,255,0.6);margin-bottom:8px;">×4 опыта · +30 энергии · до 350 💎</div>
+          <div style="font-size:11px;color:rgba(100,220,255,0.6);margin-bottom:8px;">×4 опыта · +30 🔋 · до 350 💎</div>
           <div style="display:flex;align-items:center;justify-content:space-between;">
             <div style="font-size:16px;font-weight:900;color:#00c8ff;">943 💎</div>
             <div style="font-size:11px;font-weight:800;color:${state.gems >= 943 ? '#00e676' : '#ff4655'};">${state.gems >= 943 ? '✅ Доступно' : '❌ Мало 💎'}</div>
@@ -7268,7 +7268,7 @@ function renderChestsTab() {
             <span style="font-size:8px;font-weight:900;padding:2px 7px;border-radius:6px;text-transform:uppercase;letter-spacing:0.5px;background:rgba(255,200,0,0.15);color:#ffe566;">TOP</span>
           </div>
           <div style="font-size:15px;font-weight:900;color:#c77dff;margin-bottom:3px;">Ultra Storm</div>
-          <div style="font-size:11px;color:rgba(180,120,255,0.6);margin-bottom:8px;">×6 кликов · +65 энергии · до 1000 💎 · MAX на 3 дня</div>
+          <div style="font-size:11px;color:rgba(180,120,255,0.6);margin-bottom:8px;">×6 кликов · +65 🔋 · до 1000 💎 · MAX на 3 дня</div>
           <div style="display:flex;align-items:center;justify-content:space-between;">
             <div style="font-size:16px;font-weight:900;color:#a855f7;">1 625 💎</div>
             <div style="font-size:11px;font-weight:800;color:${state.gems >= 1625 ? '#00e676' : '#ff4655'};">${state.gems >= 1625 ? '✅ Доступно' : '❌ Мало 💎'}</div>
@@ -7719,12 +7719,12 @@ function renderVip() {
       `
     },
     {
-      icon:'⚡', title:'×3 к награде молний', desc:'Утраивает получаемую энергию ⚡', color:'#ffe566',
+      icon:'⚡', title:'×3 к награде молний', desc:'Утраивает получаемые молнии ⚡', color:'#ffe566',
       detailIcon:'⚡',
-      detailTitle:'Тройная энергия молний',
+      detailTitle:'Тройные молнии',
       detailBody:`
         <div style="margin-bottom:12px;font-size:13px;color:rgba(255,255,255,0.7);line-height:1.7;">
-          Энергия ⚡ — валюта для активации MAX и прокачки. С подпиской все источники молний дают <strong style="color:#ffe566;">×3 энергии</strong>.
+          Молнии ⚡ — валюта для активации MAX и прокачки. С подпиской все источники молний дают <strong style="color:#ffe566;">×3 молний</strong>.
         </div>
         <div style="background:rgba(255,229,102,0.07);border:1px solid rgba(255,229,102,0.25);border-radius:14px;padding:14px 16px;margin-bottom:10px;">
           <div style="font-size:11px;color:rgba(255,229,102,0.6);text-transform:uppercase;letter-spacing:1.5px;font-weight:900;margin-bottom:10px;">Что входит в ×3</div>
@@ -7734,7 +7734,7 @@ function renderVip() {
             <span style="font-size:12px;color:rgba(255,255,255,0.6);">${s}</span>
           </div>`).join('')}
         </div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.35);line-height:1.6;">Быстрее набирай энергию — быстрее продлевай MAX и покупай улучшения!</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.35);line-height:1.6;">Быстрее набирай молнии — быстрее продлевай MAX и покупай улучшения!</div>
       `
     },
     {
@@ -7828,28 +7828,28 @@ function renderVip() {
       `
     },
     {
-      icon:'⚡', title:'Энергия: 2000 + ×3 реген', desc:'Запас 2000 энергии и +3 в 5 секунд', color:'#00e5ff',
-      detailIcon:'⚡',
-      detailTitle:'Расширенная система энергии',
+      icon:'🔋', title:'Батарея: 2000 + ×3 реген', desc:'Запас 2000 батареи и +3 в 5 секунд', color:'#00e5ff',
+      detailIcon:'🔋',
+      detailTitle:'Расширенная система батареи',
       detailBody:`
         <div style="margin-bottom:12px;font-size:13px;color:rgba(255,255,255,0.7);line-height:1.7;">
-          С MAX подпиской твой запас энергии увеличивается с <strong style="color:rgba(255,255,255,0.5);">500</strong> до <strong style="color:#00e5ff;">2000 ⚡</strong>, а автовосстановление ускоряется в <strong style="color:#00e5ff;">3 раза</strong>.
+          С MAX подпиской твой запас батареи увеличивается с <strong style="color:rgba(255,255,255,0.5);">500</strong> до <strong style="color:#00e5ff;">2000 🔋</strong>, а автовосстановление ускоряется в <strong style="color:#00e5ff;">3 раза</strong>.
         </div>
         <div style="background:rgba(0,229,255,0.07);border:1px solid rgba(0,229,255,0.25);border-radius:14px;padding:14px 16px;margin-bottom:10px;">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
             <div style="text-align:center;">
               <div style="font-size:10px;color:rgba(255,255,255,0.3);font-weight:900;text-transform:uppercase;margin-bottom:8px;">Без MAX</div>
-              <div style="font-size:22px;font-weight:900;color:rgba(255,255,255,0.4);">500 ⚡</div>
-              <div style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:5px;">+1 ⚡ / 5 сек</div>
+              <div style="font-size:22px;font-weight:900;color:rgba(255,255,255,0.4);">500 🔋</div>
+              <div style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:5px;">+1 🔋 / 5 сек</div>
             </div>
             <div style="text-align:center;border-left:1px solid rgba(0,229,255,0.15);padding-left:12px;">
-              <div style="font-size:10px;color:rgba(0,229,255,0.7);font-weight:900;text-transform:uppercase;margin-bottom:8px;">С MAX ⚡</div>
-              <div style="font-size:22px;font-weight:900;color:#00e5ff;text-shadow:0 0 14px rgba(0,229,255,0.7);">2000 ⚡</div>
-              <div style="font-size:10px;color:rgba(0,229,255,0.5);margin-top:5px;">+3 ⚡ / 5 сек</div>
+              <div style="font-size:10px;color:rgba(0,229,255,0.7);font-weight:900;text-transform:uppercase;margin-bottom:8px;">С MAX 🔋</div>
+              <div style="font-size:22px;font-weight:900;color:#00e5ff;text-shadow:0 0 14px rgba(0,229,255,0.7);">2000 🔋</div>
+              <div style="font-size:10px;color:rgba(0,229,255,0.5);margin-top:5px;">+3 🔋 / 5 сек</div>
             </div>
           </div>
         </div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.35);line-height:1.6;">Нажми на полоску энергии в верхней части экрана, чтобы увидеть подробную статистику!</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.35);line-height:1.6;">Нажми на полоску батареи в верхней части экрана, чтобы увидеть подробную статистику!</div>
       `
     },
     {
@@ -8000,7 +8000,7 @@ function renderVip() {
     </button>
     ${!canBuy ?
       `<div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.3);margin-top:5px;">Нужно ещё <strong style="color:#00ffe8;text-shadow:0 0 10px rgba(0,255,200,0.7);">${(VIP_COST - xp).toLocaleString('ru-RU')} ⚡</strong></div>` :
-      `<div style="text-align:center;font-size:11px;color:rgba(0,255,200,0.65);margin-top:5px;text-shadow:0 0 10px rgba(0,255,200,0.4);">✅ У тебя достаточно энергии!</div>`
+      `<div style="text-align:center;font-size:11px;color:rgba(0,255,200,0.65);margin-top:5px;text-shadow:0 0 10px rgba(0,255,200,0.4);">✅ У тебя достаточно молний!</div>`
     }
 
     <div style="display:flex;align-items:center;gap:10px;margin:12px 0 5px;">
@@ -8621,7 +8621,7 @@ function renderDiamondMagnate() {
     </button>
     ${!canBuy ?
       `<div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.3);margin-top:5px;">Нужно ещё <strong style="color:#7df9ff;text-shadow:0 0 10px rgba(0,200,255,0.7);">${(DM_COST - xp).toLocaleString('ru-RU')} ⚡</strong></div>` :
-      `<div style="text-align:center;font-size:11px;color:rgba(0,200,255,0.65);margin-top:5px;text-shadow:0 0 10px rgba(0,200,255,0.4);">✅ У тебя достаточно энергии!</div>`
+      `<div style="text-align:center;font-size:11px;color:rgba(0,200,255,0.65);margin-top:5px;text-shadow:0 0 10px rgba(0,200,255,0.4);">✅ У тебя достаточно молний!</div>`
     }
 
     ${sectionLinksHtml([
@@ -8828,7 +8828,7 @@ function renderFireDuo() {
     </button>
     ${!canBuy ?
       `<div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.3);margin-top:5px;">Нужно ещё <strong style="color:#ffb74d;text-shadow:0 0 10px rgba(255,140,0,0.7);">${(FD_COST - xp).toLocaleString('ru-RU')} ⚡</strong></div>` :
-      `<div style="text-align:center;font-size:11px;color:rgba(255,140,0,0.65);margin-top:5px;text-shadow:0 0 10px rgba(255,140,0,0.4);">✅ У тебя достаточно энергии!</div>`
+      `<div style="text-align:center;font-size:11px;color:rgba(255,140,0,0.65);margin-top:5px;text-shadow:0 0 10px rgba(255,140,0,0.4);">✅ У тебя достаточно молний!</div>`
     }
 
     ${sectionLinksHtml([
@@ -10244,14 +10244,14 @@ function buyStormChest(){
     rewardIcon='✨'; rewardTitle='х2 опыта на 25 минут'; rewardSub='Множитель';
     addToInventory({icon:'✨', label:'х2 опыта на 25 мин', sub:'Множитель опыта', source:'Storm Сундук', mult:2, multDur:25*60*1000});
   } else if(reward === 'energy15'){
-    rewardIcon='⚡'; rewardTitle='+15 Энергии'; rewardSub='Энергия';
-    addToInventory({icon:'⚡', label:'+15 Энергии', sub:'Единицы энергии', source:'Storm Сундук', energy:15});
+    rewardIcon='🔋'; rewardTitle='+15 Батареи'; rewardSub='Батарея';
+    addToInventory({icon:'🔋', label:'+15 Батареи', sub:'Единицы батареи', source:'Storm Сундук', energy:15});
   } else if(reward === 'x15_35m'){
     rewardIcon='💫'; rewardTitle='х1.5 опыта на 35 минут'; rewardSub='Множитель';
     addToInventory({icon:'💫', label:'х1.5 опыта на 35 мин', sub:'Множитель опыта', source:'Storm Сундук', mult:1.5, multDur:35*60*1000});
   } else if(reward === 'zap200'){
     rewardIcon='⚡'; rewardTitle='+200 ⚡'; rewardSub='Молнии';
-    addToInventory({icon:'⚡', label:'+200 ⚡', sub:'Молнии энергии', source:'Storm Сундук', xp:200});
+    addToInventory({icon:'⚡', label:'+200 ⚡', sub:'Молнии', source:'Storm Сундук', xp:200});
   } else {
     rewardIcon='🌟'; rewardTitle='х3 опыта на 1 час'; rewardSub='Множитель';
     addToInventory({icon:'🌟', label:'х3 опыта на 1 час', sub:'Множитель опыта', source:'Storm Сундук', mult:3, multDur:60*60*1000});
@@ -10300,14 +10300,14 @@ function buyMediumStormChest(){
     rewardIcon='✨'; rewardTitle='х4 опыта на 25 минут'; rewardSub='Множитель';
     addToInventory({icon:'✨', label:'х4 опыта на 25 мин', sub:'Множитель опыта', source:'Storm Сундук', mult:4, multDur:25*60*1000});
   } else if(reward === 'energy30'){
-    rewardIcon='⚡'; rewardTitle='+30 Энергии'; rewardSub='Энергия';
-    addToInventory({icon:'⚡', label:'+30 Энергии', sub:'Единицы энергии', source:'Storm Сундук', energy:30});
+    rewardIcon='🔋'; rewardTitle='+30 Батареи'; rewardSub='Батарея';
+    addToInventory({icon:'🔋', label:'+30 Батареи', sub:'Единицы батареи', source:'Storm Сундук', energy:30});
   } else if(reward === 'x3_35m'){
     rewardIcon='🌟'; rewardTitle='х3 опыта на 35 минут'; rewardSub='Множитель';
     addToInventory({icon:'🌟', label:'х3 опыта на 35 мин', sub:'Множитель опыта', source:'Storm Сундук', mult:3, multDur:35*60*1000});
   } else if(reward === 'zap750'){
     rewardIcon='⚡'; rewardTitle='+750 ⚡'; rewardSub='Молнии';
-    addToInventory({icon:'⚡', label:'+750 ⚡', sub:'Молнии энергии', source:'Storm Сундук', xp:750});
+    addToInventory({icon:'⚡', label:'+750 ⚡', sub:'Молнии', source:'Storm Сундук', xp:750});
   } else if(reward === 'x5_xp'){
     rewardIcon='💥'; rewardTitle='х5 опыта на 1 час'; rewardSub='Множитель';
     addToInventory({icon:'💥', label:'х5 опыта на 1 час', sub:'Множитель опыта', source:'Storm Сундук', mult:5, multDur:60*60*1000});
@@ -10361,14 +10361,14 @@ function buyUltraStormChest(){
     rewardIcon='⚡'; rewardTitle='х6 опыта на 25 минут'; rewardSub='Множитель';
     addToInventory({icon:'⚡', label:'х6 опыта на 25 мин', sub:'Множитель опыта', source:'Storm Сундук', mult:6, multDur:25*60*1000});
   } else if(reward === 'energy65'){
-    rewardIcon='⚡'; rewardTitle='+65 Энергии'; rewardSub='Энергия';
-    addToInventory({icon:'⚡', label:'+65 Энергии', sub:'Единицы энергии', source:'Storm Сундук', energy:65});
+    rewardIcon='🔋'; rewardTitle='+65 Батареи'; rewardSub='Батарея';
+    addToInventory({icon:'🔋', label:'+65 Батареи', sub:'Единицы батареи', source:'Storm Сундук', energy:65});
   } else if(reward === 'x4_35m'){
     rewardIcon='💫'; rewardTitle='х4 опыта на 35 минут'; rewardSub='Множитель';
     addToInventory({icon:'💫', label:'х4 опыта на 35 мин', sub:'Множитель опыта', source:'Storm Сундук', mult:4, multDur:35*60*1000});
   } else if(reward === 'zap1000'){
     rewardIcon='⚡'; rewardTitle='+1000 ⚡'; rewardSub='Молнии';
-    addToInventory({icon:'⚡', label:'+1000 ⚡', sub:'Молнии энергии', source:'Storm Сундук', xp:1000});
+    addToInventory({icon:'⚡', label:'+1000 ⚡', sub:'Молнии', source:'Storm Сундук', xp:1000});
   } else if(reward === 'x4_1d'){
     rewardIcon='🌟'; rewardTitle='х4 опыта на 1 день'; rewardSub='Множитель';
     addToInventory({icon:'🌟', label:'х4 опыта на 1 день', sub:'Множитель опыта', source:'Storm Сундук', mult:4, multDur:24*60*60*1000});
@@ -10376,8 +10376,8 @@ function buyUltraStormChest(){
     rewardIcon='💎'; rewardTitle='+1000 💎'; rewardSub='Алмазы';
     addToInventory({icon:'💎', label:'+1000 💎', sub:'Алмазы', source:'Storm Сундук', gems:1000});
   } else if(reward === 'energy40'){
-    rewardIcon='⚡'; rewardTitle='+40 Энергии'; rewardSub='Энергия';
-    addToInventory({icon:'⚡', label:'+40 Энергии', sub:'Единицы энергии', source:'Storm Сундук', energy:40});
+    rewardIcon='🔋'; rewardTitle='+40 Батареи'; rewardSub='Батарея';
+    addToInventory({icon:'🔋', label:'+40 Батареи', sub:'Единицы батареи', source:'Storm Сундук', energy:40});
   } else if(reward === 'gems350'){
     rewardIcon='💎'; rewardTitle='+350 💎'; rewardSub='Алмазы';
     addToInventory({icon:'💎', label:'+350 💎', sub:'Алмазы', source:'Storm Сундук', gems:350});
@@ -12031,7 +12031,7 @@ function applyRoulettePrize(prize) {
 
   if (prize.id === 'xp200') {
     const amt = Math.round(200 * mult);
-    addToInventory({ icon: '⚡', label: fmtNum(amt) + ' ⚡', sub: 'Молнии энергии', source: 'Рулетка', xp: amt });
+    addToInventory({ icon: '⚡', label: fmtNum(amt) + ' ⚡', sub: 'Молнии', source: 'Рулетка', xp: amt });
     updateInventoryBadge();
     resultHtml = showPrizeResult(fmtNum(amt) + ' ⚡' + multSuffix, '⚡', prize.color, 'Приз добавлен в инвентарь!');
   } else if (prize.id === 'gem550') {
@@ -12041,9 +12041,9 @@ function applyRoulettePrize(prize) {
     resultHtml = showPrizeResult(fmtNum(amt) + ' 💎' + multSuffix, '💎', prize.color, 'Приз добавлен в инвентарь!');
   } else if (prize.id === 'en48k') {
     const amt = Math.round(48 * mult);
-    addToInventory({ icon: '⚡', label: '+' + fmtNum(amt) + ' ⚡ энергии', sub: 'Единицы энергии', source: 'Рулетка', xp: amt });
+    addToInventory({ icon: '⚡', label: '+' + fmtNum(amt) + ' ⚡', sub: 'Молнии', source: 'Рулетка', xp: amt });
     updateInventoryBadge();
-    resultHtml = showPrizeResult('+' + fmtNum(amt) + ' ⚡ энергии' + multSuffix, '⚡', prize.color, 'Приз добавлен в инвентарь!');
+    resultHtml = showPrizeResult('+' + fmtNum(amt) + ' ⚡' + multSuffix, '⚡', prize.color, 'Приз добавлен в инвентарь!');
   } else if (prize.id === 'gem1250') {
     const amt = Math.round(1250 * mult);
     addToInventory({ icon: '💎', label: fmtNum(amt) + ' 💎', sub: 'Алмазы', source: 'Рулетка', gems: amt });
@@ -12255,7 +12255,7 @@ const NEON_SPIN_COST = 5000; // ⚡
 const NEON_PRIZES = [
   { id:'n_xp4000',     label:'4 000 ⚡',                  icon:'⚡',  color:'#ffaa00', glow:'rgba(255,170,0,0.8)',   chance:35,    weight:35    },
   { id:'n_gem5650',    label:'5 650 💎',                  icon:'💎',  color:'#00e5ff', glow:'rgba(0,229,255,0.8)',   chance:20,    weight:20    },
-  { id:'n_en185',      label:'+185 энергии ⚡',           icon:'⚡',  color:'#00ffcc', glow:'rgba(0,255,204,0.8)',   chance:15,    weight:15    },
+  { id:'n_en185',      label:'+185 молний ⚡',           icon:'⚡',  color:'#00ffcc', glow:'rgba(0,255,204,0.8)',   chance:15,    weight:15    },
   { id:'n_joker_ruby', label:'Рубиновая карта Джокера 🃏',icon:'🃏',  color:'#ff2266', glow:'rgba(255,34,102,0.9)',  chance:8,     weight:8     },
   { id:'n_gem15k',     label:'15 000 💎',                 icon:'💎',  color:'#ff6bff', glow:'rgba(255,107,255,0.9)',  chance:6,     weight:6     },
   { id:'n_xp7800',     label:'7 800 ⚡',                  icon:'⚡',  color:'#ff9c00', glow:'rgba(255,156,0,0.9)',   chance:5,     weight:5     },
@@ -12505,7 +12505,7 @@ function applyNeonPrize(prize) {
   function fmt(n) { return Math.round(n).toLocaleString('ru-RU'); }
 
   if (prize.id === 'n_xp4000') {
-    addToInventory({ icon: '⚡', label: '4 000 ⚡', sub: 'Молнии энергии', source: 'Нeon-рулетка', xp: 4000 });
+    addToInventory({ icon: '⚡', label: '4 000 ⚡', sub: 'Молнии', source: 'Нeon-рулетка', xp: 4000 });
     updateInventoryBadge();
     resultHtml = showPrizeResult('4 000 ⚡', '⚡', prize.color, 'Приз добавлен в инвентарь!');
   } else if (prize.id === 'n_gem5650') {
@@ -12513,9 +12513,9 @@ function applyNeonPrize(prize) {
     updateInventoryBadge();
     resultHtml = showPrizeResult('5 650 💎', '💎', prize.color, 'Приз добавлен в инвентарь!');
   } else if (prize.id === 'n_en185') {
-    addToInventory({ icon: '⚡', label: '+185 ⚡ энергии', sub: 'Единицы энергии', source: 'Нeon-рулетка', xp: 185 });
+    addToInventory({ icon: '⚡', label: '+185 ⚡', sub: 'Молнии', source: 'Нeon-рулетка', xp: 185 });
     updateInventoryBadge();
-    resultHtml = showPrizeResult('+185 энергии ⚡', '⚡', prize.color, 'Приз добавлен в инвентарь!');
+    resultHtml = showPrizeResult('+185 молний ⚡', '⚡', prize.color, 'Приз добавлен в инвентарь!');
   } else if (prize.id === 'n_joker_ruby') {
     // Ruby Joker card — give one legendary card not yet owned
     const allC = typeof ALL_CARDS !== 'undefined' ? ALL_CARDS : [];
@@ -12800,6 +12800,7 @@ function buyAutumnLeaf() {
 <style>
 /* ===== РУЛЕТКА ЛЕТА ===== */
 .mq-cur{margin-left:auto;margin-right:10px;font-size:17px;font-weight:900;color:#fff;background:rgba(0,0,0,.3);border:2px solid rgba(255,255,255,.8);border-radius:14px;padding:5px 12px;text-shadow:0 2px 0 rgba(0,0,0,.3);white-space:nowrap}
+.mq-cur2{margin-left:0;font-size:13px;padding:4px 9px}
 .mq-cur.pop{animation:mqCurPop .6s ease}
 @keyframes mqCurPop{40%{transform:scale(1.25)}}
 .mq-tab{font-size:12px}
@@ -12866,6 +12867,7 @@ function buyAutumnLeaf() {
     <div class="mq-head">
       <div class="mq-title">🍉 Melons Quest</div>
       <div class="mq-cur" title="Ваши арбузы">🍉 <span id="mqMelons">0</span></div>
+      <div class="mq-cur mq-cur2" title="Молнии и алмазы">⚡ <span id="mqXp">0</span> · 💎 <span id="mqGems">0</span></div>
       <button class="mq-close" onclick="closeMelonQuest()">✕</button>
     </div>
     <div class="mq-tabs">
@@ -13023,6 +13025,7 @@ function buyAutumnLeaf() {
   }
   const _sw=window.switchMelonTab;
   window.switchMelonTab=function(t){_sw(t); if(t==='wheel') render();};
+  window.swRender=render;
   window.spinSummerWheel=function(){
     if(spinning) return;
     if((state.xp||0)<COST){ toast('Нужно '+COST+' ⚡ для прокрута!','error'); return; }
@@ -13051,7 +13054,7 @@ function buyAutumnLeaf() {
 <script>
 /* ===== ШКАЛА НАГРАД (40 этажей за 🍉) ===== */
 (function(){
-  // [цена🍉, тип, значение]  x=⚡  g=💎  c=сундук  s=спин  e=эмодзи  m=запас энергии  r=новая карта
+  // [цена🍉, тип, значение]  x=⚡  g=💎  c=сундук  s=спин  e=эмодзи  m=запас батареи  r=новая карта
   const F=[
   [15,'x',250],[15,'g',150],[15,'c','common'],[15,'s',1],[15,'g',300],
   [25,'g',350],[25,'x',500],[25,'c','common'],[25,'g',700],[25,'x',550],
@@ -13085,7 +13088,7 @@ function buyAutumnLeaf() {
     if(t==='c')return 'Бесплатный '+CN[v]+' сундук 🎁';
     if(t==='s')return '1 бесплатный спин рулетки 🎰';
     if(t==='e')return 'Эмодзи-статус '+v;
-    if(t==='m')return '+'+v+' ⚡ в запас энергии';
+    if(t==='m')return '+'+v+' 🔋 в запас батареи';
     return (v==='epic'?'Эпическая карта':'Случайная карта')+' 🎴 (новая)';};
   const $=id=>document.getElementById(id);
   function newCard(rar){
@@ -13108,7 +13111,7 @@ function buyAutumnLeaf() {
     if(t==='x'){state.xp=parseFloat(((state.xp||0)+v).toFixed(4));toast('+'+fmt(v)+' ⚡','success');}
     else if(t==='g'){state.gems=parseFloat((state.gems+v).toFixed(4));state.totalGems=parseFloat(((state.totalGems||0)+v).toFixed(4));toast('+'+fmt(v)+' 💎','success');}
     else if(t==='s'){state.freeRouletteSpins=(state.freeRouletteSpins||0)+1;toast('🎰 +1 бесплатный спин','success');}
-    else if(t==='m'){state.energyBonus=(state.energyBonus||0)+v;toast('⚡ Запас энергии +'+v,'success');try{updateEnergyBar();}catch(e){}}
+    else if(t==='m'){state.energyBonus=(state.energyBonus||0)+v;state.energy=Math.min(getEnergyMax(),(state.energy||0)+v);toast('🔋 Запас батареи +'+v,'success');try{updateEnergyBar();}catch(e){}}
     else if(t==='e'){state.summerEmojis=state.summerEmojis||[];if(!state.summerEmojis.includes(v))state.summerEmojis.push(v);state.emojiStatus=v;toast('Новый эмодзи-статус '+v+' (уже установлен)','success');}
     else if(t==='c'){const res=awardCard(v);saveState();try{updateUI();}catch(e){}
       openChestAnim(v,cnt=>{cnt.innerHTML=cardHtml(res,'🎁 Награда шкалы');});return;}
@@ -13122,7 +13125,7 @@ function buyAutumnLeaf() {
     if(t==='c'){const r=RC[v];return{i:'🎁',t:CN[v].charAt(0).toUpperCase()+CN[v].slice(1)+' сундук',a:r[0],b:r[1]};}
     if(t==='s')return{i:'🎰',t:'Спин рулетки',a:'#ff5f6d',b:'#b3123e'};
     if(t==='e')return{i:v,t:'Эмодзи-статус',a:'#ff8ad8',b:'#a12a9c'};
-    if(t==='m')return{i:'🔋',t:'+'+v+' в запас ⚡',a:'#2fd6a1',b:'#0a7a66'};
+    if(t==='m')return{i:'🔋',t:'+'+v+' в запас 🔋',a:'#2fd6a1',b:'#0a7a66'};
     return{i:'🎴',t:v==='epic'?'Эпическая карта':'Новая карта',a:'#b57bff',b:'#5a25b8'};}
   window.claimKosmos=function(i){
     if(!hasKP())return;
@@ -13175,11 +13178,30 @@ function buyAutumnLeaf() {
     try{saveState();updateUI();}catch(e){}
     render();
   };
+  window.twRender=render;
   const _prev=window.switchMelonTab;
   window.switchMelonTab=function(t){_prev(t);if(t==='tower')render();};
   // обновлять список после выигрыша в рулетке
   const _o=window.spinSummerWheel;
   window.spinSummerWheel=function(){_o();setTimeout(render,5600);};
+})();
+</script>
+<script>
+/* ===== живое обновление балансов Melons Quest ===== */
+(function(){
+  let sig='';
+  setInterval(function(){
+    const ov=document.getElementById('melonOverlay');
+    if(!ov||!ov.classList.contains('active'))return;
+    const f=n=>Math.floor(n||0).toLocaleString('ru-RU');
+    const set=(id,v)=>{const e=document.getElementById(id);if(e&&e.textContent!==v)e.textContent=v;};
+    set('mqMelons',f(state.melons));set('mqXp',f(state.xp));set('mqGems',f(state.gems));
+    const n=[Math.floor(state.xp||0),Math.floor(state.gems||0),state.melons||0,state.melonFloor||0,(state.kosmosClaimed||[]).length,state.kosmosPass?1:0].join('|');
+    if(n!==sig){sig=n;
+      try{updateUI();}catch(e){}
+      try{window.swRender&&window.swRender();}catch(e){}
+      try{window.twRender&&window.twRender();}catch(e){}}
+  },400);
 })();
 </script>
 </body>
