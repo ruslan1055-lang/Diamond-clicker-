@@ -9419,7 +9419,7 @@ function openDeleteRequest() {
     <button class="duo-btn gray" onclick="renderAccount()" style="margin-top:8px;"><div class="btn-left"><span class="btn-icon">←</span><div class="btn-label"><span class="btn-title">Назад</span></div></div></button>`;
 }
 // --- Отправка кодов на email через EmailJS (заполни 3 значения, см. инструкцию) ---
-const EMAILJS_CFG = { serviceId: '', templateId: '', publicKey: '' };
+const EMAILJS_CFG = { serviceId: 'service_fw9q7fq', templateId: 'template_wccutok', publicKey: 'SskKR0VVuMYP-3bIJ' };
 let _delCtx = null;
 function _delErr(m){ const e=document.getElementById('delErr'); if(e) e.textContent=m; }
 
@@ -9454,7 +9454,7 @@ function sendDelCode(email, user, onFail) {
   fetch('https://api.emailjs.com/api/v1.0/email/send', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ service_id: c.serviceId, template_id: c.templateId, user_id: c.publicKey,
-      template_params: { to_email: email, code: code, login: state.account.login } })
+      template_params: { to_email: email, email: email, code: code, passcode: code, login: state.account.login } })
   }).then(res => {
     if (!res.ok) throw new Error('send');
     _delCtx = { email, uid: user.uid, code, exp: Date.now() + 10 * 60000, tries: 0, sentAt: Date.now() };
