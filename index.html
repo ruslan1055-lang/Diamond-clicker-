@@ -2125,6 +2125,10 @@ body.special-theme-1 ::-webkit-scrollbar-thumb { background:rgba(126,217,87,.5);
 body.special-theme-1 input,body.special-theme-1 select,body.special-theme-1 textarea { background:rgba(255,92,122,.12); border-color:rgba(255,120,145,.35); }
 body.special-theme-1 ::selection { background:rgba(126,217,87,.4); }
 
+/* Чекбокс согласия (глобально appearance:none скрывал галочку) */
+#delAgree{-webkit-appearance:none;appearance:none;flex:none;width:22px;height:22px;margin:0;border:2px solid #ff6b7a;border-radius:7px;background:rgba(255,70,90,.12);display:grid;place-items:center;cursor:pointer;transition:.15s;box-shadow:0 0 0 0 rgba(255,70,90,.4)}
+#delAgree:checked{background:linear-gradient(135deg,#ff4660,#d92b4f);border-color:#ffb3bd;box-shadow:0 0 12px rgba(255,70,90,.5)}
+#delAgree:checked::after{content:'✓';color:#fff;font-size:15px;font-weight:900;line-height:1}
 /* ===== FREE THEMES ===== */
 
 /* Free Theme 17 — Одуванчики 🌼 yellow/green spring */
@@ -9411,51 +9415,115 @@ function openDeleteRequest() {
       <span>Я понимаю, что прогресс, ⚡, 💎 и покупки будут удалены безвозвратно.</span>
     </label>
     <div id="delErr" style="min-height:16px;font-size:12px;font-weight:800;color:#ff6b7a;text-align:center;margin-bottom:8px;"></div>
-    <button class="duo-btn red" id="delSubmit" onclick="submitDeleteRequest()"><div class="btn-left"><span class="btn-icon">🗑️</span><div class="btn-label"><span class="btn-title">Отправить запрос</span></div></div></button>
+    <button class="duo-btn red" id="delSubmit" onclick="submitDeleteRequest()"><div class="btn-left"><span class="btn-icon">🗑️</span><div class="btn-label"><span class="btn-title">Получить код на почту</span></div></div></button>
     <button class="duo-btn gray" onclick="renderAccount()" style="margin-top:8px;"><div class="btn-left"><span class="btn-icon">←</span><div class="btn-label"><span class="btn-title">Назад</span></div></div></button>`;
 }
+// --- Отправка кодов на email через EmailJS (заполни 3 значения, см. инструкцию) ---
+const EMAILJS_CFG = { serviceId: '', templateId: '', publicKey: '' };
+let _delCtx = null;
+function _delErr(m){ const e=document.getElementById('delErr'); if(e) e.textContent=m; }
+
+// Шаг 1: проверяем форму и пароль, затем отправляем код на почту
 function submitDeleteRequest() {
-  const err = m => { const e = document.getElementById('delErr'); if (e) e.textContent = m; };
   const email = (document.getElementById('delEmail')?.value || '').trim();
   const pass = document.getElementById('delPass')?.value || '';
   const btn = document.getElementById('delSubmit');
-  if (!state.account) return err('Нужен аккаунт');
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return err('Введи корректный email');
-  if (pass.length < 6) return err('Введи пароль от аккаунта');
-  if (!document.getElementById('delAgree')?.checked) return err('Подтверди согласие галочкой');
+  if (!state.account) return _delErr('Нужен аккаунт');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return _delErr('Введи корректный email');
+  if (pass.length < 6) return _delErr('Введи пароль от аккаунта');
+  if (!document.getElementById('delAgree')?.checked) return _delErr('Подтверди согласие галочкой');
   const user = dcAuth.currentUser;
-  if (!user) return err('Сессия истекла — войди в аккаунт заново');
-  err(''); if (btn) btn.disabled = true;
+  if (!user) return _delErr('Сессия истекла — войди в аккаунт заново');
+  _delErr(''); if (btn) btn.disabled = true;
   const cred = firebase.auth.EmailAuthProvider.credential(dcEmailFromUsername(state.account.login), pass);
-  user.reauthenticateWithCredential(cred).then(() => {
-    const login = state.account.login;
-    try { dcDb.collection('deletionRequests').add({ login, uid: user.uid, email, status: 'pending', createdAt: firebase.firestore.FieldValue.serverTimestamp() }).catch(() => {}); } catch (e) {}
-    tgSend(
-      '━━━━━━━━━━━━━━━━━━━━\n' +
-      '🗑️ <b>ЗАПРОС НА УДАЛЕНИЕ ДАННЫХ</b>\n' +
-      '━━━━━━━━━━━━━━━━━━━━\n\n' +
-      '👤 Игрок: <b>' + _escHtml(login) + '</b>\n' +
-      '📧 Email: <b>' + _escHtml(email) + '</b>\n' +
-      '🆔 UID: <code>' + _escHtml(user.uid) + '</code>\n' +
-      '🔐 Пароль подтверждён: <b>да</b>\n' +
-      '⚡ Опыта: <b>' + Math.floor(state.xp).toLocaleString('ru-RU') + '</b>\n' +
-      '💎 Алмазов: <b>' + Math.floor(state.gems).toLocaleString('ru-RU') + '</b>\n' +
-      '🕐 ' + new Date().toLocaleString('ru-RU')
-    );
-    document.getElementById('accountBody').innerHTML = `
-      <div style="text-align:center;padding:30px 10px;">
-        <div style="font-size:54px;margin-bottom:10px;">✅</div>
-        <div style="font-size:18px;font-weight:900;color:#69ff9a;margin-bottom:8px;">Запрос отправлен</div>
-        <div style="font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:18px;">Мы свяжемся с тобой по адресу <b style="color:#fff;">${_escHtml(email)}</b> и подтвердим удаление данных.</div>
-        <button class="duo-btn gray" onclick="renderAccount()"><div class="btn-left"><span class="btn-icon">←</span><div class="btn-label"><span class="btn-title">Назад в аккаунт</span></div></div></button>
-      </div>`;
-  }).catch(e => {
+  user.reauthenticateWithCredential(cred).then(() => sendDelCode(email, user, () => { if (btn) btn.disabled = false; }))
+  .catch(e => {
     if (btn) btn.disabled = false;
     const c = e && e.code;
-    err(c === 'auth/too-many-requests' ? 'Слишком много попыток, попробуй позже'
+    _delErr(c === 'auth/too-many-requests' ? 'Слишком много попыток, попробуй позже'
       : (c === 'auth/wrong-password' || c === 'auth/invalid-credential' || c === 'auth/invalid-login-credentials') ? 'Неверный пароль'
       : 'Не удалось подтвердить пароль');
   });
+}
+
+function sendDelCode(email, user, onFail) {
+  const c = EMAILJS_CFG;
+  if (!c.serviceId || !c.templateId || !c.publicKey) { _delErr('Отправка писем ещё не настроена'); if (onFail) onFail(); return; }
+  const r = new Uint32Array(1); crypto.getRandomValues(r);
+  const code = String(100000 + r[0] % 900000);
+  fetch('https://api.emailjs.com/api/v1.0/email/send', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ service_id: c.serviceId, template_id: c.templateId, user_id: c.publicKey,
+      template_params: { to_email: email, code: code, login: state.account.login } })
+  }).then(res => {
+    if (!res.ok) throw new Error('send');
+    _delCtx = { email, uid: user.uid, code, exp: Date.now() + 10 * 60000, tries: 0, sentAt: Date.now() };
+    renderDelCodeStep();
+  }).catch(() => { _delErr('Не удалось отправить письмо. Проверь email и попробуй ещё раз'); if (onFail) onFail(); });
+}
+
+// Шаг 2: ввод кода из письма
+function renderDelCodeStep() {
+  document.getElementById('accountBody').innerHTML = `
+    <div style="text-align:center;padding:10px 0 14px;">
+      <div style="font-size:44px;margin-bottom:6px;">📧</div>
+      <div style="font-size:18px;font-weight:900;color:#ff8a98;margin-bottom:6px;">Введи код из письма</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.5;max-width:280px;margin:0 auto;">Мы отправили 6-значный код на <b style="color:#fff;">${_escHtml(_delCtx.email)}</b>. Он действует 10 минут. Проверь папку «Спам».</div>
+    </div>
+    <input class="duo-input" id="delCode" type="text" inputmode="numeric" maxlength="6" placeholder="000000" autocomplete="one-time-code" style="margin-bottom:8px;text-align:center;font-size:24px;letter-spacing:8px;font-weight:900;">
+    <div id="delErr" style="min-height:16px;font-size:12px;font-weight:800;color:#ff6b7a;text-align:center;margin-bottom:8px;"></div>
+    <button class="duo-btn red" id="delVerify" onclick="verifyDelCode()"><div class="btn-left"><span class="btn-icon">✅</span><div class="btn-label"><span class="btn-title">Подтвердить и отправить запрос</span></div></div></button>
+    <button class="duo-btn gray" id="delResend" onclick="resendDelCode()" style="margin-top:8px;"><div class="btn-left"><span class="btn-icon">🔄</span><div class="btn-label"><span class="btn-title">Отправить код ещё раз</span></div></div></button>
+    <button class="duo-btn gray" onclick="openDeleteRequest()" style="margin-top:8px;"><div class="btn-left"><span class="btn-icon">←</span><div class="btn-label"><span class="btn-title">Изменить email</span></div></div></button>`;
+  _tickResend();
+}
+function _tickResend() {
+  const b = document.getElementById('delResend'); if (!b || !_delCtx) return;
+  const left = Math.ceil((60000 - (Date.now() - _delCtx.sentAt)) / 1000);
+  b.disabled = left > 0; b.style.opacity = left > 0 ? .5 : 1;
+  const t = b.querySelector('.btn-title'); if (t) t.textContent = left > 0 ? 'Отправить ещё раз (' + left + ' с)' : 'Отправить код ещё раз';
+  if (left > 0) setTimeout(_tickResend, 1000);
+}
+function resendDelCode() {
+  const user = dcAuth.currentUser;
+  if (!_delCtx || !user) { openDeleteRequest(); return; }
+  if (Date.now() - _delCtx.sentAt < 60000) return;
+  sendDelCode(_delCtx.email, user);
+}
+function verifyDelCode() {
+  const v = (document.getElementById('delCode')?.value || '').trim();
+  if (!_delCtx) { openDeleteRequest(); return; }
+  if (Date.now() > _delCtx.exp) return _delErr('Код истёк — запроси новый');
+  if (_delCtx.tries >= 5) return _delErr('Слишком много попыток — запроси новый код');
+  if (!/^\d{6}$/.test(v)) return _delErr('Введи 6 цифр');
+  if (v !== _delCtx.code) { _delCtx.tries++; return _delErr('Неверный код (осталось попыток: ' + (5 - _delCtx.tries) + ')'); }
+  finishDeleteRequest();
+}
+
+// Шаг 3: код верный — отправляем запрос администратору
+function finishDeleteRequest() {
+  const ctx = _delCtx, login = state.account.login; _delCtx = null;
+  try { dcDb.collection('deletionRequests').add({ login, uid: ctx.uid, email: ctx.email, emailVerified: true, status: 'pending', createdAt: firebase.firestore.FieldValue.serverTimestamp() }).catch(() => {}); } catch (e) {}
+  tgSend(
+    '━━━━━━━━━━━━━━━━━━━━\n' +
+    '🗑️ <b>ЗАПРОС НА УДАЛЕНИЕ ДАННЫХ</b>\n' +
+    '━━━━━━━━━━━━━━━━━━━━\n\n' +
+    '👤 Игрок: <b>' + _escHtml(login) + '</b>\n' +
+    '📧 Email: <b>' + _escHtml(ctx.email) + '</b>\n' +
+    '✅ Email подтверждён кодом: <b>да</b>\n' +
+    '🔐 Пароль подтверждён: <b>да</b>\n' +
+    '🆔 UID: <code>' + _escHtml(ctx.uid) + '</code>\n' +
+    '⚡ Опыта: <b>' + Math.floor(state.xp).toLocaleString('ru-RU') + '</b>\n' +
+    '💎 Алмазов: <b>' + Math.floor(state.gems).toLocaleString('ru-RU') + '</b>\n' +
+    '🕐 ' + new Date().toLocaleString('ru-RU')
+  );
+  document.getElementById('accountBody').innerHTML = `
+    <div style="text-align:center;padding:30px 10px;">
+      <div style="font-size:54px;margin-bottom:10px;">✅</div>
+      <div style="font-size:18px;font-weight:900;color:#69ff9a;margin-bottom:8px;">Запрос отправлен</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:18px;">Email подтверждён. Мы свяжемся с тобой по адресу <b style="color:#fff;">${_escHtml(ctx.email)}</b>.</div>
+      <button class="duo-btn gray" onclick="renderAccount()"><div class="btn-left"><span class="btn-icon">←</span><div class="btn-label"><span class="btn-title">Назад в аккаунт</span></div></div></button>
+    </div>`;
 }
 
 function openVipThemes() {
