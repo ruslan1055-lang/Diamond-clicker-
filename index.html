@@ -9316,20 +9316,21 @@ function submitDeleteRequest() {
   if (pass.length < 6) return _delErr('Введи пароль от аккаунта');
   if (!document.getElementById('delAgree')?.checked) return _delErr('Подтверди согласие галочкой');
   _delErr(''); if (btn) btn.disabled = true;
-  const authEmail = dcEmailFromUsername(state.account.login);
+  const authEmail = dcEmailFromUsername(dcSanitizeUsername(state.account.login));
   const cred = firebase.auth.EmailAuthProvider.credential(authEmail, pass);
   // Если сессия слетела — входим заново по введённому паролю, иначе просто подтверждаем пароль
   const cur = dcAuth.currentUser;
-  const getUser = cur
-    ? cur.reauthenticateWithCredential(cred).then(() => dcAuth.currentUser || cur)
-    : dcAuth.signInWithEmailAndPassword(authEmail, pass).then(r => r.user);
+  const getUser = dcAuth.signInWithEmailAndPassword(authEmail, pass).then(r => r.user);
   getUser.then(user => sendDelCode(email, user, () => { if (btn) btn.disabled = false; }))
   .catch(e => {
     if (btn) btn.disabled = false;
     const c = e && e.code;
     _delErr(c === 'auth/too-many-requests' ? 'Слишком много попыток, попробуй позже'
       : (c === 'auth/wrong-password' || c === 'auth/invalid-credential' || c === 'auth/invalid-login-credentials') ? 'Неверный пароль'
-      : 'Не удалось подтвердить пароль');
+      : c === 'auth/network-request-failed' ? 'Нет связи с сервером — проверь интернет и попробуй снова'
+      : c === 'auth/user-disabled' ? 'Аккаунт заблокирован'
+      : 'Не удалось подтвердить пароль (' + (c || (e && e.message) || 'ошибка') + ')');
+    console.warn('delete-confirm error:', e);
   });
 }
 
