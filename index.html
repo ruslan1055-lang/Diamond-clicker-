@@ -9315,11 +9315,15 @@ function submitDeleteRequest() {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return _delErr('Введи корректный email');
   if (pass.length < 6) return _delErr('Введи пароль от аккаунта');
   if (!document.getElementById('delAgree')?.checked) return _delErr('Подтверди согласие галочкой');
-  const user = dcAuth.currentUser;
-  if (!user) return _delErr('Сессия истекла — войди в аккаунт заново');
   _delErr(''); if (btn) btn.disabled = true;
-  const cred = firebase.auth.EmailAuthProvider.credential(dcEmailFromUsername(state.account.login), pass);
-  user.reauthenticateWithCredential(cred).then(() => sendDelCode(email, user, () => { if (btn) btn.disabled = false; }))
+  const authEmail = dcEmailFromUsername(state.account.login);
+  const cred = firebase.auth.EmailAuthProvider.credential(authEmail, pass);
+  // Если сессия слетела — входим заново по введённому паролю, иначе просто подтверждаем пароль
+  const cur = dcAuth.currentUser;
+  const getUser = cur
+    ? cur.reauthenticateWithCredential(cred).then(() => dcAuth.currentUser || cur)
+    : dcAuth.signInWithEmailAndPassword(authEmail, pass).then(r => r.user);
+  getUser.then(user => sendDelCode(email, user, () => { if (btn) btn.disabled = false; }))
   .catch(e => {
     if (btn) btn.disabled = false;
     const c = e && e.code;
