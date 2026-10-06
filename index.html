@@ -2,6 +2,49 @@
 <html lang="ru">
 <head>
 <script>
+/* ===== ГЛОБАЛЬНЫЙ ВЫКЛЮЧАТЕЛЬ ЗВУКА (Web Audio + <audio>/<video>) ===== */
+(function(){
+  var KEY='dc_sound_off',off=false,masters=new WeakMap(),ctxs=[],media=[];
+  try{off=localStorage.getItem(KEY)==='1'}catch(e){}
+  var AN=window.AudioNode&&AudioNode.prototype;
+  if(AN&&window.AudioDestinationNode){
+    var oc=AN.connect;
+    AN.connect=function(dest){
+      try{
+        if(dest instanceof AudioDestinationNode){
+          var ctx=dest.context,m=masters.get(ctx);
+          if(!m){m=ctx.createGain();m.gain.value=off?0:1;oc.call(m,dest);masters.set(ctx,m);ctxs.push(ctx)}
+          oc.call(this,m,arguments[1],arguments[2]);
+          return dest;
+        }
+      }catch(e){}
+      return oc.apply(this,arguments);
+    };
+  }
+  if(window.HTMLMediaElement){
+    var op=HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play=function(){
+      if(media.indexOf(this)<0)media.push(this);
+      if(off)this.muted=true;
+      return op.apply(this,arguments);
+    };
+  }
+  window.isSoundOff=function(){return off};
+  window.setSoundOff=function(v){
+    off=!!v;
+    try{localStorage.setItem(KEY,off?'1':'0')}catch(e){}
+    ctxs.forEach(function(c){var m=masters.get(c);if(m){try{m.gain.setValueAtTime(off?0:1,c.currentTime)}catch(e){m.gain.value=off?0:1}}});
+    media.forEach(function(e){e.muted=off});
+    document.querySelectorAll('audio,video').forEach(function(e){e.muted=off});
+  };
+  window.toggleSoundSetting=function(on){
+    window.setSoundOff(!on);
+    var i=document.getElementById('snd-ico');if(i)i.textContent=on?'🔊':'🔇';
+    if(typeof toast==='function')toast(on?'🔊 Звуки включены':'🔇 Все звуки выключены','success');
+  };
+})();
+</script>
+<script>
 // Мгновенная проверка локального флага бана — срабатывает раньше всего
 // остального кода, чтобы исключить любое мигание интерфейса игры.
 (function(){
@@ -241,6 +284,13 @@ body.perf-hint  .click-hint               { animation: none !important; opacity:
 }
 #diamondBtn svg { width: 100%; height: 100%; }
 
+/* ===== НОВЫЙ АЛМАЗ: анимации ===== */
+.bd-shine{animation:bdShine 3.6s ease-in-out infinite}
+@keyframes bdShine{0%,45%{transform:translateX(0)}100%{transform:translateX(340px)}}
+.bd-tw{transform-box:fill-box;transform-origin:center;animation:bdTw 2.6s ease-in-out infinite;animation-delay:var(--d,0s)}
+@keyframes bdTw{0%,100%{transform:scale(.2);opacity:0}50%{transform:scale(1);opacity:1}}
+body.perf-glow .bd-shine,body.perf-glow .bd-tw{animation:none}
+body.perf-glow .bd-tw{opacity:.85}
 .click-power {
   margin-top: 22px; font-size: 16px; font-weight: 900;
   color: rgba(255,255,255,0.88);
@@ -2821,116 +2871,65 @@ body[class*="free-theme-"] #bonusTab1 {
     <button id="diamondBtn" aria-label="Кликни на алмаз">
       <svg viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <!-- Main body gradient -->
-          <linearGradient id="dg-main" x1="20%" y1="0%" x2="80%" y2="100%">
-            <stop offset="0%"   stop-color="#c8f0ff"/>
-            <stop offset="25%"  stop-color="#40c8ff"/>
-            <stop offset="55%"  stop-color="#0080e0"/>
-            <stop offset="85%"  stop-color="#0040a0"/>
-            <stop offset="100%" stop-color="#001860"/>
+          <linearGradient id="bd-sheen" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%"   stop-color="#fff" stop-opacity="0.45"/>
+            <stop offset="45%"  stop-color="#fff" stop-opacity="0"/>
+            <stop offset="100%" stop-color="#000a30" stop-opacity="0.35"/>
           </linearGradient>
-          <!-- Left top facet -->
-          <linearGradient id="dg-lt" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%"   stop-color="#e8f8ff" stop-opacity="0.9"/>
-            <stop offset="100%" stop-color="#80d0ff" stop-opacity="0.3"/>
+          <linearGradient id="bd-rainbow" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%"   stop-color="#ff7ad9"/>
+            <stop offset="50%"  stop-color="#ffe66b"/>
+            <stop offset="100%" stop-color="#7affc9"/>
           </linearGradient>
-          <!-- Right top facet -->
-          <linearGradient id="dg-rt" x1="100%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%"   stop-color="#60b0ff" stop-opacity="0.6"/>
-            <stop offset="100%" stop-color="#0050c0" stop-opacity="0.2"/>
+          <linearGradient id="bd-shine" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%"   stop-color="#fff" stop-opacity="0"/>
+            <stop offset="50%"  stop-color="#fff" stop-opacity="0.75"/>
+            <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
           </linearGradient>
-          <!-- Left bottom facet -->
-          <linearGradient id="dg-lb" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%"   stop-color="#0080ff" stop-opacity="0.5"/>
-            <stop offset="100%" stop-color="#001040" stop-opacity="0.8"/>
-          </linearGradient>
-          <!-- Right bottom facet -->
-          <linearGradient id="dg-rb" x1="100%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%"   stop-color="#0060d0" stop-opacity="0.4"/>
-            <stop offset="100%" stop-color="#000820" stop-opacity="0.9"/>
-          </linearGradient>
-          <!-- Center bright -->
-          <radialGradient id="dg-center" cx="42%" cy="38%" r="35%">
-            <stop offset="0%"   stop-color="#ffffff" stop-opacity="0.9"/>
-            <stop offset="50%"  stop-color="#a0e8ff" stop-opacity="0.4"/>
-            <stop offset="100%" stop-color="#0080ff" stop-opacity="0"/>
-          </radialGradient>
-          <!-- Inner glow -->
-          <radialGradient id="dg-inner" cx="50%" cy="55%" r="50%">
-            <stop offset="0%"   stop-color="#40a0ff" stop-opacity="0.35"/>
-            <stop offset="100%" stop-color="#000840" stop-opacity="0.6"/>
-          </radialGradient>
-          <!-- Shimmer -->
-          <linearGradient id="dg-shimmer" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%"   stop-color="white" stop-opacity="0"/>
-            <stop offset="45%"  stop-color="white" stop-opacity="0.55"/>
-            <stop offset="55%"  stop-color="white" stop-opacity="0.55"/>
-            <stop offset="100%" stop-color="white" stop-opacity="0"/>
-          </linearGradient>
-          <clipPath id="diamond-clip">
-            <polygon points="100,18 185,75 145,198 55,198 15,75"/>
-          </clipPath>
-          <filter id="inner-glow">
-            <feGaussianBlur stdDeviation="3" result="blur"/>
-            <feComposite in="SourceGraphic" in2="blur" operator="over"/>
-          </filter>
+          <clipPath id="bd-clip"><polygon points="62,38 138,38 186,82 100,206 14,82"/></clipPath>
+          <filter id="bd-blur"><feGaussianBlur stdDeviation="3"/></filter>
         </defs>
 
-        <!-- Shadow beneath diamond -->
-        <ellipse cx="100" cy="205" rx="52" ry="10" fill="rgba(0,80,200,0.3)" filter="url(#inner-glow)"/>
+        <!-- тень -->
+        <ellipse cx="100" cy="212" rx="46" ry="6" fill="rgba(0,60,160,0.35)" filter="url(#bd-blur)"/>
 
-        <!-- Main diamond body -->
-        <polygon points="100,18 185,75 145,198 55,198 15,75" fill="url(#dg-main)"/>
-
-        <!-- Facets overlaid on body -->
-        <!-- Top-left facet -->
-        <polygon points="100,18 15,75 100,100" fill="url(#dg-lt)"/>
-        <!-- Top-right facet -->
-        <polygon points="100,18 185,75 100,100" fill="url(#dg-rt)"/>
-        <!-- Bottom-left facet -->
-        <polygon points="15,75 100,100 55,198" fill="url(#dg-lb)"/>
-        <!-- Bottom-right facet -->
-        <polygon points="185,75 145,198 100,100" fill="url(#dg-rb)"/>
-        <!-- Center girdle line area -->
-        <polygon points="100,100 55,198 145,198" fill="rgba(0,30,90,0.28)"/>
-
-        <!-- Inner radial fill for depth -->
-        <polygon points="100,18 185,75 145,198 55,198 15,75" fill="url(#dg-inner)"/>
-
-        <!-- Facet edge lines for realism -->
-        <line x1="100" y1="18" x2="100" y2="100" stroke="rgba(255,255,255,0.22)" stroke-width="1"/>
-        <line x1="15"  y1="75" x2="100" y2="100" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-        <line x1="185" y1="75" x2="100" y2="100" stroke="rgba(255,255,255,0.1)"  stroke-width="0.8"/>
-        <line x1="100" y1="100" x2="55"  y2="198" stroke="rgba(255,255,255,0.1)"  stroke-width="0.8"/>
-        <line x1="100" y1="100" x2="145" y2="198" stroke="rgba(0,0,80,0.4)"       stroke-width="0.8"/>
-
-        <!-- Outer edge highlights -->
-        <polyline points="100,18 185,75" stroke="rgba(255,255,255,0.65)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-        <polyline points="100,18 15,75"  stroke="rgba(255,255,255,0.35)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-        <polyline points="15,75 55,198"  stroke="rgba(255,255,255,0.12)" stroke-width="1"   fill="none"/>
-        <polyline points="185,75 145,198" stroke="rgba(0,0,60,0.5)"      stroke-width="1.2" fill="none"/>
-        <polyline points="55,198 145,198" stroke="rgba(0,0,80,0.4)"      stroke-width="1"   fill="none"/>
-
-        <!-- Bright center glow overlay -->
-        <polygon points="100,18 185,75 145,198 55,198 15,75" fill="url(#dg-center)"/>
-
-        <!-- Top shine sparkle -->
-        <ellipse cx="78" cy="52" rx="14" ry="7" fill="rgba(255,255,255,0.7)" transform="rotate(-28,78,52)"/>
-        <ellipse cx="68" cy="44" rx="5"  ry="3" fill="rgba(255,255,255,0.9)" transform="rotate(-28,68,44)"/>
-
-        <!-- Star sparkle top right -->
-        <g transform="translate(162,46)" opacity="0.85">
-          <line x1="0" y1="-8" x2="0" y2="8"   stroke="white" stroke-width="1.2" stroke-linecap="round"/>
-          <line x1="-8" y1="0" x2="8" y2="0"   stroke="white" stroke-width="1.2" stroke-linecap="round"/>
-          <line x1="-5" y1="-5" x2="5" y2="5"  stroke="white" stroke-width="0.7" stroke-linecap="round"/>
-          <line x1="5"  y1="-5" x2="-5" y2="5" stroke="white" stroke-width="0.7" stroke-linecap="round"/>
+        <g stroke="rgba(255,255,255,0.6)" stroke-width="1" stroke-linejoin="round">
+          <!-- корона (верх) -->
+          <polygon points="14,82 62,38 57,82"   fill="#7fe3ff"/>
+          <polygon points="62,38 57,82 100,82"  fill="#d4f8ff"/>
+          <polygon points="62,38 100,38 100,82" fill="#f0fdff"/>
+          <polygon points="100,38 138,38 100,82" fill="#a4f0ff"/>
+          <polygon points="138,38 100,82 143,82" fill="#3db9ff"/>
+          <polygon points="138,38 143,82 186,82" fill="#1f8fe8"/>
+          <!-- павильон (низ) -->
+          <polygon points="14,82 57,82 100,206"  fill="#3bb7ff"/>
+          <polygon points="57,82 100,82 100,206" fill="#1d86e6"/>
+          <polygon points="100,82 143,82 100,206" fill="#1260c4"/>
+          <polygon points="143,82 186,82 100,206" fill="#0a3f93"/>
         </g>
 
-        <!-- Small sparkle bottom-left -->
-        <g transform="translate(38,155)" opacity="0.5">
-          <line x1="0" y1="-5" x2="0" y2="5" stroke="white" stroke-width="0.8" stroke-linecap="round"/>
-          <line x1="-5" y1="0" x2="5" y2="0" stroke="white" stroke-width="0.8" stroke-linecap="round"/>
+        <!-- радужная дисперсия -->
+        <polygon points="62,38 57,82 100,82" fill="url(#bd-rainbow)" opacity="0.28"/>
+        <polygon points="138,38 143,82 100,82" fill="url(#bd-rainbow)" opacity="0.18"/>
+
+        <!-- общий блик и контур -->
+        <polygon points="62,38 138,38 186,82 100,206 14,82" fill="url(#bd-sheen)"/>
+        <polygon points="62,38 138,38 186,82 100,206 14,82" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="1.6" stroke-linejoin="round"/>
+        <line x1="14" y1="82" x2="186" y2="82" stroke="rgba(255,255,255,0.75)" stroke-width="1.4"/>
+
+        <!-- блеск, бегущий по граням -->
+        <g clip-path="url(#bd-clip)">
+          <g class="bd-shine"><rect x="-20" y="0" width="40" height="220" fill="url(#bd-shine)" transform="skewX(-20)"/></g>
         </g>
+
+        <!-- блики -->
+        <polygon points="70,46 90,46 76,64" fill="#fff" opacity="0.85"/>
+        <circle cx="33" cy="80" r="2.6" fill="#fff" opacity="0.9"/>
+
+        <!-- искры -->
+        <g transform="translate(160,36)"><g class="bd-tw" style="--d:0s"><path d="M0-10L2.4-2.4 10 0 2.4 2.4 0 10-2.4 2.4-10 0-2.4-2.4Z" fill="#fff"/></g></g>
+        <g transform="translate(40,50)"><g class="bd-tw" style="--d:.9s"><path d="M0-7L1.7-1.7 7 0 1.7 1.7 0 7-1.7 1.7-7 0-1.7-1.7Z" fill="#fff"/></g></g>
+        <g transform="translate(128,150)"><g class="bd-tw" style="--d:1.7s"><path d="M0-6L1.5-1.5 6 0 1.5 1.5 0 6-1.5 1.5-6 0-1.5-1.5Z" fill="#cdf3ff"/></g></g>
       </svg>
     </button>
   </div>
@@ -7343,6 +7342,23 @@ function renderSettings() {
         Отключи тяжёлые эффекты если игра тормозит.<br>
         Нажми <b>«Сохранить»</b> чтобы применить изменения.
       </div>
+    </div>
+
+    <!-- Section: Sound -->
+    <div class="settings-section-header">
+      <span class="settings-section-label">🔊 Звук</span>
+      <div class="settings-section-line"></div>
+    </div>
+    <div class="setting-row">
+      <div class="setting-icon-wrap" id="snd-ico">${window.isSoundOff() ? '🔇' : '🔊'}</div>
+      <div class="setting-info">
+        <div class="setting-title">Звуки приложения</div>
+        <div class="setting-sub">Выкл. — полностью убирает все звуки. Применяется сразу</div>
+      </div>
+      <label class="toggle-wrap" style="margin-left:14px;">
+        <input type="checkbox" id="toggle-sound" ${window.isSoundOff() ? '' : 'checked'} onchange="toggleSoundSetting(this.checked)">
+        <span class="toggle-track"></span>
+      </label>
     </div>
 
     <!-- Section: Visual effects -->
