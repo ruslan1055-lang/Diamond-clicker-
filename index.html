@@ -2,6 +2,213 @@
 <html lang="ru">
 <head>
 <script>
+/* ===== ТОТАЛЬНАЯ АНТИСПАМ-ЗАЩИТА =====
+   Правило: более 5 нажатий на любые кнопки (кроме главного алмаза) за 3 секунды
+   → игра блокируется на 10 секунд + предупреждение «Не спамь!».
+   Блокировка переживает перезагрузку страницы. */
+(function(){
+  'use strict';
+  var MAX_TAPS = 5, WINDOW_MS = 3000, LOCK_MS = 10000, KEY = 'dc_spam_lock_until';
+  var SEL = 'button,a[href],[onclick],[role="button"],summary,select,label,' +
+            'input[type="button"],input[type="submit"],.nav-btn,.task-btn,.chest-card,.game-card';
+  var taps = [], lockUntil = 0, overlay = null, timer = null;
+
+  try { lockUntil = +localStorage.getItem(KEY) || 0; } catch(e){}
+  if (lockUntil - Date.now() > LOCK_MS + 1000) lockUntil = Date.now() + LOCK_MS; // защита от подмены времени
+
+  function isLocked(){ return Date.now() < lockUntil; }
+
+  function isDiamond(el){ return !!(el.closest && el.closest('#diamondBtn')); }
+
+  function isButtonLike(el){
+    var n = el, i = 0;
+    while (n && n.nodeType === 1 && n !== document.body && i < 8){
+      if (n.matches(SEL)) return true;
+      var c = ''; try { c = getComputedStyle(n).cursor; } catch(e){}
+      if (c === 'pointer') return true;
+      n = n.parentElement; i++;
+    }
+    return false;
+  }
+
+  function buildOverlay(){
+    if (overlay) return overlay;
+    var st = document.createElement('style');
+    st.textContent =
+      '#dc-spam-lock{position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;' +
+      'background:rgba(4,6,16,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);' +
+      'font-family:Nunito,sans-serif;color:#fff;text-align:center;padding:24px;touch-action:none;user-select:none}' +
+      '#dc-spam-lock .sl-box{max-width:320px;width:100%;padding:28px 22px;border-radius:24px;' +
+      'background:linear-gradient(160deg,#2a0a14,#14060c);border:1.5px solid rgba(255,60,90,.55);' +
+      'box-shadow:0 0 40px rgba(255,50,80,.3),0 8px 0 rgba(0,0,0,.4)}' +
+      '#dc-spam-lock .sl-ic{font-size:54px;line-height:1;margin-bottom:10px}' +
+      '#dc-spam-lock .sl-t{font-size:24px;font-weight:900;color:#ff6680;margin-bottom:8px}' +
+      '#dc-spam-lock .sl-d{font-size:13px;font-weight:800;color:rgba(255,255,255,.7);line-height:1.5;margin-bottom:16px}' +
+      '#dc-spam-lock .sl-n{font-size:44px;font-weight:900;color:#fff;line-height:1}' +
+      '#dc-spam-lock .sl-bar{height:8px;border-radius:99px;background:rgba(255,255,255,.1);margin-top:16px;overflow:hidden}' +
+      '#dc-spam-lock .sl-bar i{display:block;height:100%;width:100%;border-radius:99px;background:linear-gradient(90deg,#ff3c5a,#ff9c00);transition:width .2s linear}';
+    document.head.appendChild(st);
+    overlay = document.createElement('div');
+    overlay.id = 'dc-spam-lock';
+    overlay.innerHTML =
+      '<div class="sl-box"><div class="sl-ic">🚫</div>' +
+      '<div class="sl-t">Не спамь!</div>' +
+      '<div class="sl-d">Слишком частые нажатия.<br>Игра заблокирована, подожди немного.</div>' +
+      '<div class="sl-n" id="dc-sl-n">10</div>' +
+      '<div class="sl-bar"><i id="dc-sl-bar"></i></div></div>';
+    ['click','touchstart','touchend','pointerdown','mousedown','contextmenu'].forEach(function(t){
+      overlay.addEventListener(t, function(e){ e.preventDefault(); e.stopPropagation(); }, { passive:false });
+    });
+    document.body.appendChild(overlay);
+    return overlay;
+  }
+
+  function tick(){
+    var left = lockUntil - Date.now();
+    if (left <= 0) return unlock();
+    var n = document.getElementById('dc-sl-n'), b = document.getElementById('dc-sl-bar');
+    if (n) n.textContent = Math.ceil(left / 1000);
+    if (b) b.style.width = Math.max(0, left / LOCK_MS * 100) + '%';
+  }
+
+  function showLock(){
+    if (!document.body) { document.addEventListener('DOMContentLoaded', showLock, { once:true }); return; }
+    buildOverlay();
+    overlay.style.display = 'flex';
+    tick();
+    clearInterval(timer);
+    timer = setInterval(tick, 200);
+  }
+
+  function lock(){
+    lockUntil = Date.now() + LOCK_MS;
+    taps = [];
+    try { localStorage.setItem(KEY, String(lockUntil)); } catch(e){}
+    showLock();
+  }
+
+  function unlock(){
+    clearInterval(timer); timer = null;
+    lockUntil = 0; taps = [];
+    try { localStorage.removeItem(KEY); } catch(e){}
+    if (overlay) overlay.style.display = 'none';
+    try { if (typeof window.toast === 'function') window.toast('✅ Игра разблокирована', 'success'); } catch(e){}
+  }
+
+  // Любое действие во время блокировки гасится (включая алмаз)
+  ['click','touchstart','pointerdown','mousedown','keydown'].forEach(function(type){
+    window.addEventListener(type, function(e){
+      if (!isLocked()) return;
+      if (overlay && overlay.contains(e.target)) return;
+      e.preventDefault(); e.stopImmediatePropagation();
+    }, { capture:true, passive:false });
+  });
+
+  // Подсчёт нажатий по кнопкам (алмаз не считается)
+  window.addEventListener('click', function(e){
+    if (isLocked()) return;
+    var t = e.target;
+    if (!t || t.nodeType !== 1) return;
+    if (isDiamond(t)) return;
+    if (t.labels && t.labels.length) return;          // клик, пересланный от <label> к <input>, уже посчитан
+    if (t.tagName === 'INPUT' && t.type === 'file') return;
+    if (!isButtonLike(t)) return;
+
+    var now = Date.now();
+    taps = taps.filter(function(ts){ return now - ts < WINDOW_MS; });
+    taps.push(now);
+    if (taps.length > MAX_TAPS){
+      e.preventDefault(); e.stopImmediatePropagation();
+      lock();
+    }
+  }, true);
+
+  // Блокировка могла остаться с прошлого визита
+  if (isLocked()) showLock();
+  else if (lockUntil) { try { localStorage.removeItem(KEY); } catch(e){} lockUntil = 0; }
+})();
+</script>
+<script>
+/* ===== ЗАЩИТА ОТ КРАШЕЙ И ВЗЛОМА (клиентская часть) ===== */
+(function(){
+  'use strict';
+  // 1) Базовая CSP: без плагинов и подмены <base>
+  try {
+    var m = document.createElement('meta');
+    m.httpEquiv = 'Content-Security-Policy';
+    m.content = "object-src 'none'; base-uri 'self'";
+    document.head.appendChild(m);
+  } catch(e){}
+
+  // 2) Ошибки не должны ронять игру и засорять консоль/цикл
+  var errN = 0, errT = Date.now();
+  window.addEventListener('error', function(e){
+    if (Date.now() - errT > 5000) { errT = Date.now(); errN = 0; }
+    if (++errN > 50) { e.preventDefault(); e.stopImmediatePropagation(); }
+  }, true);
+  window.addEventListener('unhandledrejection', function(e){ e.preventDefault(); });
+
+  // 3) Чистим < > во всех текстовых полях (кроме пароля/почты) — против XSS-ников и промокодов
+  document.addEventListener('input', function(e){
+    var t = e.target;
+    if (!t || t.tagName !== 'INPUT' && t.tagName !== 'TEXTAREA') return;
+    if (t.type === 'password' || t.type === 'email') return;
+    if (/[<>]/.test(t.value)) t.value = t.value.replace(/[<>]/g, '');
+  }, true);
+
+  // 4) Ограничение длины вводимого текста
+  document.addEventListener('focusin', function(e){
+    var t = e.target;
+    if (t && t.tagName === 'INPUT' && (t.type === 'text' || !t.type) && !t.maxLength || t && t.maxLength === -1) {
+      if (t.tagName === 'INPUT' && t.type !== 'password') t.maxLength = 64;
+    }
+  }, true);
+
+  // 5) Защита числовых полей state от NaN/Infinity (частый способ «крашнуть» игру)
+  var snap = {};
+  setInterval(function(){
+    try {
+      if (typeof state !== 'object' || !state) return;
+      Object.keys(state).forEach(function(k){
+        var v = state[k];
+        if (typeof v !== 'number') return;
+        if (!isFinite(v)) { state[k] = (k in snap) ? snap[k] : 0; }
+        else snap[k] = v;
+      });
+    } catch(e){}
+  }, 2000);
+
+  // 6) Обёртки после загрузки: тосты и промокоды
+  window.addEventListener('load', function(){
+    // не больше 4 тостов одновременно (защита от DOM-флуда)
+    if (typeof window.toast === 'function') {
+      var _toast = window.toast;
+      window.toast = function(){
+        var all = document.querySelectorAll('.toast');
+        for (var i = 0; i < all.length - 3; i++) all[i].remove();
+        return _toast.apply(this, arguments);
+      };
+    }
+    // промокоды: не чаще раза в 1.5 с и не больше 8 за минуту (защита от перебора)
+    if (typeof window.redeemPromo === 'function') {
+      var _rp = window.redeemPromo, last = 0, hist = [], blockedUntil = 0;
+      window.redeemPromo = function(){
+        var now = Date.now();
+        if (now < blockedUntil || now - last < 1500) return;
+        hist = hist.filter(function(t){ return now - t < 60000; });
+        if (hist.length >= 8) {
+          blockedUntil = now + 60000;
+          try { window.toast && window.toast('⛔ Слишком много попыток. Подожди минуту.', 'error'); } catch(e){}
+          return;
+        }
+        last = now; hist.push(now);
+        return _rp.apply(this, arguments);
+      };
+    }
+  });
+})();
+</script>
+<script>
 /* ===== ГЛОБАЛЬНЫЙ ВЫКЛЮЧАТЕЛЬ ЗВУКА (Web Audio + <audio>/<video>) ===== */
 (function(){
   var KEY='dc_sound_off',off=false,masters=new WeakMap(),ctxs=[],media=[];
@@ -5088,7 +5295,7 @@ function renderAccount() {
         `}
         <div class="welcome-title">Добро пожаловать!</div>
         <div class="welcome-sub" style="display:flex;align-items:center;gap:5px;justify-content:center;">
-          <span>@${state.account.login}</span>
+          <span>@${_escHtml(state.account.login)}</span>
           ${state.account.login === 'polya_12359' ? `<img src="data:image/svg+xml,%3Csvg xmlns='http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg' viewBox='0 0 100 100'%3E%3Cpath d='M50 4 L62 19 L80 14 L81 33 L97 42 L89 58 L97 74 L81 79 L76 97 L58 90 L50 100 L42 90 L24 97 L19 79 L3 74 L11 58 L3 42 L19 33 L20 14 L38 19 Z' fill='%23FF007F'%2F%3E%3Cpolyline points='29%2C51 44%2C66 71%2C34' stroke='rgba(255%2C255%2C255%2C0.92)' stroke-width='10' stroke-linecap='round' stroke-linejoin='round' fill='none'%2F%3E%3C%2Fsvg%3E" style="width:26px;height:26px;vertical-align:middle;flex-shrink:0;filter:drop-shadow(0 0 5px rgba(255,0,128,0.85));" title="Верифицированный аккаунт" />` : ''}
           ${state.emojiStatus ? `<span id="nameStatusEmoji" style="font-size:16px;cursor:pointer;" onclick="toggleEmojiPicker()" title="Сменить статус">${state.emojiStatus}</span>` : `<span id="nameStatusEmoji" onclick="toggleEmojiPicker()" style="font-size:11px;color:rgba(255,255,255,0.3);cursor:pointer;border:1px dashed rgba(255,255,255,0.2);border-radius:8px;padding:1px 5px;">+ статус</span>`}
         </div>
@@ -11262,7 +11469,7 @@ function renderLeagueModal(data) {
       const isMe = p.uid===myUid;
       waitRows += `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:14px;margin-bottom:6px;background:${isMe?'rgba(255,255,255,0.1)':'rgba(255,255,255,0.03)'};border:1.5px solid ${isMe?L.color+'66':'rgba(255,255,255,0.06)'};">
         <span style="font-size:16px;">👤</span>
-        <span style="flex:1;font-size:13px;font-weight:800;color:#fff;">${p.name||'Игрок'}${isMe?' <span style="font-size:10px;opacity:0.6;">(ты)</span>':''}</span>
+        <span style="flex:1;font-size:13px;font-weight:800;color:#fff;">${_escHtml(p.name||'Игрок')}${isMe?' <span style="font-size:10px;opacity:0.6;">(ты)</span>':''}</span>
         <span style="font-size:11px;color:#00e676;font-weight:800;">✓ готов</span>
       </div>`;
     });
@@ -11304,7 +11511,7 @@ function renderLeagueModal(data) {
     else if(isBot){bg='rgba(255,40,70,0.07)';border='rgba(255,50,80,0.25)';}
     rows+=`<div style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:14px;margin-bottom:6px;background:${bg};border:1.5px solid ${border};${isMe?'box-shadow:0 2px 12px '+L.color+'33;':''}">
       <span style="font-size:14px;font-weight:900;width:22px;text-align:center;color:${isTop?'#00e676':isBot?'#ff4460':'var(--text2)'};">${medal||rank}</span>
-      <span style="flex:1;font-size:13px;font-weight:800;color:${isMe?'#fff':'rgba(255,255,255,0.85)'};">${p.name||'Игрок'}${isMe?' <span style="font-size:10px;opacity:0.6;">(ты)</span>':''}</span>
+      <span style="flex:1;font-size:13px;font-weight:800;color:${isMe?'#fff':'rgba(255,255,255,0.85)'};">${_escHtml(p.name||'Игрок')}${isMe?' <span style="font-size:10px;opacity:0.6;">(ты)</span>':''}</span>
       <span style="font-size:13px;font-weight:900;color:${isTop?'#ffe566':isBot?'#ff6680':'rgba(255,255,255,0.7)'};">⚡ ${(p.score||0).toLocaleString()}</span>
     </div>`;
     if(rank===PROMOTE_COUNT&&total>PROMOTE_COUNT)
