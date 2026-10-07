@@ -3562,6 +3562,18 @@ body[class*="free-theme-"] #bonusTab1 {
   </div>
 </div>
 
+<!-- ULTRA MODAL -->
+<div class="modal-overlay" id="modal-ultra">
+  <div class="modal" style="border-top-color:rgba(255,210,77,0.5);box-shadow:0 -10px 50px rgba(0,0,0,0.8),0 -2px 0 rgba(255,210,77,0.28),0 -4px 40px rgba(255,79,216,0.14);">
+    <div class="modal-handle" style="background:rgba(255,210,77,0.35);"></div>
+    <div class="modal-header" style="border-bottom-color:rgba(255,210,77,0.15);">
+      <span class="modal-title" style="background:linear-gradient(135deg,#ffd24d 0%,#ff4fd8 55%,#8b5cf6 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">🏵️ ULTRA</span>
+      <button class="modal-close" onclick="closeModal('ultra')" style="border-color:rgba(255,210,77,0.25);color:rgba(255,210,77,0.6);">✕</button>
+    </div>
+    <div class="modal-body" id="ultraBody"></div>
+  </div>
+</div>
+
 <!-- WITHDRAW OFFER MODAL (shown after first withdrawal) -->
 <div class="modal-overlay" id="modal-withdraw-offer">
   <div class="modal" style="border-top-color:rgba(255,215,0,0.4);box-shadow:0 -10px 50px rgba(0,0,0,0.8),0 -2px 0 rgba(255,215,0,0.25),0 -4px 40px rgba(255,170,0,0.1);">
@@ -3777,6 +3789,7 @@ function defaultState() {
       claimed: [],          // забранные дни (номера 1-30)
     },
     fireDuo: null,      // { end: timestamp } — Fire Duolingo subscription
+    ultra: null,        // { end, last, earned } — ULTRA subscription (🏵️)
     dailyRewards: {
       lastClaimDate: null,  // 'YYYY-MM-DD' of last claim
       streak: 0,            // current streak day (1-7)
@@ -3861,6 +3874,11 @@ function sanitizeState(merged, parsed) {
       if (merged.diamondMagnate.end === undefined) merged.diamondMagnate.end = null;
       if (merged.diamondMagnate.lastClaimDate === undefined) merged.diamondMagnate.lastClaimDate = null;
       if (merged.fireDuo === undefined) merged.fireDuo = null;
+      if (!merged.ultra || typeof merged.ultra !== 'object' || typeof merged.ultra.end !== 'number') merged.ultra = null;
+      if (merged.ultra) {
+        if (typeof merged.ultra.last !== 'number' || !isFinite(merged.ultra.last)) merged.ultra.last = Date.now();
+        if (typeof merged.ultra.earned !== 'number') merged.ultra.earned = 0;
+      }
       if (!Array.isArray(merged.collectedCards)) merged.collectedCards = [];
       if (typeof merged.cashbackPool !== 'number') merged.cashbackPool = 0;
       if (typeof merged.prgram !== 'number') merged.prgram = 0;
@@ -4399,6 +4417,91 @@ function buyDiamondMagnate() {
   );
   toast('💎 Diamond magnate активирован на 30 дней!', 'success');
   renderDiamondMagnate();
+}
+
+// ============================================================
+//  🏵️ ULTRA — подписка на 30 дней (оплата алмазами 💎)
+//  • Зомби шутер без ограничений  • Вывод без комиссии
+//  • 150 выводов в день           • Пассивный доход 15 000 💎/час
+//    (копится по времени, в том числе когда игра закрыта)
+// ============================================================
+const ULTRA_COST = 1100000;            // 💎 за 30 дней
+const ULTRA_DAYS = 30;
+const ULTRA_PASSIVE_PER_HOUR = 15000;  // 💎 в час
+const ULTRA_WITHDRAW_LIMIT = 150;      // выводов в день
+
+function isUltraActive() {
+  return !!(state.ultra && state.ultra.end > Date.now());
+}
+
+// Начисляет пассивный доход за время с последнего начисления (не дальше конца подписки).
+// Считает по меткам времени, поэтому работает и после закрытия игры.
+function ultraCollect() {
+  const u = state.ultra;
+  if (!u || !u.end) return 0;
+  const now = Date.now();
+  const upTo = Math.min(now, u.end);
+  if (typeof u.last !== 'number' || !isFinite(u.last) || u.last <= 0) u.last = upTo;
+  if (upTo <= u.last) return 0;
+  const whole = Math.floor((upTo - u.last) / 3600000 * ULTRA_PASSIVE_PER_HOUR);
+  if (whole < 1) return 0;
+  u.last += whole / ULTRA_PASSIVE_PER_HOUR * 3600000; // остаток дробной части не теряется
+  u.earned = (u.earned || 0) + whole;
+  state.gems += whole;
+  return whole;
+}
+
+let _ultraLastSave = 0;
+function ultraTick() {
+  try {
+    const u = state && state.ultra;
+    if (!u || !u.end) return;
+    const gapMs = Date.now() - (u.last || Date.now());
+    const gain = ultraCollect();
+    if (gain > 0) {
+      const el = document.getElementById('gemCount');
+      if (el) el.textContent = Math.floor(state.gems);
+      if (gapMs > 90000 && typeof toast === 'function') {
+        toast('🏵️ ULTRA собрала ' + gain.toLocaleString('ru-RU') + ' 💎 пока тебя не было', 'success');
+      }
+      if (Date.now() - _ultraLastSave > 15000) { _ultraLastSave = Date.now(); saveState(); }
+    }
+  } catch (e) {}
+}
+setInterval(ultraTick, 1000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) ultraTick(); });
+window.addEventListener('pagehide', () => {
+  try { if (state.ultra && state.ultra.end) { ultraCollect(); saveState(); } } catch (e) {}
+});
+
+function buyUltra() {
+  if (state.gems < ULTRA_COST) { toast('Недостаточно 💎!', 'error'); return; }
+  ultraCollect(); // при продлении не теряем уже накопленное
+  state.gems -= ULTRA_COST; addCashback(ULTRA_COST);
+  const now = Date.now();
+  const prev = state.ultra;
+  const extend = isUltraActive();
+  const base = extend ? prev.end : now;
+  state.ultra = {
+    end: base + ULTRA_DAYS * 24 * 3600 * 1000,
+    last: extend ? (prev.last || now) : now,
+    earned: (prev && prev.earned) || 0,
+  };
+  updateUI(); saveState();
+  tgSend(
+    '━━━━━━━━━━━━━━━━━━━━\n' +
+    '🏵️💎 <b>ПОДПИСКА ULTRA</b> 💎🏵️\n' +
+    '━━━━━━━━━━━━━━━━━━━━\n\n' +
+    '🎊 Новый ULTRA подписчик!\n\n' +
+    '👤 Игрок: <b>' + (state.account ? state.account.login : 'Гость') + '</b>\n' +
+    '💳 Оплата: <b>' + ULTRA_COST.toLocaleString('ru-RU') + ' 💎 алмазами</b>\n' +
+    '📅 Активна до: <b>' + new Date(state.ultra.end).toLocaleDateString('ru-RU') + '</b>\n' +
+    '💎 Алмазов осталось: <b>' + Math.floor(state.gems).toLocaleString('ru-RU') + '</b>\n\n' +
+    '━━━━━━━━━━━━━━━━━━━━\n' +
+    '🏆 <i>Diamond Clicker</i>'
+  );
+  toast('🏵️ ULTRA активирована на 30 дней!', 'success');
+  renderUltra();
 }
 
 // ============================================================
@@ -5792,6 +5895,8 @@ setInterval(checkPodgonyDot, 60000);
 function getCommissionRate(amt) {
   // Если одобрена оплата ⭐ — комиссия 0% (на 30 дней)
   if ((state.noCommissionUntil || 0) > Date.now()) return 0;
+  // 🏵️ ULTRA — комиссии на вывод нет совсем
+  if (isUltraActive()) return 0;
 
   // Dynamic commission: 5% for small, up to 15% for large amounts
   let rate;
@@ -5816,6 +5921,7 @@ function getTodayStr() {
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
 function getDailyWithdrawLimit() {
+  if (isUltraActive()) return ULTRA_WITHDRAW_LIMIT;
   return isVipActive() ? 40 : 20;
 }
 function getDailyWithdrawUsed() {
@@ -5886,7 +5992,10 @@ function renderWithdrawal() {
   const dlBorder= isLocked ? 'rgba(196,0,255,0.45)' : dailyLeft <= 5 ? 'rgba(255,140,0,0.35)' : 'rgba(0,200,80,0.3)';
 
   // Commission tiers
-  const tiers = vip
+  const ultra = isUltraActive();
+  const tiers = ultra
+    ? [[100,299,'0%'],[300,999,'0%'],[1000,2999,'0%'],[3000,6999,'0%'],[7000,10000,'0%']]
+    : vip
     ? [[100,299,'2.5%'],[300,999,'4%'],[1000,2999,'5%'],[3000,6999,'6%'],[7000,10000,'7.5%']]
     : [[100,299,'5%'],[300,999,'8%'],[1000,2999,'10%'],[3000,6999,'12%'],[7000,10000,'15%']];
 
@@ -5923,17 +6032,17 @@ function renderWithdrawal() {
     <!-- Commission table -->
     <div class="wd-commission">
       <div class="wd-commission-title">
-        <span style="font-size:14px;">${vip ? '⭐' : '💱'}</span>
-        ${vip ? 'Комиссия VIP (вдвое меньше)' : 'Комиссия системы'}
+        <span style="font-size:14px;">${ultra ? '🏵️' : vip ? '⭐' : '💱'}</span>
+        ${ultra ? 'Комиссия ULTRA — без комиссии' : vip ? 'Комиссия VIP (вдвое меньше)' : 'Комиссия системы'}
       </div>
       ${tiers.map(([from, to, pct]) => {
         const isActive = activeTier && activeTier[0] === from;
         return `<div class="wd-tier-row ${isActive ? 'active-tier' : ''}">
           <span class="wd-tier-range">${from.toLocaleString('ru-RU')} – ${to.toLocaleString('ru-RU')} 💎</span>
-          <span class="wd-tier-pct" style="color:${isActive ? '#00e676' : vip ? 'rgba(0,230,120,0.5)' : 'rgba(180,100,255,0.6)'};">${pct}</span>
+          <span class="wd-tier-pct" style="color:${isActive ? '#00e676' : (vip || ultra) ? 'rgba(0,230,120,0.5)' : 'rgba(180,100,255,0.6)'};">${pct}</span>
         </div>`;
       }).join('')}
-      ${vip ? '' : `<div style="margin-top:8px;font-size:11px;color:rgba(0,255,200,0.7);font-weight:800;border-top:1px solid rgba(0,255,200,0.1);padding-top:8px;">⚡ С MAX — все комиссии вдвое меньше</div>`}
+      ${(vip || ultra) ? '' : `<div style="margin-top:8px;font-size:11px;color:rgba(0,255,200,0.7);font-weight:800;border-top:1px solid rgba(0,255,200,0.1);padding-top:8px;">⚡ С MAX — все комиссии вдвое меньше</div>`}
     </div>
 
     ${!hasAccount ? `
@@ -6072,7 +6181,9 @@ function previewWithdraw(val) {
   }
   // Re-render to highlight active tier
   const body = document.getElementById('withdrawalBody');
-  const tiers = isVipActive()
+  const tiers = isUltraActive()
+    ? [[100,299,0],[300,999,0],[1000,2999,0],[3000,6999,0],[7000,10000,0]]
+    : isVipActive()
     ? [[100,299,0.025],[300,999,0.04],[1000,2999,0.05],[3000,6999,0.06],[7000,10000,0.075]]
     : [[100,299,0.05],[300,999,0.08],[1000,2999,0.10],[3000,6999,0.12],[7000,10000,0.15]];
   const tier = tiers.find(t => amt >= t[0] && amt <= t[1]) || tiers[0];
@@ -6088,7 +6199,7 @@ function previewWithdraw(val) {
     const isActive = t && amt >= t[0] && amt <= t[1];
     row.classList.toggle('active-tier', isActive);
     const pctEl = row.querySelector('.wd-tier-pct');
-    if (pctEl) pctEl.style.color = isActive ? '#00e676' : isVipActive() ? 'rgba(0,230,120,0.5)' : 'rgba(180,100,255,0.6)';
+    if (pctEl) pctEl.style.color = isActive ? '#00e676' : (isVipActive() || isUltraActive()) ? 'rgba(0,230,120,0.5)' : 'rgba(180,100,255,0.6)';
   });
 
   box.style.display = 'block';
@@ -6976,6 +7087,26 @@ function renderShop() {
       <span class="btn-cost" style="${xp >= FD_COST && !isFireDuoActive() ? 'background:rgba(255,140,0,0.1);border-color:rgba(255,140,0,0.3);color:#ffb74d;' : ''}">${isFireDuoActive() ? '✅ Активна' : FD_COST.toLocaleString('ru-RU') + ' ⚡'}</span>
     </button>
     ${!isFireDuoActive() && xp < FD_COST ? `<div style="text-align:center;font-size:11px;color:var(--text3);margin-top:4px;">Нужно ещё ${(FD_COST - xp).toLocaleString('ru-RU')} ⚡</div>` : ''}
+
+    <!-- ULTRA in shop -->
+    <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(255,210,77,0.5),rgba(255,79,216,0.4),transparent);margin:14px 0 12px;"></div>
+    <div style="font-size:12px;font-weight:900;background:linear-gradient(135deg,#ffd24d,#ff4fd8,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;">🏵️ ULTRA</div>
+    <button class="duo-btn ${state.gems >= ULTRA_COST ? 'orange' : 'gray'}" onclick="closeModal('shop');setTimeout(()=>openModal('ultra'),220);" style="${state.gems >= ULTRA_COST ? `
+      background: linear-gradient(160deg, #241600 0%, #1a0626 100%);
+      border: 1.5px solid rgba(255,210,77,0.75) !important;
+      box-shadow: 0 4px 0 #120a00, 0 0 20px rgba(255,210,77,0.4), 0 0 50px rgba(255,79,216,0.2), inset 0 0 20px rgba(255,210,77,0.05);
+      color: #ffd24d;
+    ` : ''}">
+      <div class="btn-left">
+        <span class="btn-icon" style="${state.gems >= ULTRA_COST ? 'filter:drop-shadow(0 0 14px rgba(255,210,77,0.9));' : ''}">🏵️</span>
+        <div class="btn-label">
+          <span class="btn-title" style="${state.gems >= ULTRA_COST ? 'color:#ffd24d;text-shadow:0 0 14px rgba(255,210,77,0.7);' : ''}">Купить подписку ULTRA 🏵️</span>
+          <span class="btn-sub" style="${state.gems >= ULTRA_COST ? 'color:rgba(255,210,77,0.55);' : ''}">Зомби · 0% комиссия · +15 000 💎/час · 30 дней</span>
+        </div>
+      </div>
+      <span class="btn-cost" style="${state.gems >= ULTRA_COST && !isUltraActive() ? 'background:rgba(255,210,77,0.1);border-color:rgba(255,210,77,0.35);color:#ffd24d;' : ''}">${isUltraActive() ? '✅ Активна' : ULTRA_COST.toLocaleString('ru-RU') + ' 💎'}</span>
+    </button>
+    ${!isUltraActive() && state.gems < ULTRA_COST ? `<div style="text-align:center;font-size:11px;color:var(--text3);margin-top:4px;">Нужно ещё ${Math.ceil(ULTRA_COST - state.gems).toLocaleString('ru-RU')} 💎</div>` : ''}
 
     <!-- Chests moved to separate tab -->
     <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(255,200,0,0.5),rgba(255,140,0,0.4),transparent);margin:14px 0 12px;"></div>
@@ -9023,6 +9154,172 @@ function renderFireDuo() {
 }
 
 
+// ============================================================
+//  🏵️ ULTRA — render
+// ============================================================
+function renderUltra() {
+  const body = document.getElementById('ultraBody');
+  if (!body) return;
+
+  ultraCollect();
+  const gems = Math.floor(state.gems);
+  const canBuy = state.gems >= ULTRA_COST;
+  const active = isUltraActive();
+  const msLeft = active ? state.ultra.end - Date.now() : 0;
+  const daysLeft = Math.ceil(msLeft / 86400000);
+  const hoursLeft = Math.ceil(msLeft / 3600000);
+  const earned = Math.floor((state.ultra && state.ultra.earned) || 0);
+  const GOLD = '#ffd24d', PINK = '#ff4fd8', VIOLET = '#8b5cf6';
+  const fmt = n => n.toLocaleString('ru-RU');
+  const per = ULTRA_PASSIVE_PER_HOUR;
+
+  const dot = (c) => `<span style="width:6px;height:6px;border-radius:50%;background:${c};box-shadow:0 0 8px ${c};flex-shrink:0;display:inline-block;"></span>`;
+  const box = (c) => `background:${c}12;border:1px solid ${c}40;border-radius:14px;padding:14px 16px;margin-bottom:10px;`;
+  const boxTitle = (c, t) => `<div style="font-size:11px;color:${c}99;text-transform:uppercase;letter-spacing:1.5px;font-weight:900;margin-bottom:10px;">${t}</div>`;
+  const intro = (t) => `<div style="margin-bottom:12px;font-size:13px;color:rgba(255,255,255,0.7);line-height:1.7;">${t}</div>`;
+  const note = (t) => `<div style="font-size:11px;color:rgba(255,255,255,0.35);line-height:1.6;">${t}</div>`;
+  const BADGE = '🏵️ ULTRA Привилегия';
+
+  const perks = [
+    {
+      icon:'🧟', title:'Зомби шутер без ограничений', desc:'Играй сколько хочешь и в любых режимах', color:'#9be15d',
+      detailIcon:'🧟', detailTitle:'Зомби шутер — безлимит', badgeLabel:BADGE,
+      detailBody: intro(`С подпиской <strong style="color:#9be15d;">ULTRA</strong> игра <strong style="color:#9be15d;">Зомби шутер</strong> доступна тебе <strong style="color:#9be15d;">без ограничений по времени и по режимам</strong>.`) +
+        `<div style="${box('#9be15d')}">${boxTitle('#9be15d','Что открыто')}` +
+        ['Неограниченное время игры','Все режимы и все волны','Доступ в любой момент, пока активна подписка'].map(t => `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">${dot('#9be15d')}<span style="font-size:12px;color:rgba(255,255,255,0.6);">${t}</span></div>`).join('') +
+        `</div>` + note('Открой раздел мини-игр и запускай 🧟 Зомби шутер — подписка ULTRA даёт полный доступ.')
+    },
+    {
+      icon:'💸', title:'Вывод без комиссии', desc:'Комиссия на все выводы — 0%', color:GOLD,
+      detailIcon:'💸', detailTitle:'Комиссия на вывод — 0%', badgeLabel:BADGE,
+      detailBody: intro(`При выводе алмазов обычно взимается комиссия. С <strong style="color:${GOLD};">ULTRA</strong> ты выводишь <strong style="color:${GOLD};">без комиссии вообще</strong> — получаешь всю сумму целиком.`) +
+        `<div style="${box(GOLD)}">${boxTitle(GOLD,'Таблица комиссий')}` +
+        `<div style="display:flex;justify-content:flex-end;gap:12px;margin-bottom:7px;font-size:10px;color:rgba(255,255,255,0.3);"><span style="width:38px;text-align:center;">обычно</span><span style="width:38px;text-align:center;">MAX</span><span style="width:44px;text-align:right;color:${GOLD}bb;">ULTRA</span></div>` +
+        [['100 – 299 💎','5%','2.5%'],['300 – 999 💎','8%','4%'],['1 000 – 2 999 💎','10%','5%'],['3 000 – 6 999 💎','12%','6%'],['7 000 – 10 000 💎','15%','7.5%']].map(([r,a,b]) =>
+          `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;font-size:11px;"><span style="color:rgba(255,255,255,0.45);flex:1;">${r}</span><span style="color:rgba(255,255,255,0.3);width:38px;text-align:center;">${a}</span><span style="color:rgba(255,255,255,0.3);width:38px;text-align:center;">${b}</span><span style="color:${GOLD};font-weight:900;width:44px;text-align:right;text-shadow:0 0 8px ${GOLD}80;">0% ✓</span></div>`).join('') +
+        `</div>` + note('Чем больше сумма вывода, тем больше экономия.')
+    },
+    {
+      icon:'🔓', title:'150+ выводов в день', desc:'Вместо 20 обычных и 40 с MAX', color:'#00e5ff',
+      detailIcon:'🔓', detailTitle:'Огромный лимит выводов', badgeLabel:BADGE,
+      detailBody: intro(`Обычный лимит — <strong style="color:rgba(255,255,255,0.6);">20 выводов в день</strong>, с MAX — 40. С <strong style="color:#00e5ff;">ULTRA</strong> лимит поднимается до <strong style="color:#00e5ff;">${ULTRA_WITHDRAW_LIMIT} выводов ежедневно</strong>.`) +
+        `<div style="${box('#00e5ff')}">${boxTitle('#00e5ff','Лимит в день')}` +
+        [['Без подписки','20',0.13],['MAX','40',0.27],['ULTRA',String(ULTRA_WITHDRAW_LIMIT),1]].map(([n,v,w]) =>
+          `<div style="margin-bottom:9px;"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span style="color:${n==='ULTRA'?'#00e5ff':'rgba(255,255,255,0.5)'};font-weight:${n==='ULTRA'?900:700};">${n}</span><span style="color:${n==='ULTRA'?'#00e5ff':'rgba(255,255,255,0.5)'};font-weight:900;">${v}</span></div><div style="height:6px;border-radius:4px;background:rgba(255,255,255,0.06);"><div style="height:6px;width:${(w*100).toFixed(0)}%;border-radius:4px;background:${n==='ULTRA'?'linear-gradient(90deg,#00e5ff,#8b5cf6)':'rgba(255,255,255,0.25)'};${n==='ULTRA'?'box-shadow:0 0 10px #00e5ff;':''}"></div></div></div>`).join('') +
+        `</div>` + note('Лимит обновляется каждый день в полночь.')
+    },
+    {
+      icon:'⏱️', title:`Пассивный доход: ${fmt(per)} 💎/час`, desc:'Алмазы копятся сами — даже когда тебя нет в игре', color:PINK,
+      detailIcon:'⏱️', detailTitle:'Пассивный доход ULTRA', badgeLabel:BADGE,
+      detailBody: intro(`<strong style="color:${PINK};">ULTRA</strong> сама собирает для тебя алмазы: <strong style="color:${PINK};">${fmt(per)} 💎 каждый час</strong>. Это работает <strong style="color:${PINK};">и когда ты не в игре</strong> — всё накопленное зачисляется автоматически.`) +
+        `<div style="${box(PINK)}">${boxTitle(PINK,'Сколько это')}` +
+        [['За час','+'+fmt(per)],['За сутки','+'+fmt(per*24)],['За 30 дней','+'+fmt(per*24*ULTRA_DAYS)]].map(([a,b]) =>
+          `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;"><span style="font-size:12px;color:rgba(255,255,255,0.5);">${a}</span><span style="font-size:15px;font-weight:900;color:${PINK};text-shadow:0 0 12px ${PINK}80;">${b} 💎</span></div>`).join('') +
+        `</div>` +
+        (active ? `<div style="${box(GOLD)}"><div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:12px;color:rgba(255,255,255,0.55);">Уже собрано пассивно</span><span style="font-size:15px;font-weight:900;color:${GOLD};">${fmt(earned)} 💎</span></div></div>` : '') +
+        note('Доход считается по времени до конца подписки: закрой игру, вернись позже — алмазы уже будут на балансе.')
+    },
+  ];
+  window._ultraPerksData = perks;
+
+  body.innerHTML = `
+    <!-- ULTRA banner -->
+    <div style="
+      background:linear-gradient(160deg,rgba(32,20,0,0.98) 0%,rgba(24,6,34,0.98) 100%);
+      border:1.5px solid rgba(255,210,77,0.55);border-radius:24px;padding:26px 14px 22px;margin-bottom:16px;
+      text-align:center;position:relative;overflow:hidden;
+      box-shadow:0 0 34px rgba(255,210,77,0.18),0 0 70px rgba(255,79,216,0.1),inset 0 0 40px rgba(255,210,77,0.04);
+      animation:maxBorderPulse 3s ease-in-out infinite;">
+      <div style="position:absolute;inset:0;background:
+        linear-gradient(rgba(255,210,77,0.035) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(255,210,77,0.035) 1px,transparent 1px);
+        background-size:28px 28px;pointer-events:none;border-radius:inherit;"></div>
+      <div style="position:absolute;top:-34px;left:50%;transform:translateX(-50%);width:240px;height:100px;
+        background:radial-gradient(ellipse,rgba(255,79,216,0.28),transparent 70%);pointer-events:none;filter:blur(10px);"></div>
+      <div style="position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(255,210,77,0.7),rgba(255,79,216,0.7),transparent);
+        animation:maxScanLine 3s linear infinite;pointer-events:none;opacity:0.6;box-shadow:0 0 12px rgba(255,210,77,0.5);"></div>
+      <div style="position:absolute;top:10px;left:10px;width:14px;height:14px;border-top:2px solid rgba(255,210,77,0.75);border-left:2px solid rgba(255,210,77,0.75);border-radius:2px 0 0 0;"></div>
+      <div style="position:absolute;top:10px;right:10px;width:14px;height:14px;border-top:2px solid rgba(255,210,77,0.75);border-right:2px solid rgba(255,210,77,0.75);border-radius:0 2px 0 0;"></div>
+      <div style="position:absolute;bottom:10px;left:10px;width:14px;height:14px;border-bottom:2px solid rgba(255,210,77,0.75);border-left:2px solid rgba(255,210,77,0.75);border-radius:0 0 0 2px;"></div>
+      <div style="position:absolute;bottom:10px;right:10px;width:14px;height:14px;border-bottom:2px solid rgba(255,210,77,0.75);border-right:2px solid rgba(255,210,77,0.75);border-radius:0 0 2px 0;"></div>
+
+      <div style="font-size:60px;margin-bottom:4px;animation:maxIconPulse 2.5s ease-in-out infinite;line-height:1;position:relative;z-index:1;filter:drop-shadow(0 0 16px rgba(255,210,77,0.7));">🏵️</div>
+      <div style="position:relative;z-index:1;filter:drop-shadow(0 0 16px rgba(255,79,216,0.55));">
+        <div style="
+          font-size:clamp(52px,17vw,76px);font-weight:900;letter-spacing:clamp(3px,1.6vw,8px);line-height:1.05;
+          background:linear-gradient(135deg,#ffd24d 0%,#fff1a8 22%,#ff4fd8 50%,#8b5cf6 75%,#ffd24d 100%);
+          background-size:220% auto;
+          -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+          animation:maxShimmer 2.5s linear infinite;
+          padding-left:clamp(3px,1.6vw,8px);
+        ">ULTRA</div>
+      </div>
+      <div style="font-size:12px;color:rgba(255,210,77,0.65);margin-top:6px;letter-spacing:2px;font-weight:800;text-transform:uppercase;position:relative;z-index:1;">Подписка · 30 дней</div>
+
+      ${active ? `
+        <div style="margin-top:14px;background:rgba(255,210,77,0.07);border:1px solid rgba(255,210,77,0.4);border-radius:14px;padding:11px 16px;display:flex;align-items:center;justify-content:center;gap:10px;position:relative;z-index:1;box-shadow:0 0 18px rgba(255,210,77,0.12),inset 0 0 10px rgba(255,210,77,0.04);">
+          <span style="font-size:18px;filter:drop-shadow(0 0 8px rgba(255,210,77,0.8));">✅</span>
+          <div>
+            <div style="font-size:13px;font-weight:900;color:${GOLD};text-shadow:0 0 14px rgba(255,210,77,0.7);">Подписка активна</div>
+            <div style="font-size:10px;color:rgba(255,210,77,0.6);margin-top:2px;letter-spacing:0.5px;">Осталось ${daysLeft > 1 ? daysLeft + ' дн.' : hoursLeft + ' ч.'} · собрано ${fmt(earned)} 💎</div>
+          </div>
+        </div>` : `
+        <div style="margin-top:12px;font-size:11px;color:rgba(255,210,77,0.55);letter-spacing:1px;font-weight:800;position:relative;z-index:1;">▶ САМАЯ МОЩНАЯ ПОДПИСКА</div>`}
+    </div>
+
+    <!-- Perks -->
+    <div style="font-size:10px;font-weight:900;color:rgba(255,210,77,0.55);text-transform:uppercase;letter-spacing:2px;margin-bottom:11px;display:flex;align-items:center;gap:8px;">
+      <span style="color:rgba(255,210,77,0.8);">🏵️</span> Возможности
+      <span style="flex:1;height:1px;background:linear-gradient(90deg,rgba(255,210,77,0.28),transparent);display:block;"></span>
+    </div>
+    ${perks.map((p, i) => `
+    <div onclick="showPerkDetail(${i}, '_ultraPerksData')" style="
+      background:linear-gradient(135deg,rgba(30,18,0,0.95) 0%,rgba(20,5,28,0.95) 100%);
+      border:1px solid rgba(255,210,77,0.2);border-radius:16px;padding:13px 15px;margin-bottom:9px;
+      display:flex;gap:13px;align-items:center;position:relative;overflow:hidden;
+      box-shadow:0 0 12px rgba(255,210,77,0.05),inset 0 0 20px rgba(255,210,77,0.02);
+      cursor:pointer;transition:border-color 0.2s,box-shadow 0.2s,transform 0.1s;
+      -webkit-tap-highlight-color:transparent;user-select:none;"
+      ontouchstart="this.style.transform='scale(0.97)';this.style.borderColor='rgba(255,210,77,0.45)'" ontouchend="this.style.transform='';this.style.borderColor='rgba(255,210,77,0.2)'">
+      <div style="position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,210,77,0.07),transparent);pointer-events:none;border-radius:inherit;animation:maxPerkShine 4s ease-in-out infinite;animation-delay:${(i * 0.6).toFixed(1)}s;"></div>
+      <div style="position:absolute;left:0;top:20%;bottom:20%;width:2px;background:linear-gradient(180deg,transparent,${p.color},transparent);border-radius:2px;box-shadow:0 0 8px ${p.color};"></div>
+      <span style="font-size:28px;flex-shrink:0;filter:drop-shadow(0 0 10px ${p.color}) drop-shadow(0 0 20px ${p.color}88);margin-left:4px;">${p.icon}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:900;color:${p.color};text-shadow:0 0 16px ${p.color}88,0 0 30px ${p.color}44;">${p.title}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:3px;line-height:1.4;">${p.desc}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+        <div style="width:6px;height:6px;border-radius:50%;background:${p.color};box-shadow:0 0 8px ${p.color},0 0 16px ${p.color};"></div>
+        <div style="font-size:14px;color:${p.color};opacity:0.6;font-weight:900;">›</div>
+      </div>
+    </div>`).join('')}
+
+    <!-- Buy / renew -->
+    <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(255,210,77,0.45),rgba(255,79,216,0.35),transparent);margin:16px 0 14px;"></div>
+
+    <button class="duo-btn ${canBuy ? 'orange' : 'gray'}" onclick="buyUltra()" ${!canBuy ? 'disabled' : ''} style="${canBuy ? `
+      background:linear-gradient(160deg,#241600 0%,#1a0626 100%);
+      border:1.5px solid rgba(255,210,77,0.75) !important;
+      box-shadow:0 4px 0 #120a00,0 0 20px rgba(255,210,77,0.4),0 0 50px rgba(255,79,216,0.2),inset 0 0 20px rgba(255,210,77,0.05);
+      color:${GOLD};
+      animation:maxBorderPulse 2.5s ease-in-out infinite;
+    ` : ''}">
+      <div class="btn-left">
+        <span class="btn-icon" style="${canBuy ? 'filter:drop-shadow(0 0 14px rgba(255,210,77,0.9)) drop-shadow(0 0 28px rgba(255,79,216,0.6));' : ''}">${active ? '🔄' : '🏵️'}</span>
+        <div class="btn-label">
+          <span class="btn-title" style="${canBuy ? 'color:' + GOLD + ';text-shadow:0 0 14px rgba(255,210,77,0.7);' : ''}">${active ? 'Продлить ULTRA' : 'Активировать ULTRA'}</span>
+          <span class="btn-sub" style="${canBuy ? 'color:rgba(255,210,77,0.55);' : ''}">30 дней · оплата алмазами</span>
+        </div>
+      </div>
+      <span class="btn-cost" style="${canBuy ? 'background:rgba(255,210,77,0.1);border-color:rgba(255,210,77,0.35);color:' + GOLD + ';' : ''}">${fmt(ULTRA_COST)} 💎</span>
+    </button>
+    ${!canBuy
+      ? `<div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.3);margin-top:5px;">Нужно ещё <strong style="color:${GOLD};text-shadow:0 0 10px rgba(255,210,77,0.7);">${fmt(Math.ceil(ULTRA_COST - state.gems))} 💎</strong></div>`
+      : `<div style="text-align:center;font-size:11px;color:rgba(255,210,77,0.7);margin-top:5px;text-shadow:0 0 10px rgba(255,210,77,0.4);">✅ У тебя достаточно алмазов! (${fmt(gems)} 💎)</div>`}
+  `;
+}
+
+
 const _DH = '60ef089b7c42c6cc53b12eb6ad32dfda75b3cbaff562c44e75ce8ea7d1aa6cd6';
 let _donateUnlocked = false;
 
@@ -9792,6 +10089,7 @@ function openModal(id) {
   if (id === 'vip')        renderVip();
   if (id === 'dm')         renderDiamondMagnate();
   if (id === 'fd')         renderFireDuo();
+  if (id === 'ultra')      renderUltra();
   if (id === 'withdraw-offer') renderWithdrawOffer();
   if (id === 'transfer')      renderTransfer();
   if (id === 'podgony')       renderPodgony();
@@ -13239,8 +13537,9 @@ function buyAutumnLeaf() {
       <div class="mq-games">
         <div class="mq-game play" onclick="openCrossy()"><span>🦆</span>Crossy Road<em>Играть</em></div>
         <div class="mq-game play" onclick="openMineMan()" style="background:linear-gradient(160deg,#9a6b3f,#4b8f2e)"><span>⛏️</span>Mine-man<em>3D</em></div>
-        <div class="mq-game play" onclick="openZombie()" style="background:linear-gradient(160deg,#2f4f2f,#6b1a1a)"><span>🧟</span>Зомби шутер<em>👑 MAX · 3D</em></div>
+        <div class="mq-game play" onclick="openZombie()" style="background:linear-gradient(160deg,#2f4f2f,#6b1a1a)"><span>🧟</span>Зомби шутер<em>👑 MAX · 🏵️ ULTRA</em></div>
         <div class="mq-game play" onclick="openTappy()" style="background:linear-gradient(160deg,#4fc3f7,#0277bd)"><span>🐤</span>Tappy Bird<em>Играть</em></div>
+        <div class="mq-game play" onclick="openDunk()" style="background:linear-gradient(160deg,#ff9a4c,#d9480f)"><span>🏀</span>Tappy Dunk<em>Играть</em></div>
         <div class="mq-game"><span>🏐</span>Пляжный волейбол<em>Скоро</em></div>
         <div class="mq-game"><span>🍦</span>Мороженое<em>Скоро</em></div>
         <div class="mq-game"><span>🏄</span>Сёрфинг<em>Скоро</em></div>
@@ -13989,6 +14288,289 @@ function buyAutumnLeaf() {
     ctx.fillStyle='#ff7043'; ctx.beginPath(); ctx.moveTo(15,-1); ctx.lineTo(28,3); ctx.lineTo(15,8); ctx.closePath(); ctx.fill(); ctx.stroke();
     if(mode==='dead'){ ctx.strokeStyle='#1b1b1b'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(6,-8);ctx.lineTo(12,-2);ctx.moveTo(12,-8);ctx.lineTo(6,-2);ctx.stroke(); }
     ctx.restore();
+  }
+
+  function loop(t){
+    if(!running) return;
+    const dt=Math.min(.033,(t-last)/1000||0); last=t; tNow=t/1000;
+    if(W&&H){ update(dt); draw(); } else resize();
+    raf=requestAnimationFrame(loop);
+  }
+})();
+</script>
+
+<!-- ===== 🏀 TAPPY DUNK ===== -->
+<style>
+#tdOverlay{position:fixed;inset:0;z-index:9994;background:linear-gradient(180deg,#ff8a4c,#ffd08a);display:flex;flex-direction:column;align-items:center;opacity:0;pointer-events:none;transition:opacity .25s;font-family:'Nunito',sans-serif;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+#tdOverlay.active{opacity:1;pointer-events:all}
+.td-top{width:100%;max-width:460px;display:flex;align-items:center;gap:8px;padding:10px 12px;box-sizing:border-box;z-index:3}
+.td-pill{background:rgba(0,0,0,.45);border:2px solid rgba(255,255,255,.75);color:#fff;border-radius:14px;padding:5px 12px;font-size:15px;font-weight:900}
+.td-x{margin-left:auto;width:36px;height:36px;border-radius:50%;border:2px solid rgba(255,255,255,.75);background:rgba(0,0,0,.45);color:#fff;font-size:16px;font-weight:900;cursor:pointer}
+#tdWrap{position:relative;flex:1;width:100%;max-width:460px;min-height:0;overflow:hidden;border-radius:18px 18px 0 0}
+#tdCanvas{width:100%;height:100%;display:block;touch-action:none}
+.td-box{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:78%;max-width:320px;background:rgba(255,255,255,.96);border-radius:22px;padding:18px 16px;text-align:center;color:#7a2e00;box-shadow:0 10px 40px rgba(0,0,0,.45);border:3px solid #ff8a3d}
+.td-box h3{margin:0 0 6px;font-size:22px;font-weight:900}
+.td-box p{margin:4px 0;font-size:13px;font-weight:800;line-height:1.35}
+.td-box button{margin-top:10px;width:100%;padding:12px;border:none;border-radius:14px;font-family:inherit;font-size:15px;font-weight:900;color:#fff;cursor:pointer;background:linear-gradient(160deg,#ff8a3d,#e5530a);box-shadow:0 4px 0 #8a2f00}
+.td-box button.sec{background:linear-gradient(160deg,#5b8def,#2a4fb8);box-shadow:0 4px 0 #17306f}
+.td-box button:active{transform:translateY(2px)}
+.td-big{font-size:46px;line-height:1.1}
+.td-new{display:none;margin:6px auto 0;padding:3px 12px;border-radius:99px;background:#ffd54a;color:#7a4a00;font-size:12px;font-weight:900;width:max-content}
+</style>
+<div id="tdOverlay">
+  <div class="td-top">
+    <div class="td-pill">🍉 +<span id="tdGot">0</span></div>
+    <div class="td-pill" style="font-size:12px">🏆 <span id="tdBest">0</span></div>
+    <button class="td-x" onclick="closeDunk()">✕</button>
+  </div>
+  <div id="tdWrap">
+    <canvas id="tdCanvas"></canvas>
+    <div class="td-box" id="tdStart">
+      <div class="td-big">🏀🍉</div>
+      <h3>Tappy Dunk</h3>
+      <p>Тапай, чтобы подбрасывать мяч, и забивай его в кольцо сверху. Не касайся земли и не пропускай кольца!</p>
+      <p>Чистый «свиш» без касания кольца даёт +1 🍉. Арбузики по пути — тоже +1 🍉</p>
+      <p>Тап по экрану · пробел · стрелка вверх</p>
+      <button onclick="tdStart()">▶ Играть</button>
+    </div>
+    <div class="td-box" id="tdOver" style="display:none">
+      <div class="td-big" id="tdOverIcon">🏀</div>
+      <h3 id="tdOverTitle">Мимо!</h3>
+      <div class="td-new" id="tdNew">🎉 Новый рекорд!</div>
+      <p>Данков: <b id="tdOverScore">0</b> · Рекорд: <b id="tdOverBest">0</b></p>
+      <p>Собрано арбузов: <b>+<span id="tdOverMel">0</span> 🍉</b></p>
+      <button onclick="tdStart()">🔁 Ещё раз</button>
+      <button class="sec" onclick="closeDunk()">Выйти</button>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const cv=$('tdCanvas'), ctx=cv.getContext('2d');
+  const EF='"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+  const LH=640, GH=70, GY=LH-GH;
+  const G=1450, FLAP=-430, MAXV=720;
+  const RW=66, BR=14, RR=4.5, SPACING=250;
+  let W=0,H=0,S=1,LW=360,dpr=1;
+  let running=false, raf=0, last=0, tNow=0;
+  let mode='idle';                       // idle | ready | play | dead
+  let bx0=100, bx=100, by=300, vx=0, vy=0, rot=0;
+  let hoops=[], spawned=0, prevY=0, score=0, got=0;
+  let gOff=0, flash=0, pops=[], clouds=[];
+
+  function resize(){
+    const w=$('tdWrap'); dpr=Math.min(window.devicePixelRatio||1,2);
+    W=w.clientWidth; H=w.clientHeight; if(!W||!H) return;
+    cv.width=W*dpr; cv.height=H*dpr; S=H/LH; LW=W/S; bx0=LW*0.26; if(mode==='idle'||mode==='ready') bx=bx0;
+    if(!clouds.length){ for(let i=0;i<5;i++) clouds.push({x:Math.random()*LW,y:40+Math.random()*170,s:30+Math.random()*28,v:.25+Math.random()*.5}); }
+  }
+  function resetWorld(){
+    hoops=[]; spawned=0; score=0; got=0; vx=0; vy=0; rot=0; flash=0; pops=[];
+    bx=bx0; by=LH*0.42; prevY=LH*0.45;
+    $('tdGot').textContent=0; $('tdBest').textContent=state.dunkBest||0;
+  }
+  function spawnHoop(x){
+    const lo=190, hi=GY-110;
+    let y = spawned===0 ? LH*0.46 : prevY+(Math.random()*2-1)*120;
+    y=Math.max(lo,Math.min(hi,y)); prevY=y;
+    hoops.push({x:x,y:y,scored:false,rim:false,above:false,mel:Math.random()<0.45,taken:false,mx:x-SPACING/2,my:Math.max(120,Math.min(GY-60,y+(Math.random()*2-1)*90))});
+    spawned++;
+  }
+  function speed(){ return 135+Math.min(score,30)*1.6; }
+
+  window.tdStart=function(){
+    resetWorld();
+    $('tdStart').style.display='none'; $('tdOver').style.display='none';
+    mode='ready';
+    if(!running){running=true;last=performance.now();raf=requestAnimationFrame(loop);}
+  };
+  window.openDunk=function(){
+    $('tdOverlay').classList.add('active');
+    $('tdStart').style.display='block'; $('tdOver').style.display='none';
+    $('tdBest').textContent=state.dunkBest||0; $('tdGot').textContent=0;
+    mode='idle'; hoops=[]; score=0;
+    requestAnimationFrame(()=>{resize(); bx=bx0; by=LH*0.44; if(!running){running=true;last=performance.now();raf=requestAnimationFrame(loop);}});
+  };
+  window.closeDunk=function(){
+    $('tdOverlay').classList.remove('active'); running=false; mode='idle'; cancelAnimationFrame(raf);
+    try{saveState();updateUI();}catch(e){}
+    const e=$('mqMelons'); if(e) e.textContent=Math.floor(state.melons||0).toLocaleString('ru-RU');
+  };
+
+  function flap(){
+    if(mode==='ready'){ mode='play'; spawnHoop(LW+80); }
+    if(mode==='play'){ vy=FLAP; }
+  }
+  function die(msg){
+    if(mode==='dead') return;
+    mode='dead'; flash=1;
+    const newRec=score>(state.dunkBest||0);
+    if(newRec) state.dunkBest=score;
+    try{saveState();}catch(e){}
+    $('tdOverScore').textContent=score; $('tdOverBest').textContent=state.dunkBest||0; $('tdOverMel').textContent=got;
+    $('tdBest').textContent=state.dunkBest||0;
+    $('tdNew').style.display=(newRec&&score>0)?'block':'none';
+    $('tdOverIcon').textContent=score>=30?'🥇':score>=20?'🥈':score>=10?'🥉':'🏀';
+    $('tdOverTitle').textContent=msg;
+    setTimeout(()=>{ if($('tdOverlay').classList.contains('active')&&mode==='dead') $('tdOver').style.display='block'; },700);
+  }
+
+  cv.addEventListener('pointerdown',e=>{ e.preventDefault(); flap(); });
+  window.addEventListener('keydown',e=>{
+    if(!$('tdOverlay').classList.contains('active')) return;
+    const k=e.key;
+    if(k===' '||k==='ArrowUp'||k==='w'||k==='W'){ flap(); e.preventDefault(); }
+  });
+  window.addEventListener('resize',()=>{ if($('tdOverlay').classList.contains('active')) resize(); });
+
+  // столкновение мяча с точкой (px,py) радиуса pr; hoopSpeed — скорость обода влево
+  function bounce(px,py,pr,sp,h){
+    let dx=bx-px, dy=by-py, d=Math.hypot(dx,dy), min=BR+pr;
+    if(d>=min) return;
+    if(d<0.001){dx=0;dy=-1;d=1;}
+    const nx=dx/d, ny=dy/d;
+    bx=px+nx*min; by=py+ny*min;
+    let rvx=vx+sp, rvy=vy;
+    const dot=rvx*nx+rvy*ny;
+    if(dot<0){
+      const e=.55;
+      rvx-=(1+e)*dot*nx; rvy-=(1+e)*dot*ny;
+      vx=Math.max(-260,Math.min(260,rvx-sp)); vy=rvy;
+      if(h) h.rim=true;
+    }
+  }
+  function nearestRect(rx,ry,rw,rh){
+    return [Math.max(rx,Math.min(bx,rx+rw)), Math.max(ry,Math.min(by,ry+rh))];
+  }
+
+  function update(dt){
+    const sp=speed();
+    if(mode!=='dead'){
+      for(const c of clouds){ c.x-=c.v*(mode==='play'?sp*.12:14)*dt; if(c.x<-80) c.x=LW+60; }
+      gOff=(gOff+(mode==='play'?sp:50)*dt)%60;
+    }
+    if(flash>0) flash=Math.max(0,flash-dt*3.2);
+    for(let i=pops.length-1;i>=0;i--){ pops[i].t+=dt; if(pops[i].t>0.9) pops.splice(i,1); }
+
+    if(mode==='idle'||mode==='ready'){ by=LH*0.44+Math.sin(tNow*5)*9; bx=bx0; rot+=dt*2; return; }
+
+    vy=Math.min(MAXV,vy+G*dt);
+    // пружина к исходной позиции по X
+    vx+=(bx0-bx)*7*dt; vx*=Math.max(0,1-2.2*dt);
+    bx+=vx*dt; by+=vy*dt; rot+=(vx+sp*.6)*dt*0.06+dt*2;
+    if(mode==='play' && by<BR){ by=BR; if(vy<0) vy=0; }
+
+    if(mode==='play'){
+      for(const h of hoops) h.x-=sp*dt;
+      const lastH=hoops[hoops.length-1];
+      if(!lastH||lastH.x<LW+20) spawnHoop((lastH?lastH.x:LW)+SPACING);
+      for(const h of hoops){
+        h.mx-=sp*dt;
+        if(h.mel&&!h.taken&&Math.hypot(bx-h.mx,by-h.my)<28){
+          h.taken=true; got++; state.melons=(state.melons||0)+1;
+          $('tdGot').textContent=got; pops.push({x:h.mx,y:h.my,t:0,txt:'+1 🍉'});
+          try{saveState();}catch(e){}
+        }
+        // обод и щит
+        bounce(h.x,h.y,RR,sp,h);
+        bounce(h.x+RW,h.y,RR,sp,h);
+        const [qx,qy]=nearestRect(h.x+RW+RR,h.y-64,8,70);
+        bounce(qx,qy,0.5,sp,h);
+        // засчитывание: мяч был выше обода и прошёл вниз внутри кольца
+        if(!h.scored){
+          if(by<h.y-BR*0.6 && bx>h.x && bx<h.x+RW) h.above=true;
+          if(h.above && by>h.y+6 && bx>h.x+2 && bx<h.x+RW-2){
+            h.scored=true; score++;
+            const swish=!h.rim;
+            pops.push({x:h.x+RW/2,y:h.y+10,t:0,txt:swish?'СВИШ! +1 🍉':'ДАНК!'});
+            if(swish){ got++; state.melons=(state.melons||0)+1; $('tdGot').textContent=got; try{saveState();}catch(e){} }
+          }
+          // пролетел мимо кольца — промах
+          if(h.x+RW+RR+8<bx-BR){ die('Промах мимо кольца!'); break; }
+        }
+      }
+      while(hoops.length&&hoops[0].x<-RW-40) hoops.shift();
+    }
+    if(by+BR>=GY){ by=GY-BR; if(mode==='play') die('Мяч упал на землю!'); vy=0; }
+  }
+
+  function drawHoop(h){
+    const x=h.x,y=h.y;
+    // сетка
+    ctx.strokeStyle='rgba(255,255,255,.85)'; ctx.lineWidth=1.6;
+    const sw=Math.sin(tNow*6+x*.02)*1.5;
+    for(let i=0;i<=5;i++){
+      const tx=x+3+i*(RW-6)/5, bxn=x+14+i*(RW-28)/5+sw;
+      ctx.beginPath(); ctx.moveTo(tx,y+2); ctx.lineTo(bxn,y+38); ctx.stroke();
+    }
+    for(let j=1;j<=3;j++){
+      const t=j/4, yy=y+2+t*36, l=x+3+t*11+sw*t, r=x+RW-3-t*11+sw*t;
+      ctx.beginPath(); ctx.moveTo(l,yy); ctx.lineTo(r,yy); ctx.stroke();
+    }
+    // щит
+    ctx.fillStyle='#fff'; ctx.strokeStyle='#3a3a3a'; ctx.lineWidth=3;
+    ctx.fillRect(x+RW+RR,y-64,9,70); ctx.strokeRect(x+RW+RR,y-64,9,70);
+    ctx.fillStyle='#e53935'; ctx.fillRect(x+RW+RR+1.5,y-26,6,24);
+    // стойка
+    ctx.fillStyle='#555'; ctx.fillRect(x+RW+RR+3,y+6,4,GY-(y+6));
+    // обод
+    ctx.strokeStyle='#e5530a'; ctx.lineWidth=6; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+RW+RR,y); ctx.stroke();
+    ctx.fillStyle='#ff7a2e'; ctx.beginPath(); ctx.arc(x,y,RR,0,Math.PI*2); ctx.fill();
+    ctx.lineCap='butt';
+  }
+
+  function drawBall(){
+    ctx.save(); ctx.translate(bx,by); ctx.rotate(rot);
+    const g=ctx.createRadialGradient(-4,-5,2,0,0,BR+2);
+    g.addColorStop(0,'#ffa55c'); g.addColorStop(1,'#e2590e');
+    ctx.fillStyle=g; ctx.strokeStyle='#4a1d00'; ctx.lineWidth=2.2;
+    ctx.beginPath(); ctx.arc(0,0,BR,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.lineWidth=1.7;
+    ctx.beginPath(); ctx.moveTo(-BR,0); ctx.lineTo(BR,0); ctx.moveTo(0,-BR); ctx.lineTo(0,BR); ctx.stroke();
+    ctx.beginPath(); ctx.arc(-BR*1.35,0,BR*1.0,-0.95,0.95); ctx.stroke();
+    ctx.beginPath(); ctx.arc(BR*1.35,0,BR*1.0,Math.PI-0.95,Math.PI+0.95); ctx.stroke();
+    if(mode==='dead'){ ctx.rotate(-rot); ctx.fillStyle='#fff'; ctx.font=`900 12px Nunito,sans-serif`; ctx.fillText('x_x',0,1); }
+    ctx.restore();
+  }
+
+  function draw(){
+    ctx.setTransform(dpr*S,0,0,dpr*S,0,0);
+    const sky=ctx.createLinearGradient(0,0,0,GY);
+    sky.addColorStop(0,'#ff7e5f');sky.addColorStop(.55,'#feb47b');sky.addColorStop(1,'#ffe3a8');
+    ctx.fillStyle=sky; ctx.fillRect(0,0,LW,LH);
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.font=`60px ${EF}`; ctx.fillText('🌇',LW-54,64);
+    ctx.globalAlpha=.85;
+    for(const c of clouds){ ctx.font=`${c.s}px ${EF}`; ctx.fillText('☁️',c.x,c.y); }
+    ctx.globalAlpha=1;
+    // силуэт трибун/пальм
+    ctx.fillStyle='rgba(120,50,20,.28)';
+    for(let i=0;i<12;i++){ const x=((i*70-gOff*.3)%(LW+140)+LW+140)%(LW+140)-70; ctx.fillRect(x,GY-60-((i*37)%30),52,60+((i*37)%30)); }
+    // хупы
+    for(const h of hoops){
+      drawHoop(h);
+      if(h.mel&&!h.taken){ ctx.font=`28px ${EF}`; ctx.fillText('🍉',h.mx,h.my+Math.sin(tNow*4+h.mx*.05)*4); }
+    }
+    // площадка
+    const fl=ctx.createLinearGradient(0,GY,0,LH); fl.addColorStop(0,'#d9904a'); fl.addColorStop(1,'#a85f25');
+    ctx.fillStyle=fl; ctx.fillRect(0,GY,LW,GH);
+    ctx.fillStyle='rgba(60,25,5,.28)';
+    for(let x=-60-gOff;x<LW+60;x+=60){ ctx.fillRect(x,GY+8,3,GH); }
+    ctx.fillStyle='#fff'; ctx.fillRect(0,GY,LW,4);
+    drawBall();
+    for(const o of pops){ ctx.globalAlpha=1-o.t/0.9; ctx.font=`900 20px Nunito,${EF}`; ctx.lineWidth=4; ctx.strokeStyle='#7a2e00'; ctx.fillStyle='#fff'; ctx.strokeText(o.txt,o.x,o.y-o.t*50); ctx.fillText(o.txt,o.x,o.y-o.t*50); ctx.globalAlpha=1; }
+    if(mode==='play'||mode==='dead'){
+      ctx.font='900 56px Nunito,sans-serif'; ctx.lineWidth=8; ctx.strokeStyle='#7a2e00'; ctx.lineJoin='round'; ctx.fillStyle='#fff';
+      ctx.strokeText(score,LW/2,86); ctx.fillText(score,LW/2,86);
+    }
+    if(mode==='ready'){
+      ctx.font=`44px ${EF}`; ctx.fillText('👆',LW/2,LH*0.64+Math.sin(tNow*6)*6);
+      ctx.font='900 18px Nunito,sans-serif'; ctx.lineWidth=5; ctx.strokeStyle='#7a2e00'; ctx.fillStyle='#fff';
+      ctx.strokeText('Тапни, чтобы бросить',LW/2,LH*0.72); ctx.fillText('Тапни, чтобы бросить',LW/2,LH*0.72);
+    }
+    if(flash>0){ ctx.fillStyle='rgba(255,255,255,'+(flash*.8)+')'; ctx.fillRect(0,0,LW,LH); }
   }
 
   function loop(t){
@@ -14891,29 +15473,57 @@ window.mmNew=function(){if(inited){pendNew=true;showMode()}};
 #zsMsg{position:absolute;left:50%;top:22%;transform:translateX(-50%);font-size:26px;font-weight:900;text-shadow:0 2px 8px #000;text-align:center;pointer-events:none}
 #zsMenu{position:absolute;inset:0;background:rgba(10,10,15,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:20px}
 #zsMenu h1{margin:0;font-size:34px;color:#7dff6a}#zsMenu button{padding:14px 30px;border:0;border-radius:14px;background:linear-gradient(135deg,#b06cff,#ff9c3a);color:#fff;font-weight:900;font-size:17px;cursor:pointer}
+#zsMenu{overflow-y:auto;touch-action:pan-y}#zsMenu>:first-child{margin-top:auto}#zsMenu>:last-child{margin-bottom:auto}
+#zsLocs{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:640px}
+.zs-lc{width:148px;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.08);border:2px solid transparent;cursor:pointer;display:flex;flex-direction:column;gap:3px;text-align:left}
+.zs-lc b{font-size:14px}.zs-lc span{font-size:11px;opacity:.75;line-height:1.3}
+.zs-lc.on{border-color:#7dff6a;background:rgba(125,255,106,.14)}
+#zsPr{left:50%;top:50px;transform:translateX(-50%);display:none;white-space:nowrap;background:rgba(20,90,40,.75);cursor:pointer}
 #zsTj{position:absolute;left:30px;bottom:70px;width:110px;height:110px;border-radius:50%;background:rgba(255,255,255,.12);display:none}
 #zsTk{position:absolute;left:35px;top:35px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.4)}
 .zs-b{position:absolute;right:24px;width:70px;height:70px;border-radius:50%;background:rgba(255,60,60,.5);display:none;align-items:center;justify-content:center;font-size:28px}
 </style>
 <div id="zsOv"><canvas id="zsCv"></canvas><div id="zsHit"></div><div id="zsCh"></div>
 <div class="zs-p" id="zsWv">🧟 Волна 1</div><div class="zs-p" id="zsSc">Убито: 0</div><div class="zs-p" id="zsX" onclick="closeZombie()">✕</div><div class="zs-p" id="zsF" onclick="zsFSTog()" title="Полный экран (F)" style="right:60px;top:12px;cursor:pointer">⛶</div><div class="zs-p" id="zsQ" onclick="zsQual()" style="right:110px;top:12px;cursor:pointer"></div>
-<div class="zs-p" id="zsHp">❤️ <span id="zsHpT">100</span><div id="zsHpB"></div></div><div class="zs-p" id="zsAm">🔫 12 / ∞</div><div id="zsMsg"></div>
+<div class="zs-p" id="zsHp">❤️ <span id="zsHpT">100</span><div id="zsHpB"></div></div><div class="zs-p" id="zsAm">🔫 12 / ∞</div><div id="zsMsg"></div><div class="zs-p" id="zsPr" onclick="zsSkip()"></div>
 <div id="zsTj"><div id="zsTk"></div></div><div class="zs-b" id="zsFire" style="bottom:110px">🔫</div><div class="zs-b" id="zsRel" style="bottom:200px;width:54px;height:54px;font-size:22px;background:rgba(60,120,255,.5)">🔄</div>
-<div id="zsMenu"><h1>🧟 Зомби шутер</h1><div style="opacity:.85;max-width:420px;line-height:1.5">Бегай по улицам, заходи в дома и отбивайся от волн зомби.<br>WASD — ходьба · Shift — бег · ЛКМ — стрельба · R — перезарядка · 1-9 / колесо — слоты · E — аптечка · Esc — пауза<br>На телефоне: джойстик слева, камера — свайп справа, слоты внизу (аптечка — слот 2, тап ещё раз = применить)</div><button onclick="zsStart()">▶ Играть</button><button id="zsQ2" onclick="zsQual()" style="background:#2d3a4f;font-size:15px;padding:10px 24px"></button></div></div>
+<div id="zsMenu"><h1>🧟 Зомби шутер</h1><div style="opacity:.85;max-width:420px;line-height:1.5">Бегай по улицам, заходи в дома и отбивайся от волн зомби.<br>На всех волнах зомби сами чуют тебя и идут за тобой. Перед каждой волной у тебя 5 минут на подготовку: собирай аптечки и оружие.<br>WASD — ходьба · Shift — бег · ЛКМ — стрельба · R — перезарядка · 1-9 / колесо — слоты · E — аптечка · Esc — пауза · N — пропустить подготовку · слот 4 — 🚀 базука (1 заряд раз в 1:50)<br>На телефоне: джойстик слева, камера — свайп справа, слоты внизу (аптечка — слот 2, тап ещё раз = применить)</div><div style="font-weight:800;opacity:.9">📍 Выбери локацию</div><div id="zsLocs"></div><button onclick="zsStart()">▶ Играть</button><button id="zsQ2" onclick="zsQual()" style="background:#2d3a4f;font-size:15px;padding:10px 24px"></button></div></div>
 <script>
 (function(){
 const $=id=>document.getElementById(id),TOUCH='ontouchstart' in window;
 let T,scene,cam,ren,clock,boxes,solids,zs,ready=false,run=false,raf,P,keys={},kills,wave,ammo,msgT,fireCd,spawnQ,nextWave,HR=[],parts=[],moon,lights=[],AC,t0=0;
 const MAXA=16,N=124,DX=[1,-1,0,0,1,1,-1,-1],DY=[0,0,1,-1,1,-1,1,-1];let blk,gd,gq,gt=0,SL=[],Q=(()=>{try{const v=localStorage.getItem('zsQ');if(v!==null&&+v>=0&&+v<=2)return+v}catch(e){}return TOUCH?1:2})();
+const LOCS=[
+{id:'city',n:'🌃 Ночной город',d:'Классика: лунные улицы и жилые дома',bg:0x070b18,fog:0x0a1022,fd:.028,hs:0x6f88c8,hg:0x1a1a26,hi:.55,mc:0x9fb4ff,mi:.9,mo:0xf2f4ff,stars:1,gm:1,gc:0xffffff,pm:1,pc:0xffffff,leaf:0x1f4a2a,trunk:0x4a3320,exp:1.25,zm:1,snow:0},
+{id:'fog',n:'🌫️ Туманная окраина',d:'Густой туман — зомби видно слишком поздно',bg:0x141b1a,fog:0x1d2825,fd:.065,hs:0x7f9a90,hg:0x1a201e,hi:.7,mc:0x9fc0b0,mi:.55,mo:0xcfe0d8,stars:0,gm:1,gc:0x8a9a8a,pm:1,pc:0x9aaa9a,leaf:0x2a4a30,trunk:0x3a2a1a,exp:1.35,zm:1,snow:0},
+{id:'snow',n:'❄️ Снежный посёлок',d:'Метель и белая земля, холодный свет',bg:0x1a2840,fog:0x2c3e58,fd:.034,hs:0x9fc0ff,hg:0x4a5a78,hi:.8,mc:0xcfe0ff,mi:1,mo:0xffffff,stars:1,gm:0,gc:0xcfd9e8,pm:0,pc:0xe3ecf7,leaf:0xdfe8f2,trunk:0x4a3320,exp:1.2,zm:1,snow:1},
+{id:'waste',n:'🌋 Багровая пустошь',d:'Закат, пыль и пепел. Зомби быстрее на 15%',bg:0x2a0f0a,fog:0x4a1c12,fd:.03,hs:0xff8a5a,hg:0x2a1008,hi:.65,mc:0xff8a4a,mi:.8,mo:0xff6a2a,stars:0,gm:0,gc:0x6a4a30,pm:0,pc:0x8a6a50,leaf:0x4a3418,trunk:0x2a1a0e,exp:1.25,zm:1.15,snow:0}];
+let curLoc=(()=>{try{const v=localStorage.getItem('zsLoc');if(LOCS.some(l=>l.id===v))return v}catch(e){}return 'city'})();
+const LOC=()=>LOCS.find(l=>l.id===curLoc)||LOCS[0];
+let bzCd=0,rks=[],fxs=[],crs=[],crt=[],GG,GZ0,BL;const CR_R=5.2,CR_C=3.2,CR_D=.8;const BZT=110,BZR=7;
+let GM,HM,ST,MO,SNOW,prep=0,prTxt='',wp=null,sgAmmo=6;const PREP=300,SGM=6,RT2=1.8;
+function renderLocs(){const b=$('zsLocs');if(!b)return;b.innerHTML=LOCS.map(l=>'<div class="zs-lc'+(l.id===curLoc?' on':'')+'" onclick="zsLoc(\''+l.id+'\')"><b>'+l.n+'</b><span>'+l.d+'</span></div>').join('')}
+function applyLoc(){if(!ready||!scene)return;const L=LOC();
+ scene.background.set(L.bg);scene.fog.color.set(L.fog);scene.fog.density=L.fd;
+ HM.color.set(L.hs);HM.groundColor.set(L.hg);HM.intensity=L.hi;moon.color.set(L.mc);moon.intensity=L.mi;ren.toneMappingExposure=L.exp;
+ ST.visible=!!L.stars;MO.material.color.set(L.mo);
+ const pm=mat('conc');for(const [m,k,c] of[[GM,L.gm,L.gc],[pm,L.pm,L.pc]]){if(m.userData.m0===undefined)m.userData.m0=m.map;m.map=k?m.userData.m0:null;m.color.set(c);m.needsUpdate=true}
+ mat('1f4a2a').color.set(L.leaf);mat('4a3320').color.set(L.trunk);
+ if(L.snow&&!SNOW){const n=700,pos=new Float32Array(n*3);for(let i=0;i<n;i++){pos[i*3]=(Math.random()-.5)*50;pos[i*3+1]=Math.random()*16;pos[i*3+2]=(Math.random()-.5)*50}
+  const g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(pos,3));SNOW=new T.Points(g,new T.PointsMaterial({color:0xffffff,size:.14,transparent:true,opacity:.9,depthWrite:false}));SNOW.frustumCulled=false;scene.add(SNOW)}
+ if(SNOW)SNOW.visible=!!L.snow}
+window.zsLoc=function(id){if(!LOCS.some(l=>l.id===id))return;curLoc=id;try{localStorage.setItem('zsLoc',id)}catch(e){}renderLocs();if(ready){applyLoc();ren.render(scene,cam)}};
+window.zsSkip=function(){if(run&&prep>0)prep=.001};
 function load(cb){if(window.THREE)return cb();const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';s.onload=cb;s.onerror=()=>alert('Не удалось загрузить 3D');document.head.appendChild(s)}
-window.openZombie=function(){if(TOUCH)zsFS(true);const tx='⚙️ Графика: '+['Низкая','Средняя','Высокая'][Q];$('zsQ').textContent=tx;$('zsQ2').textContent=tx;
- if(typeof isVipActive!=='function'||!isVipActive()){try{openModal('vip')}catch(e){alert('Зомби шутер доступен только с подпиской MAX 👑')}return}
- $('zsOv').classList.add('on');$('zsMenu').style.display='flex';load(()=>{T=window.THREE;if(!ready){build();ready=true}resize();ren.render(scene,cam)})};
+window.zsAllowed=function(){try{return (typeof isVipActive==='function'&&isVipActive())||(typeof isUltraActive==='function'&&isUltraActive())}catch(e){return false}};
+window.openZombie=function(){if(TOUCH)zsFS(true);renderLocs();const tx='⚙️ Графика: '+['Низкая','Средняя','Высокая'][Q];$('zsQ').textContent=tx;$('zsQ2').textContent=tx;
+ if(!zsAllowed()){try{openModal('vip')}catch(e){alert('Зомби шутер доступен только с подпиской MAX 👑 или ULTRA 🏵️')}return}
+ $('zsOv').classList.add('on');$('zsMenu').style.display='flex';load(()=>{T=window.THREE;if(!ready){build();ready=true}applyLoc();resize();ren.render(scene,cam)})};
 window.closeZombie=function(){zsFS(false);run=false;cancelAnimationFrame(raf);$('zsOv').classList.remove('on');try{document.exitPointerLock()}catch(e){}};
 window.zsStart=function(){
- if(typeof isVipActive==='function'&&!isVipActive()){closeZombie();return}
+ if(!zsAllowed()){closeZombie();return}
  try{AC=AC||new (window.AudioContext||window.webkitAudioContext)()}catch(e){}
- reset();$('zsMenu').style.display='none';run=true;clock.getDelta();cancelAnimationFrame(raf);loop();
+ applyLoc();reset();$('zsMenu').style.display='none';run=true;clock.getDelta();cancelAnimationFrame(raf);loop();
  if(!TOUCH)try{$('zsCv').requestPointerLock()}catch(e){}};
 /* ---------- звук ---------- */
 function snd(type,vol,dist){if(!AC)return;const t=AC.currentTime,v=vol/(1+(dist||0)*.12);
@@ -15030,16 +15640,16 @@ function build(){
  ren.outputEncoding=T.sRGBEncoding;ren.toneMapping=T.ACESFilmicToneMapping;ren.toneMappingExposure=1.25;ren.shadowMap.enabled=true;ren.shadowMap.type=T.PCFSoftShadowMap;
  scene=new T.Scene();scene.background=new T.Color(0x070b18);scene.fog=new T.FogExp2(0x0a1022,.028);
  cam=new T.PerspectiveCamera(75,1,.05,140);cam.rotation.order='YXZ';scene.add(cam);
- scene.add(new T.HemisphereLight(0x6f88c8,0x1a1a26,.55));
+ HM=new T.HemisphereLight(0x6f88c8,0x1a1a26,.55);scene.add(HM);
  moon=new T.DirectionalLight(0x9fb4ff,.9);moon.castShadow=true;const sc=moon.shadow.camera;sc.left=sc.bottom=-34;sc.right=sc.top=34;sc.near=1;sc.far=140;moon.shadow.mapSize.set(TOUCH?1024:2048,TOUCH?1024:2048);moon.shadow.bias=-.0004;moon.shadow.normalBias=.03;scene.add(moon,moon.target);
  clock=new T.Clock();boxes=[];solids=[];zs=[];
- const gm=mat('asphalt');gm.map.repeat.set(35,35);gm.bumpMap.repeat.set(35,35);const g=new T.Mesh(new T.PlaneGeometry(140,140),gm);g.rotation.x=-Math.PI/2;g.receiveShadow=true;scene.add(g);
+ const gm=mat('asphalt');GM=gm;gm.map.repeat.set(35,35);gm.bumpMap.repeat.set(35,35);const gg=new T.PlaneGeometry(140,140,280,280);gg.setAttribute('color',new T.BufferAttribute(new Float32Array(gg.attributes.position.count*3).fill(1),3));GG=gg;GZ0=gg.attributes.position.array.slice();gm.vertexColors=true;const g=new T.Mesh(gg,gm);g.rotation.x=-Math.PI/2;g.receiveShadow=true;scene.add(g);
  // разметка
  for(const s of[-20,20]){const dm=new T.MeshBasicMaterial({color:0xc9a82a});for(let k=-58;k<58;k+=6){for(const o of[0,1]){const m=new T.Mesh(new T.PlaneGeometry(o?.18:3,o?3:.18),dm);m.rotation.x=-Math.PI/2;m.position.set(o?s:k+1.5,.025,o?k+1.5:s);scene.add(m)}}}
  // звёзды
  const sp=[];for(let i=0;i<400;i++){const a=Math.random()*6.28,e=Math.random()*1.4+.15,r=120;sp.push(Math.cos(a)*Math.cos(e)*r,Math.sin(e)*r,Math.sin(a)*Math.cos(e)*r)}
  const sg=new T.BufferGeometry();sg.setAttribute('position',new T.Float32BufferAttribute(sp,3));const st=new T.Points(sg,new T.PointsMaterial({color:0xffffff,size:.7,fog:false}));scene.add(st);
- const mo=new T.Mesh(new T.SphereGeometry(5,16,16),new T.MeshBasicMaterial({color:0xf2f4ff,fog:false}));mo.position.set(-60,70,-90);scene.add(mo);
+ const mo=new T.Mesh(new T.SphereGeometry(5,16,16),new T.MeshBasicMaterial({color:0xf2f4ff,fog:false}));mo.position.set(-60,70,-90);scene.add(mo);ST=st;MO=mo;
  let n=0;for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){const cx=i*40,cz=j*40,ox=Math.abs(i)+Math.abs(j);
   box(28,.14,28,mat('conc'),cx,.07,cz,false);house(cx,cz-1,n++);
   tree(cx-12,cz-12);tree(cx+12.5,cz-11);
@@ -15048,12 +15658,12 @@ function build(){
  for(const s of[-1,1]){box(124,5,1,mat('stone'),0,2.5,s*61);box(1,5,124,mat('stone'),s*61,2.5,0)}
  [[20,-8,0,0xc0392b],[-20,10,0,0x2c6fbb],[8,20,1.57,0xe6c229],[-34,-20,1.57,0x27ae60],[20,34,0,0x777777],[-20,-36,0,0xcc6600],[-8,-20,1.57,0x5b2a8a]].forEach(a=>car(a[0],a[1],a[2],a[3]));
  const gun=buildAK();gun.position.set(.2,-.2,-.58);gun.rotation.y=.04;cam.add(gun);
- P={gun,x:0,z:0,mag:gun.userData.mag,mf:gun.userData.mf,sel:0,med:0,useA:0};initInv();
- const fl=new T.PointLight(0xffaa44,0,10);fl.position.set(0,0,-1);cam.add(fl);P.fl=fl;
+ P={gun,x:0,z:0,mag:gun.userData.mag,mf:gun.userData.mf,sel:0,med:0,useA:0,hasSG:0,rel2:0};P.sg=buildSG();P.sg.position.set(.2,-.2,-.58);P.sg.visible=false;cam.add(P.sg);P.bz=buildBZ();P.bz.position.set(.22,-.22,-.6);P.bz.visible=false;cam.add(P.bz);initInv();
+ BL=new T.PointLight(0xff8a30,0,32);scene.add(BL);const fl=new T.PointLight(0xffaa44,0,10);fl.position.set(0,0,-1);cam.add(fl);P.fl=fl;
  const sl=new T.SpotLight(0xfff4dc,2.2,38,.5,.45,1.2);sl.position.set(.15,-.1,0);sl.target.position.set(0,0,-5);cam.add(sl,sl.target);sl.shadow.mapSize.set(1024,1024);sl.shadow.bias=-.0005;P.sl=sl;
  for(let i=0;i<50;i++){const m=new T.Mesh(new T.BoxGeometry(.07,.07,.07),new T.MeshBasicMaterial({color:0x8a0000}));m.visible=false;scene.add(m);parts.push({m,v:new T.Vector3(),l:0})}
  buildGrid();setQ(Q);addEventListener('resize',resize);
- addEventListener('keydown',e=>{keys[e.code]=1;if(run&&e.code==='KeyG')window.zsQual();if(run&&e.code==='KeyF')window.zsFSTog();if(run&&e.code==='KeyR')reload();if(run){if(/^Digit[1-9]$/.test(e.code))setSel(+e.code.slice(5)-1);if(e.code==='KeyE')useMed()}});addEventListener('keyup',e=>keys[e.code]=0);
+ addEventListener('keydown',e=>{keys[e.code]=1;if(run&&e.code==='KeyG')window.zsQual();if(run&&e.code==='KeyF')window.zsFSTog();if(run&&e.code==='KeyR')reload();if(run&&e.code==='KeyN')window.zsSkip();if(run){if(/^Digit[1-9]$/.test(e.code))setSel(+e.code.slice(5)-1);if(e.code==='KeyE')useMed()}});addEventListener('keyup',e=>keys[e.code]=0);
  document.addEventListener('mousemove',e=>{if(run&&document.pointerLockElement)look(e.movementX,e.movementY,.0022)});
  document.addEventListener('pointerlockchange',()=>{if(run&&!document.pointerLockElement&&!TOUCH){run=false;$('zsMenu').style.display='flex'}});
  $('zsCv').addEventListener('mousedown',e=>{if(!run)return;if(!document.pointerLockElement)$('zsCv').requestPointerLock();else P.shoot=1});
@@ -15086,14 +15696,14 @@ function touch(){const j=$('zsTj'),k=$('zsTk');j.style.display='block';$('zsFire
  $('zsRel').addEventListener('touchstart',e=>{e.preventDefault();reload()},{passive:false})}
 function resize(){if(!ren)return;ren.setSize(innerWidth,innerHeight,false);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()}
 function msg(t,ms=2000){const m=$('zsMsg');m.textContent=t;clearTimeout(msgT);msgT=setTimeout(()=>m.textContent='',ms)}
-function reset(){zs.forEach(z=>scene.remove(z.g));zs=[];Object.assign(P,{x:20,z:20,yaw:0,pit:0,hp:100,shoot:0,bob:0,rel:0,shake:0});P.jx=P.jz=0;resetInv();kills=0;wave=0;ammo=MAXA;fireCd=0;spawnQ=0;nextWave=2;
- const mn=$('zsMenu');mn.querySelector('h1').textContent='🧟 Зомби шутер';mn.querySelector('button').textContent='▶ Играть';updField();hud();msg('Ночь. Они повсюду… Заходи в дома 🏚️',3500)}
-function hud(){$('zsHpT').textContent=Math.max(0,Math.ceil(P.hp));$('zsHpB').style.width=Math.max(0,P.hp)+'%';$('zsAm').textContent=P.rel>0?'🔄 перезарядка…':'🔫 АК-47 · '+ammo+' / ∞';$('zsSc').textContent='Убито: '+kills;$('zsWv').textContent='🧟 Волна '+wave;updHb()}
-function reload(){if(P.rel>0||ammo===MAXA)return;if(P.sel!==0)setSel(0);P.rel=RT;hud();tone(220,110,.07,.25);setTimeout(()=>tone(300,150,.07,.25),RT*550)}
+function reset(){zs.forEach(z=>scene.remove(z.g));zs=[];Object.assign(P,{x:20,z:20,yaw:0,pit:0,hp:100,shoot:0,bob:0,rel:0,shake:0});P.jx=P.jz=0;resetInv();kills=0;wave=0;ammo=MAXA;fireCd=0;spawnQ=0;nextWave=2;prep=PREP;prTxt='';
+ const mn=$('zsMenu');mn.querySelector('h1').textContent='🧟 Зомби шутер';mn.querySelector('button').textContent='▶ Играть';updField();hud();msg('У тебя 5 минут: собери 🩹 аптечки и найди 💥 дробовик в домах',4500)}
+function hud(){$('zsHpT').textContent=Math.max(0,Math.ceil(P.hp));$('zsHpB').style.width=Math.max(0,P.hp)+'%';$('zsAm').textContent=P.sel===3?(bzCd>0?'⏳ Базука · '+((Math.ceil(bzCd)/60)|0)+':'+('0'+Math.ceil(bzCd)%60).slice(-2):'🚀 Базука · заряд готов'):P.sel===2&&P.hasSG?(P.rel2>0?'🔄 перезарядка…':'💥 Дробовик · '+sgAmmo+' / ∞'):(P.rel>0?'🔄 перезарядка…':'🔫 АК-47 · '+ammo+' / ∞');$('zsSc').textContent='Убито: '+kills;$('zsWv').textContent='🧟 Волна '+wave;updHb()}
+function reload(){if(P.sel===2&&P.hasSG){reloadSG();return}if(P.rel>0||ammo===MAXA)return;if(P.sel!==0)setSel(0);P.rel=RT;hud();tone(220,110,.07,.25);setTimeout(()=>tone(300,150,.07,.25),RT*550)}
 function groundY(x,z){for(const h of HR)if(Math.abs(x-h.cx)<h.W/2&&Math.abs(z-h.cz)<h.D/2)return .24;return (Math.abs(((x+20)%40+40)%40-20)<14&&Math.abs(((z+20)%40+40)%40-20)<14)?.15:.03}
 function burst(p,n,c,sp){let k=0;for(const q of parts){if(q.l>0)continue;q.m.material.color.set(c);q.m.position.copy(p);q.v.set((Math.random()-.5)*sp,Math.random()*sp*.7,(Math.random()-.5)*sp);q.l=.5+Math.random()*.4;q.m.visible=true;if(++k>=n)break}}
 /* ---------- ИНВЕНТАРЬ · АПТЕЧКИ · АК-47 ---------- */
-const HEAL=18,MED_EVERY=120,RT=1.7,ITN=['Автомат Калашникова АК-47','Аптечка  +18 ❤️'];
+const HEAL=18,MED_EVERY=120,RT=1.7,ITN=['Автомат Калашникова АК-47','Аптечка  +18 ❤️','Дробовик 💥 ×7','Базука 🚀 (1 заряд / 1:50)'];
 let meds=[],medHand,medT=0,hbSl=[],inTm,mtEl,inEl,mtTxt='';
 F.grain=(x,w,c)=>{x.fillStyle=c||'#7a4320';x.fillRect(0,0,w,w);for(let i=0;i<70;i++){x.fillStyle='rgba('+(Math.random()<.5?'0,0,0':'255,200,140')+','+(.05+Math.random()*.12)+')';x.fillRect(0,Math.random()*w,w,1+Math.random()*2)}nz(x,w,120,.12)};
 F.steel=(x,w,c)=>{x.fillStyle=c||'#3b3c42';x.fillRect(0,0,w,w);nz(x,w,500,.18);for(let i=0;i<16;i++){x.fillStyle='rgba(210,210,220,'+(.05+Math.random()*.1)+')';x.fillRect(Math.random()*w,Math.random()*w,8+Math.random()*30,1)}};
@@ -15157,6 +15767,76 @@ function buildMed(){
  for(const s of[-1,1]){a(Bx(.16,.05,.01),r,0,.085,s*.083);a(Bx(.05,.16,.01),r,0,.085,s*.083)}
  for(const s of[-1,1])a(Bx(.04,.05,.012),gd,s*.13,.155,.083);
  return g}
+function buildSG(){const g=new T.Group(),mt=(c,r,m)=>new T.MeshStandardMaterial({color:c,roughness:r,metalness:m}),st=mt(0x2a2b30,.4,.6),wd=mt(0x7a4420,.6,.05),
+ A=(w,h,d,m,x,y,z)=>{const o=new T.Mesh(new T.BoxGeometry(w,h,d),m);o.position.set(x,y,z);g.add(o);return o},
+ C=(r,l,m,x,y,z)=>{const o=new T.Mesh(new T.CylinderGeometry(r,r,l,12),m);o.rotation.x=Math.PI/2;o.position.set(x,y,z);g.add(o);return o};
+ A(.055,.08,.3,st,0,0,0);C(.022,.78,st,0,.02,-.52);C(.017,.62,st,0,-.022,-.44);A(.06,.055,.22,wd,0,-.045,-.38);A(.05,.11,.34,wd,0,-.035,.33);A(.04,.08,.05,st,0,-.07,.1);return g}
+function spawnWeap(){if(P.hasSG||wp||!HR.length)return;const h=HR[(Math.random()*HR.length)|0],x=h.cx+4,z=h.cz+2.2;
+ const root=new T.Group(),model=buildSG();model.scale.setScalar(1.3);root.position.set(x,0,z);root.add(model);
+ const am=(c,op)=>new T.MeshBasicMaterial({color:c,transparent:true,opacity:op,blending:T.AdditiveBlending,depthWrite:false,side:T.DoubleSide});
+ const beam=new T.Mesh(new T.CylinderGeometry(.3,.3,2.4,16,1,true),am(0xffa535,.15));beam.position.y=1.4;
+ const ring=new T.Mesh(new T.CircleGeometry(.5,20),am(0xffa535,.45));ring.rotation.x=-Math.PI/2;ring.position.y=.25;
+ root.add(beam,ring);scene.add(root);wp={root,model,x,z,ph:Math.random()*6}}
+function wpTick(dt,t){if(!wp)return;wp.model.position.y=.55+Math.sin(t*2.5+wp.ph)*.06;wp.model.rotation.y=t*1.3+wp.ph;
+ if(Math.hypot(P.x-wp.x,P.z-wp.z)<1.6){scene.remove(wp.root);wp=null;P.hasSG=1;sgAmmo=SGM;tone(440,880,.15,.16);setSel(2);hud();msg('💥 Дробовик! слот 3 · R — перезарядка',2600)}}
+function reloadSG(){if(P.rel2>0||sgAmmo===SGM)return;P.rel2=RT2;hud();tone(200,100,.08,.25);setTimeout(()=>tone(300,160,.08,.25),RT2*600)}
+function shootSG(){if(fireCd>0||P.rel2>0)return;if(sgAmmo<=0){reloadSG();return}
+ sgAmmo--;fireCd=.85;P.sg.position.z=-.38;P.sg.rotation.x=.25;P.fl.intensity=4;P.pit=Math.min(1.4,P.pit+.03);hud();snd('shot',.9,0);
+ const tg=solids.concat(zs.filter(z=>!z.dying).map(z=>z.g));
+ for(let k=0;k<7;k++){const rc=new T.Raycaster();rc.setFromCamera({x:(Math.random()-.5)*.12,y:(Math.random()-.5)*.12},cam);rc.far=32;const h=rc.intersectObjects(tg,true)[0];
+  if(h){const z=h.object.userData.z;if(z){if(z.dying)continue;const hs=!!h.object.userData.head;burst(h.point,4,0x9a0000,3);z.hp-=hs?60:32;z.al=1;z.x+=(z.x-P.x)*.02;z.z+=(z.z-P.z)*.02;if(z.hp<=0)kill(z,hs)}else burst(h.point,2,0xffd080,2)}}}
+function buildBZ(){const g=new T.Group(),mt=(c,r,m)=>new T.MeshStandardMaterial({color:c,roughness:r,metalness:m}),ol=mt(0x4a5a3a,.6,.3),dk=mt(0x1e2418,.5,.4),st=mt(0x2a2b30,.4,.6),
+ C=(r,l,m,x,y,z)=>{const o=new T.Mesh(new T.CylinderGeometry(r,r,l,14),m);o.rotation.x=Math.PI/2;o.position.set(x,y,z);g.add(o);return o},
+ A=(w,h,d,m,x,y,z)=>{const o=new T.Mesh(new T.BoxGeometry(w,h,d),m);o.position.set(x,y,z);g.add(o);return o};
+ C(.07,1.1,ol,0,0,-.2);C(.09,.14,dk,0,0,-.78);C(.095,.16,dk,0,0,.36);A(.04,.14,.06,st,0,-.12,-.1);A(.04,.12,.05,st,0,-.1,.12);A(.03,.06,.1,st,0,.1,-.3);
+ const rk=new T.Mesh(new T.ConeGeometry(.06,.2,10),mt(0xc0392b,.5,.2));rk.rotation.x=-Math.PI/2;rk.position.set(0,0,-.88);g.add(rk);g.userData.rk=rk;return g}
+function cH(c,x,z){const dx=x-c.x,dz=z-c.z,r=Math.hypot(dx,dz);if(r>CR_R)return 0;const an=Math.atan2(dz,dx),rr=r/(1+.18*Math.sin(an*3+c.ph)+.1*Math.sin(an*7+c.ph*2));let h=0;
+ if(rr<CR_C){const u=rr/CR_C;h-=CR_D*(1-u*u)}h+=.22*Math.exp(-Math.pow((rr-CR_C*1.05)/.6,2));return h}
+function chH(x,z){let h=0;for(let i=0;i<crt.length;i++)if(crt[i].og)h+=cH(crt[i],x,z);return h}
+function crater(x,z){const y=groundY(x,z),og=y<.1,c={x,z,ph:Math.random()*6.28,og},objs=[];crt.push(c);
+ if(og){const pa=GG.attributes.position,ca=GG.attributes.color;
+  for(let i=0;i<pa.count;i++){const vx=pa.getX(i),vz=-pa.getY(i),dx=vx-x,dz=vz-z;if(dx>CR_R||dx<-CR_R||dz>CR_R||dz<-CR_R)continue;const r=Math.hypot(dx,dz);if(r>CR_R)continue;
+   pa.setZ(i,pa.getZ(i)+cH(c,vx,vz));
+   const an=Math.atan2(dz,dx),rr=r/(1+.18*Math.sin(an*3+c.ph)+.1*Math.sin(an*7+c.ph*2)),nz=.85+Math.random()*.3;let R_,G_,B_;
+   if(rr<CR_C*.45){R_=.45;G_=.38;B_=.33}
+   else if(rr<CR_C*1.1){const t=(rr-CR_C*.45)/(CR_C*.65);R_=.45+t*1.4;G_=.38+t*.9;B_=.33+t*.5}
+   else{const t=Math.min(1,(rr-CR_C*1.1)/(CR_R-CR_C*1.1));R_=1.85-.85*t;G_=1.28-.28*t;B_=.83+.17*t}
+   ca.setXYZ(i,ca.getX(i)*R_*nz,ca.getY(i)*G_*nz,ca.getZ(i)*B_*nz)}
+  pa.needsUpdate=true;ca.needsUpdate=true;GG.computeVertexNormals()}
+ else objs.push(decal(x,z,4.4,y+.012,'#0c0906',.8),decal(x,z,2.4,y+.016,'#000',.95));
+ const rm=new T.MeshStandardMaterial({color:0x3b2a1c,roughness:1});
+ for(let k=0;k<16;k++){const a=Math.random()*6.28,rd=CR_C*(.9+Math.random()*.9),s=.1+Math.random()*.28,m=new T.Mesh(new T.DodecahedronGeometry(s,0),rm),px=x+Math.cos(a)*rd,pz=z+Math.sin(a)*rd;
+  m.position.set(px,(og?chH(px,pz):0)+y+s*.35,pz);m.rotation.set(Math.random()*3,Math.random()*3,Math.random()*3);m.castShadow=true;scene.add(m);objs.push(m)}
+ for(let k=0;k<6;k++){const m=new T.Mesh(new T.SphereGeometry(.9,8,6),new T.MeshBasicMaterial({color:0x3a3733,transparent:true,opacity:0,depthWrite:false}));
+  m.position.set(x+(Math.random()-.5)*2,(og?chH(x,z):y)+.3,z+(Math.random()-.5)*2);scene.add(m);fxs.push({m,t:-Math.random()*1.2,sm:1})}
+ crs.push(objs);if(crs.length>8)crs.shift().forEach(o=>scene.remove(o))}
+function explode(p,gr){const ex=p.x,ez=p.z;snd('shot',1.8,0);tone(70,25,.7,.5);setTimeout(()=>tone(110,40,.5,.3),90);
+ const fb=new T.Mesh(new T.SphereGeometry(1,16,12),new T.MeshBasicMaterial({color:0xffa030,transparent:true,opacity:.95,blending:T.AdditiveBlending,depthWrite:false}));fb.position.set(p.x,Math.max(p.y,.8),p.z);scene.add(fb);fxs.push({m:fb,t:0});
+ BL.position.set(p.x,Math.max(p.y,.8)+1,p.z);BL.intensity=10;burst(new T.Vector3(p.x,Math.max(p.y,.4),p.z),25,0xff8a20,10);burst(new T.Vector3(p.x,Math.max(p.y,.4),p.z),25,0x2a2a2a,6);
+ if(gr)crater(ex,ez);
+ let n=0;for(const z of zs){if(z.dying)continue;const d=Math.hypot(z.x-ex,z.z-ez);if(d<BZR){z.hp=0;kill(z,false);n++}else if(d<BZR+16)z.al=1}
+ if(n>1)msg('🚀 Разнесло '+n+' зомби!',1800);
+ const dp=Math.hypot(P.x-ex,P.z-ez);P.shake=Math.max(P.shake,1.3*(1-Math.min(1,dp/45)));if(dp<4.5)hit(10+35*(1-dp/4.5))}
+function fireBZ(){if(fireCd>0)return;if(bzCd>0){msg('⏳ Базука заряжается: '+((Math.ceil(bzCd)/60)|0)+':'+('0'+Math.ceil(bzCd)%60).slice(-2),1200);return}
+ bzCd=BZT;fireCd=.5;const dir=cam.getWorldDirection(new T.Vector3()),m=new T.Group();
+ const b=new T.Mesh(new T.CylinderGeometry(.07,.07,.7,10),new T.MeshStandardMaterial({color:0x777a70,metalness:.5,roughness:.4}));b.rotation.x=Math.PI/2;
+ const tip=new T.Mesh(new T.ConeGeometry(.07,.2,10),new T.MeshStandardMaterial({color:0xc0392b}));tip.rotation.x=Math.PI/2;tip.position.z=.45;
+ const gl=new T.Mesh(new T.SphereGeometry(.16,8,8),new T.MeshBasicMaterial({color:0xffaa30,transparent:true,opacity:.8,blending:T.AdditiveBlending,depthWrite:false}));gl.position.z=-.45;
+ m.add(b,tip,gl);m.position.copy(cam.position).addScaledVector(dir,.9);m.position.y-=.12;m.lookAt(m.position.clone().add(dir));scene.add(m);rks.push({m,dir,life:3});
+ P.bz.position.z=-.35;P.bz.rotation.x=.3;P.fl.intensity=4;P.pit=Math.min(1.4,P.pit+.05);snd('shot',1,0);tone(120,60,.3,.3);hud();msg('🚀 Огонь! Следующий заряд через 1:50',2200)}
+function bzTick(dt){if(P.bz){P.bz.position.z+=(-.6-P.bz.position.z)*8*dt;P.bz.rotation.x*=.9}
+ if(bzCd>0){const o=Math.ceil(bzCd);bzCd=Math.max(0,bzCd-dt);if(Math.ceil(bzCd)!==o||bzCd===0){if(bzCd===0){msg('🚀 Базука заряжена!',2000);tone(500,900,.15,.15)}hud()}}
+ if(BL)BL.intensity*=Math.pow(.003,dt);
+ for(let i=fxs.length-1;i>=0;i--){const f=fxs[i];f.t+=dt;if(f.sm){if(f.t<0)continue;f.m.position.y+=dt*1.1;f.m.scale.setScalar(1+f.t*.45);f.m.material.opacity=Math.min(.45,f.t*.6)*Math.max(0,1-f.t/7);if(f.t>7){scene.remove(f.m);fxs.splice(i,1)}continue}f.m.scale.setScalar(.8+Math.min(1,f.t/.45)*BZR*.55);f.m.material.opacity=Math.max(0,.95*(1-f.t/.7));if(f.t>.7){scene.remove(f.m);fxs.splice(i,1)}}
+ for(let i=rks.length-1;i>=0;i--){const r=rks[i],st=40*dt;r.life-=dt;const pos=r.m.position;
+  const rc=new T.Raycaster(pos.clone(),r.dir,0,st+.3),h=rc.intersectObjects(solids.concat(zs.filter(z=>!z.dying).map(z=>z.g)),true)[0];
+  if(h){scene.remove(r.m);rks.splice(i,1);explode(h.point,!!h.object.userData.z);continue}
+  const np=pos.clone().addScaledVector(r.dir,st);
+  if(np.y<=.1){const tt=Math.max(0,Math.min(1,(pos.y-.1)/Math.max(1e-4,pos.y-np.y))),gp=pos.clone().addScaledVector(r.dir,st*tt);scene.remove(r.m);rks.splice(i,1);explode(gp,true);continue}
+  if(r.life<=0){scene.remove(r.m);rks.splice(i,1);explode(np,false);continue}
+  pos.copy(np)}}
+function sgTick(dt){if(!P.sg)return;P.sg.position.z+=(-.58-P.sg.position.z)*10*dt;P.sg.rotation.x*=.88;
+ if(P.rel2>0){P.rel2-=dt;P.sg.rotation.z=-.4*Math.sin(Math.max(0,1-P.rel2/RT2)*Math.PI);if(P.rel2<=0){sgAmmo=SGM;P.sg.rotation.z=0;hud()}}}
 function spawnMeds(){let n=0;
  HR.forEach((h,i)=>{if(meds[i])return;const o=i===3?[-8,h.D/2-1.8]:i===6?[-7,5.2]:[-4,h.D/2-1.6],x=h.cx+o[0],z=h.cz+o[1];
   const root=new T.Group(),model=buildMed();root.position.set(x,0,z);root.add(model);
@@ -15188,15 +15868,17 @@ function reloadAnim(dt){if(P.rel<=0)return;P.rel-=dt;const p=Math.max(0,Math.min
 function icon(i){const c=document.createElement('canvas');c.width=c.height=32;const x=c.getContext('2d'),R=(col,a,b,w,h)=>{x.fillStyle=col;x.fillRect(a,b,w,h)};
  if(i===0){R('#8a4d24',1,13,8,7);R('#2b2b2e',0,12,1,10);R('#44454b',9,12,11,5);R('#222',9,11,5,1);R('#6b3a1b',20,13,6,5);R('#55565c',26,14,6,2);R('#222',29,11,1,3);
   R('#222',14,17,4,3);R('#222',15,20,4,3);R('#222',16,23,4,3);R('#222',17,26,3,2);R('#5f3317',9,17,3,5);R('#5f3317',8,21,3,3);R('#55565c',20,12,6,1)}
+ else if(i===3){R('#2f3a26',0,11,4,10);R('#4a5a3a',4,12,22,8);R('#5d6e49',4,12,22,2);R('#2f3a26',26,11,4,10);R('#c0392b',30,13,2,6);R('#222',12,20,4,6);R('#222',18,20,3,4);R('#aaa',9,9,5,3)}
+ else if(i===2){R('#7a4420',1,14,9,6);R('#2a2b30',10,13,8,5);R('#6b6c72',18,13,14,2);R('#6b6c72',18,16,12,2);R('#7a4420',19,18,7,3);R('#111',13,18,3,4)}
  else{R('#2a2a2a',4,8,24,19);R('#f4f4f4',5,9,22,17);R('#888',5,13,22,1);R('#2a2a2a',11,4,10,4);R('#555',12,5,8,2);R('#e01616',14,15,4,9);R('#e01616',11,17,10,4)}
  return c}
 function setSel(i){P.sel=i;P.shoot=0;hbSl.forEach((s,k)=>s.el.classList.toggle('on',k===i));
- const nm=ITN[i]||'';inEl.textContent=nm;inEl.style.opacity=nm?1:0;clearTimeout(inTm);inTm=setTimeout(()=>inEl.style.opacity=0,1700);updHb()}
-function updHb(){if(!hbSl.length)return;P.gun.visible=P.sel===0;medHand.visible=P.sel===1&&P.med>0;
- hbSl[0].n.textContent=P.rel>0?'↻':ammo;hbSl[1].n.textContent=P.med>0?P.med:'';hbSl[1].ic.style.opacity=P.med>0?1:.35}
+ const nm=(i===2&&!P.hasSG)?'':(ITN[i]||'');inEl.textContent=nm;inEl.style.opacity=nm?1:0;clearTimeout(inTm);inTm=setTimeout(()=>inEl.style.opacity=0,1700);updHb()}
+function updHb(){if(!hbSl.length)return;P.gun.visible=P.sel===0;if(P.sg)P.sg.visible=P.sel===2&&!!P.hasSG;if(P.bz){P.bz.visible=P.sel===3;P.bz.userData.rk.visible=bzCd<=0}medHand.visible=P.sel===1&&P.med>0;
+ hbSl[0].n.textContent=P.rel>0?'↻':ammo;hbSl[1].n.textContent=P.med>0?P.med:'';hbSl[1].ic.style.opacity=P.med>0?1:.35;hbSl[2].n.textContent=P.hasSG?(P.rel2>0?'↻':sgAmmo):'';hbSl[2].ic.style.opacity=P.hasSG?1:.35;hbSl[3].n.textContent=bzCd>0?Math.ceil(bzCd):'';hbSl[3].ic.style.opacity=bzCd>0?.35:1}
 function pickSlot(i){if(!run)return;if(P.sel===i&&i===1)useMed();else setSel(i)}
 function resetInv(){meds.forEach(m=>m&&scene.remove(m.root));meds=[];P.med=0;P.useA=0;P.gun.rotation.set(0,.04,0);P.gun.position.z=-.58;P.mag.position.y=0;P.mag.visible=true;
- setSel(0);medT=MED_EVERY;mtTxt='';spawnMeds()}
+ if(wp){scene.remove(wp.root);wp=null}P.hasSG=0;P.rel2=0;sgAmmo=SGM;bzCd=0;rks.forEach(r=>scene.remove(r.m));rks=[];fxs.forEach(f=>scene.remove(f.m));fxs=[];crs.forEach(c=>c.forEach(o=>scene.remove(o)));crs=[];crt=[];if(GG){GG.attributes.position.array.set(GZ0);GG.attributes.position.needsUpdate=true;GG.attributes.color.array.fill(1);GG.attributes.color.needsUpdate=true;GG.computeVertexNormals()}if(BL)BL.intensity=0;setSel(0);medT=MED_EVERY;mtTxt='';spawnMeds();spawnWeap()}
 function initInv(){
  const st=document.createElement('style');st.textContent='#zsHb{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);display:flex;gap:3px;padding:3px;background:rgba(20,20,20,.6);border:2px solid #000;border-radius:4px}'
  +'.zs-sl{position:relative;width:clamp(30px,4.6vw,48px);height:clamp(30px,4.6vw,48px);box-sizing:border-box;background:rgba(139,139,139,.45);border:2px solid;border-color:#373737 #fff #fff #373737;cursor:pointer}'
@@ -15209,7 +15891,7 @@ function initInv(){
  document.head.appendChild(st);
  const ov=$('zsOv'),mn=$('zsMenu'),hb=document.createElement('div');hb.id='zsHb';
  for(let i=0;i<9;i++){const el=document.createElement('div');el.className='zs-sl';const num=document.createElement('i');num.textContent=i+1;const n=document.createElement('b');
-  let ic=null;if(i<2){ic=icon(i);el.appendChild(ic)}el.appendChild(num);el.appendChild(n);
+  let ic=null;if(i<4){ic=icon(i);el.appendChild(ic)}el.appendChild(num);el.appendChild(n);
   el.addEventListener('touchstart',e=>{e.preventDefault();e.stopPropagation();pickSlot(i)},{passive:false});
   el.addEventListener('mousedown',e=>{e.stopPropagation();pickSlot(i)});
   hb.appendChild(el);hbSl.push({el,n,ic})}
@@ -15233,7 +15915,7 @@ function spawnPos(inside){for(let tr=0;tr<120;tr++){let x,z;
   if(inside&&HR.length){const h=HR[(Math.random()*HR.length)|0];x=h.cx+(Math.random()-.5)*(h.W-2);z=h.cz+(Math.random()-.5)*(h.D-2)}
   else{const a=Math.random()<.5,s=Math.random()<.5?-20:20,u=(Math.random()-.5)*110;x=a?s:u;z=a?u:s}
   x=Math.floor(x)+.5;z=Math.floor(z)+.5;const c=cellOf(x,z);if(c<0||blk[c]||gd[c]<0)continue;
-  if(Math.hypot(x-P.x,z-P.z)<(inside?9:26))continue;if(zs.some(q=>Math.hypot(q.x-x,q.z-z)<1.3))continue;return[x,z]}return null}
+  if(Math.hypot(x-P.x,z-P.z)<(inside?17:26))continue;if(zs.some(q=>Math.hypot(q.x-x,q.z-z)<1.3))continue;return[x,z]}return null}
 function mkZombie(inside){
  const sp0=spawnPos(inside);if(!sp0)return;const x=sp0[0],z=sp0[1];
  const r=Math.random(),type=wave>=3&&r<.14?'brute':wave>=2&&r<.42?'runner':'walker';
@@ -15256,7 +15938,7 @@ function mkZombie(inside){
  const sc=type==='brute'?1.5:type==='runner'?.95:1+Math.random()*.12;g.scale.set(sc*(type==='brute'?1.25:type==='runner'?.85:1),sc,sc);
  g.position.set(x,0,z);scene.add(g);
  const hp=(type==='brute'?280:type==='runner'?50:70)+wave*8;
- const zo={g,x,z,hp,type,aL,aR,lL,lR,jaw,head,torso,ph:Math.random()*6,sp:(type==='runner'?4.2:type==='brute'?1.5:1.5+Math.random()*.7)+wave*.1,atk:0,stuck:0,dodge:0,da:0,gr:Math.random()*5,dying:0,dmg:type==='brute'?20:type==='runner'?7:10,dy:0,wt:1.5,lx:x,lz:z};
+ const zo={g,x,z,hp,type,aL,aR,lL,lR,jaw,head,torso,ph:Math.random()*6,sp:((type==='runner'?4.2:type==='brute'?1.5:1.5+Math.random()*.7)+wave*.1)*LOC().zm,atk:0,stuck:0,dodge:0,da:0,gr:Math.random()*5,dying:0,dmg:type==='brute'?20:type==='runner'?7:10,dy:0,wt:1.5,lx:x,lz:z,al:1,ry:Math.random()*6.28};
  g.traverse(o=>o.userData.z=zo);zs.push(zo);return zo}
 function hit(dmg){P.hp-=dmg;P.shake=.35;snd('hurt',.5,0);$('zsHit').style.opacity=1;setTimeout(()=>$('zsHit').style.opacity=0,200);hud();
  if(P.hp<=0){run=false;try{document.exitPointerLock()}catch(e){}const mn=$('zsMenu');mn.querySelector('h1').textContent='💀 Тебя сожрали';mn.querySelector('div').textContent='Волна '+wave+' · Убито зомби: '+kills;mn.querySelector('button').textContent='↻ Заново';mn.style.display='flex'}}
@@ -15266,27 +15948,35 @@ function shoot(){if(fireCd>0||P.rel>0)return;if(ammo<=0){reload();return}
  ammo--;fireCd=.1;P.gun.position.z=-.5;P.gun.rotation.x=.08;P.fl.intensity=3;P.pit=Math.min(1.4,P.pit+.007);P.yaw+=(Math.random()-.5)*.008;P.mf.scale.setScalar(.7+Math.random()*.6);P.mf.rotation.z=Math.random()*6;hud();snd('shot',.5,0);
  const rc=new T.Raycaster();rc.setFromCamera({x:0,y:0},cam);rc.far=70;
  const h=rc.intersectObjects(solids.concat(zs.filter(z=>!z.dying).map(z=>z.g)),true)[0];
- if(h){const z=h.object.userData.z;if(z){const hs=!!h.object.userData.head;burst(h.point,10,0x9a0000,3);z.hp-=hs?150:50;z.x+=(z.x-P.x)*.04;z.z+=(z.z-P.z)*.04;if(z.hp<=0)kill(z,hs)}else burst(h.point,5,0xffd080,2.5)}}
+ if(h){const z=h.object.userData.z;if(z){const hs=!!h.object.userData.head;burst(h.point,10,0x9a0000,3);z.hp-=hs?150:50;z.al=1;z.x+=(z.x-P.x)*.04;z.z+=(z.z-P.z)*.04;if(z.hp<=0)kill(z,hs)}else burst(h.point,5,0xffd080,2.5)}}
 function loop(){if(!run)return;raf=requestAnimationFrame(loop);const dt=Math.min(clock.getDelta(),.05),t=performance.now()/1000;
  let fx=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0),sx=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0);
  if(TOUCH){fx+=-P.jz;sx+=P.jx}const l=Math.hypot(fx,sx)||1,sp=(keys.ShiftLeft?7:4.5)*dt;
  const dx=(-Math.sin(P.yaw)*fx+Math.cos(P.yaw)*sx)/Math.max(1,l)*sp,dz=(-Math.cos(P.yaw)*fx-Math.sin(P.yaw)*sx)/Math.max(1,l)*sp;
  P.x+=dx;P.z+=dz;push(P,.4);P.x=Math.max(-59,Math.min(59,P.x));P.z=Math.max(-59,Math.min(59,P.z));
  const mvg=Math.hypot(dx,dz)>0;P.bob+=mvg?dt*9:0;P.shake*=.9;
- cam.position.set(P.x+(Math.random()-.5)*P.shake*.2,1.7+Math.sin(P.bob)*.045*(mvg?1:0),P.z+(Math.random()-.5)*P.shake*.2);cam.rotation.set(P.pit,P.yaw,(Math.random()-.5)*P.shake*.05);
+ cam.position.set(P.x+(Math.random()-.5)*P.shake*.2,1.7+chH(P.x,P.z)+Math.sin(P.bob)*.045*(mvg?1:0),P.z+(Math.random()-.5)*P.shake*.2);cam.rotation.set(P.pit,P.yaw,(Math.random()-.5)*P.shake*.05);
  moon.position.set(P.x-30,55,P.z-35);moon.target.position.set(P.x,0,P.z);
- fireCd-=dt;P.gun.position.z+=(-.58-P.gun.position.z)*12*dt;P.gun.rotation.x*=.85;P.fl.intensity*=.78;P.mf.visible=P.fl.intensity>1.4;medTick(dt,t);
- reloadAnim(dt);
- if(P.shoot){if(P.sel===0)shoot();else{if(P.sel===1)useMed();P.shoot=0}}
+ fireCd-=dt;P.gun.position.z+=(-.58-P.gun.position.z)*12*dt;P.gun.rotation.x*=.85;P.fl.intensity*=.78;P.mf.visible=P.fl.intensity>1.4;medTick(dt,t);wpTick(dt,t);
+ reloadAnim(dt);sgTick(dt);bzTick(dt);
+ if(P.shoot){if(P.sel===0)shoot();else if(P.sel===2&&P.hasSG)shootSG();else if(P.sel===3){fireBZ();P.shoot=0}else{if(P.sel===1)useMed();P.shoot=0}}
  for(const q of lights)if(q.fl)q.L.intensity=q.b*(Math.sin(t*37+q.b)*Math.sin(t*11)>.3?.25:1);
  for(const q of parts)if(q.l>0){q.l-=dt;q.v.y-=12*dt;q.m.position.addScaledVector(q.v,dt);if(q.l<=0)q.m.visible=false}
  gt-=dt;if(gt<=0){gt=.3;updField()}
  const cap=TOUCH?20:34;
- if(spawnQ>0){nextWave-=dt;if(nextWave<=0){if(zs.length<cap){mkZombie(Math.random()<.35);spawnQ--}nextWave=.3}}
- else if(!zs.some(q=>!q.dying)){nextWave-=dt;if(nextWave<=0){wave++;spawnQ=12+wave*6;nextWave=1;hud();msg('🧟 Волна '+wave,2200)}}
+ if(prep>0){prep-=dt;if(prep<=0){prep=0;wave++;spawnQ=12+wave*6;nextWave=.5;hud();msg('🧟 Волна '+wave+' · зомби чуют тебя и идут за тобой!',3200)}}
+ else if(spawnQ>0){nextWave-=dt;if(nextWave<=0){if(zs.length<cap){mkZombie(Math.random()<.35);spawnQ--}nextWave=.3}}
+ else if(!zs.some(q=>!q.dying)){prep=PREP;spawnMeds();spawnWeap();hud();msg('✅ Волна '+wave+' зачищена! 5 минут на подготовку 🩹💥',3600)}
+ {const pe=$('zsPr');if(prep>0){const sc=Math.ceil(prep),tx='⏳ Подготовка к волне '+(wave+1)+' — '+((sc/60)|0)+':'+('0'+sc%60).slice(-2)+' · '+(TOUCH?'тап — начать сразу':'N — начать сразу');if(tx!==prTxt){prTxt=tx;pe.textContent=tx}pe.style.display='block'}else pe.style.display='none'}
+ if(SNOW&&SNOW.visible){SNOW.position.set(P.x,0,P.z);const a=SNOW.geometry.attributes.position.array;for(let i=0;i<a.length;i+=3){a[i+1]-=dt*1.8;a[i]+=dt*.6;if(a[i+1]<0)a[i+1]=16;if(a[i]>25)a[i]-=50}SNOW.geometry.attributes.position.needsUpdate=true}
  for(let i=zs.length-1;i>=0;i--){const z=zs[i];
   if(z.dying){z.dying+=dt;z.g.rotation.x=-Math.min(1.5,z.dying*3.5);z.g.position.y=Math.max(0,.2-z.dying*.2)*0+0;if(z.dying>2.5){z.g.position.y-=(z.dying-2.5)*.6}if(z.dying>4){scene.remove(z.g);zs.splice(i,1)}continue}
   let ax=P.x-z.x,az=P.z-z.z,d=Math.hypot(ax,az)||1,tx=ax,tz=az;
+  const ag=(z.type==='runner'?10:z.type==='brute'?9:8)*(keys.ShiftLeft&&mvg?1.5:1);
+  if(!z.al&&d<ag){z.al=1;snd('groan',.5,d);for(const q of zs)if(!q.al&&!q.dying&&Math.hypot(q.x-z.x,q.z-z.z)<4)q.al=1}
+  
+  if(!z.al){const sw=Math.sin(t*.9+z.ph);z.g.position.set(z.x,chH(z.x,z.z),z.z);z.g.rotation.y=z.ry;z.lL.rotation.x=0;z.lR.rotation.x=0;z.aL.rotation.x=-.25+sw*.05;z.aR.rotation.x=-.2-sw*.05;z.jaw.rotation.x=.15;z.head.rotation.y=Math.sin(t*.5+z.ph)*.35;z.torso.rotation.z=sw*.03;continue}
+  z.torso.rotation.z=0;
   const ci=cellOf(z.x,z.z);
   if(ci<0||gd[ci]<0||blk[ci]){const f=nearestFree(z.x,z.z);if(f){tx=f[0]-z.x;tz=f[1]-z.z;if(blk[ci]===0&&ci>=0&&gd[ci]<0){z.x=f[0];z.z=f[1]}}}
   else if(gd[ci]>1&&d>1.6){const nx=nextCell(ci);if(nx){tx=nx[0]-z.x;tz=nx[1]-z.z}}
@@ -15295,7 +15985,7 @@ function loop(){if(!run)return;raf=requestAnimationFrame(loop);const dt=Math.min
   push(z,.4);
   for(const q of zs){if(q===z||q.dying)continue;const ex=z.x-q.x,ez=z.z-q.z,ed=Math.hypot(ex,ez);if(ed<.8&&ed>1e-4){const m=(.8-ed)*.5;z.x+=ex/ed*m;z.z+=ez/ed*m;q.x-=ex/ed*m;q.z-=ez/ed*m}}
   z.wt-=dt;if(z.wt<=0){z.wt=1.5;if(Math.hypot(z.x-z.lx,z.z-z.lz)<.3&&d>2){const f=nearestFree(z.x,z.z);if(f){z.x=f[0];z.z=f[1]}}z.lx=z.x;z.lz=z.z}
-  z.g.position.set(z.x,0,z.z);z.g.rotation.y=Math.atan2(ax,az);
+  z.g.position.set(z.x,chH(z.x,z.z),z.z);z.g.rotation.y=Math.atan2(ax,az);
   const rate=z.type==='runner'?11:5,w=Math.sin(t*rate+z.ph)*(z.type==='runner'?.9:.55);z.lL.rotation.x=w;z.lR.rotation.x=-w*.6-(z.type==='walker'?.25:0);
   z.aL.rotation.x=-1.45+Math.sin(t*3+z.ph)*.12;z.aR.rotation.x=z.type==='runner'?-1.2+w*.4:-.35+Math.sin(t*2+z.ph)*.15;
   z.jaw.rotation.x=.3+Math.abs(Math.sin(t*(z.type==='runner'?14:6)+z.ph))*.5;z.head.rotation.y=Math.sin(t*1.3+z.ph)*.25;z.head.position.x=Math.sin(t*25+z.ph)*.006*(z.type==='runner'?3:1);
