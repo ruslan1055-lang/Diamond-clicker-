@@ -13240,6 +13240,7 @@ function buyAutumnLeaf() {
         <div class="mq-game play" onclick="openCrossy()"><span>🦆</span>Crossy Road<em>Играть</em></div>
         <div class="mq-game play" onclick="openMineMan()" style="background:linear-gradient(160deg,#9a6b3f,#4b8f2e)"><span>⛏️</span>Mine-man<em>3D</em></div>
         <div class="mq-game play" onclick="openZombie()" style="background:linear-gradient(160deg,#2f4f2f,#6b1a1a)"><span>🧟</span>Зомби шутер<em>👑 MAX · 3D</em></div>
+        <div class="mq-game play" onclick="openTappy()" style="background:linear-gradient(160deg,#4fc3f7,#0277bd)"><span>🐤</span>Tappy Bird<em>Играть</em></div>
         <div class="mq-game"><span>🏐</span>Пляжный волейбол<em>Скоро</em></div>
         <div class="mq-game"><span>🍦</span>Мороженое<em>Скоро</em></div>
         <div class="mq-game"><span>🏄</span>Сёрфинг<em>Скоро</em></div>
@@ -13742,6 +13743,258 @@ function buyAutumnLeaf() {
     if(!running) return;
     const dt=Math.min(.05,(t-last)/1000||0); last=t; tNow=t/1000;
     if(W&&H){update(dt);draw();}else resize();
+    raf=requestAnimationFrame(loop);
+  }
+})();
+</script>
+
+<!-- ===== 🐤 TAPPY BIRD ===== -->
+<style>
+#tbOverlay{position:fixed;inset:0;z-index:9994;background:linear-gradient(180deg,#38b6ff,#bdeaff);display:flex;flex-direction:column;align-items:center;opacity:0;pointer-events:none;transition:opacity .25s;font-family:'Nunito',sans-serif;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+#tbOverlay.active{opacity:1;pointer-events:all}
+.tb-top{width:100%;max-width:460px;display:flex;align-items:center;gap:8px;padding:10px 12px;box-sizing:border-box;z-index:3}
+.tb-pill{background:rgba(0,0,0,.45);border:2px solid rgba(255,255,255,.75);color:#fff;border-radius:14px;padding:5px 12px;font-size:15px;font-weight:900}
+.tb-x{margin-left:auto;width:36px;height:36px;border-radius:50%;border:2px solid rgba(255,255,255,.75);background:rgba(0,0,0,.45);color:#fff;font-size:16px;font-weight:900;cursor:pointer}
+#tbWrap{position:relative;flex:1;width:100%;max-width:460px;min-height:0;overflow:hidden;border-radius:18px 18px 0 0}
+#tbCanvas{width:100%;height:100%;display:block;touch-action:none}
+.tb-box{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:78%;max-width:320px;background:rgba(255,255,255,.96);border-radius:22px;padding:18px 16px;text-align:center;color:#0b4a6f;box-shadow:0 10px 40px rgba(0,0,0,.45);border:3px solid #4fc3f7}
+.tb-box h3{margin:0 0 6px;font-size:22px;font-weight:900}
+.tb-box p{margin:4px 0;font-size:13px;font-weight:800;line-height:1.35}
+.tb-box button{margin-top:10px;width:100%;padding:12px;border:none;border-radius:14px;font-family:inherit;font-size:15px;font-weight:900;color:#fff;cursor:pointer;background:linear-gradient(160deg,#ff5f6d,#e91e63);box-shadow:0 4px 0 #8a0f3c}
+.tb-box button.sec{background:linear-gradient(160deg,#5b8def,#2a4fb8);box-shadow:0 4px 0 #17306f}
+.tb-box button:active{transform:translateY(2px)}
+.tb-big{font-size:46px;line-height:1.1}
+.tb-new{display:none;margin:6px auto 0;padding:3px 12px;border-radius:99px;background:#ffd54a;color:#7a4a00;font-size:12px;font-weight:900;width:max-content}
+</style>
+<div id="tbOverlay">
+  <div class="tb-top">
+    <div class="tb-pill">🍉 +<span id="tbGot">0</span></div>
+    <div class="tb-pill" style="font-size:12px">🏆 <span id="tbBest">0</span></div>
+    <button class="tb-x" onclick="closeTappy()">✕</button>
+  </div>
+  <div id="tbWrap">
+    <canvas id="tbCanvas"></canvas>
+    <div class="tb-box" id="tbStart">
+      <div class="tb-big">🐤🍉</div>
+      <h3>Tappy Bird</h3>
+      <p>Тапай, чтобы взлетать, и пролетай между труб. Собирай арбузики: каждый даёт +1 🍉</p>
+      <p>Тап по экрану · пробел · стрелка вверх</p>
+      <button onclick="tbStart()">▶ Играть</button>
+    </div>
+    <div class="tb-box" id="tbOver" style="display:none">
+      <div class="tb-big" id="tbOverIcon">🐤</div>
+      <h3 id="tbOverTitle">Упал!</h3>
+      <div class="tb-new" id="tbNew">🎉 Новый рекорд!</div>
+      <p>Счёт: <b id="tbOverScore">0</b> · Рекорд: <b id="tbOverBest">0</b></p>
+      <p>Собрано арбузов: <b>+<span id="tbOverMel">0</span> 🍉</b></p>
+      <button onclick="tbStart()">🔁 Ещё раз</button>
+      <button class="sec" onclick="closeTappy()">Выйти</button>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const cv=$('tbCanvas'), ctx=cv.getContext('2d');
+  const EF='"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+  const LH=640, GH=84, GY=LH-GH;            // логическая высота, высота земли, линия земли
+  const G=1500, FLAP=-440, MAXV=720;        // физика
+  const PW=60, SPACING=220, BR=13;          // ширина трубы, шаг между трубами, радиус хитбокса птицы
+  let W=0,H=0,S=1,LW=360,dpr=1;
+  let running=false, raf=0, last=0, tNow=0;
+  let mode='idle';                          // idle | ready | play | dead
+  let bx=100, by=290, vy=0, wing=0;
+  let pipes=[], spawned=0, prevY=0, score=0, got=0;
+  let gOff=0, hOff=0, flash=0, deadAt=0, hitGround=false, overShown=false;
+  let clouds=[], pops=[];
+
+  function resize(){
+    const w=$('tbWrap'); dpr=Math.min(window.devicePixelRatio||1,2);
+    W=w.clientWidth; H=w.clientHeight; if(!W||!H) return;
+    cv.width=W*dpr; cv.height=H*dpr; S=H/LH; LW=W/S; bx=LW*0.28;
+    if(!clouds.length){ for(let i=0;i<5;i++) clouds.push({x:Math.random()*LW,y:50+Math.random()*190,s:34+Math.random()*30,v:.25+Math.random()*.5}); }
+  }
+  function resetWorld(){
+    pipes=[]; spawned=0; score=0; got=0; vy=0; wing=0; flash=0; pops=[]; hitGround=false; overShown=false;
+    by=LH*0.44; prevY=LH*0.42;
+    $('tbGot').textContent=0; $('tbBest').textContent=state.tappyBest||0;
+  }
+  function spawnPipe(x){
+    const gap=Math.max(148,184-spawned*1.2);
+    const lo=52+gap/2, hi=GY-52-gap/2;
+    let y = spawned===0 ? LH*0.42 : prevY+(Math.random()*2-1)*140;
+    y=Math.max(lo,Math.min(hi,y)); prevY=y;
+    pipes.push({x:x,y:y,gap:gap,passed:false,mel:Math.random()<0.4,taken:false});
+    spawned++;
+  }
+  function speed(){ return 150+Math.min(score,30)*1.3; }
+
+  window.tbStart=function(){
+    resetWorld();
+    $('tbStart').style.display='none'; $('tbOver').style.display='none';
+    mode='ready';
+    if(!running){running=true;last=performance.now();raf=requestAnimationFrame(loop);}
+  };
+  window.openTappy=function(){
+    $('tbOverlay').classList.add('active');
+    $('tbStart').style.display='block'; $('tbOver').style.display='none';
+    $('tbBest').textContent=state.tappyBest||0; $('tbGot').textContent=0;
+    mode='idle'; pipes=[]; score=0;
+    requestAnimationFrame(()=>{resize(); by=LH*0.44; if(!running){running=true;last=performance.now();raf=requestAnimationFrame(loop);}});
+  };
+  window.closeTappy=function(){
+    $('tbOverlay').classList.remove('active'); running=false; mode='idle'; cancelAnimationFrame(raf);
+    try{saveState();updateUI();}catch(e){}
+    const e=$('mqMelons'); if(e) e.textContent=Math.floor(state.melons||0).toLocaleString('ru-RU');
+  };
+
+  function flap(){
+    if(mode==='ready'){ mode='play'; spawnPipe(LW+90); }
+    if(mode==='play'){ vy=FLAP; wing=0; }
+  }
+  function die(byGround){
+    if(mode==='dead') return;
+    mode='dead'; flash=1; deadAt=performance.now(); hitGround=!!byGround;
+    if(!byGround) vy=Math.max(vy,120);
+    const newRec=score>(state.tappyBest||0);
+    if(newRec) state.tappyBest=score;
+    try{saveState();}catch(e){}
+    $('tbOverScore').textContent=score; $('tbOverBest').textContent=state.tappyBest||0; $('tbOverMel').textContent=got;
+    $('tbBest').textContent=state.tappyBest||0;
+    $('tbNew').style.display=(newRec&&score>0)?'block':'none';
+    $('tbOverIcon').textContent=score>=30?'🥇':score>=20?'🥈':score>=10?'🥉':'🐤';
+    $('tbOverTitle').textContent=byGround?'Упал на песок!':'Врезался в трубу!';
+    setTimeout(()=>{ if($('tbOverlay').classList.contains('active')&&mode==='dead') $('tbOver').style.display='block'; },700);
+  }
+
+  cv.addEventListener('pointerdown',e=>{ e.preventDefault(); flap(); });
+  window.addEventListener('keydown',e=>{
+    if(!$('tbOverlay').classList.contains('active')) return;
+    const k=e.key;
+    if(k===' '||k==='ArrowUp'||k==='w'||k==='W'){ flap(); e.preventDefault(); }
+  });
+  window.addEventListener('resize',()=>{ if($('tbOverlay').classList.contains('active')) resize(); });
+
+  function hitRect(cx,cy,r,rx,ry,rw,rh){
+    const nx=Math.max(rx,Math.min(cx,rx+rw)), ny=Math.max(ry,Math.min(cy,ry+rh));
+    const dx=cx-nx, dy=cy-ny; return dx*dx+dy*dy<r*r;
+  }
+
+  function update(dt){
+    const sp=speed();
+    // облака и холмы живут всегда, кроме смерти
+    if(mode!=='dead'){
+      for(const c of clouds){ c.x-=c.v*(mode==='play'?sp*.12:14)*dt; if(c.x<-80) c.x=LW+60; }
+      const m=(mode==='play'?sp:60)*dt; gOff=(gOff+m)%44; hOff+=m*.35;
+    }
+    if(flash>0) flash=Math.max(0,flash-dt*3.2);
+    for(let i=pops.length-1;i>=0;i--){ pops[i].t+=dt; if(pops[i].t>0.9) pops.splice(i,1); }
+
+    if(mode==='idle'||mode==='ready'){ by=LH*0.44+Math.sin(tNow*5)*8; wing+=dt*12; return; }
+
+    // физика птицы
+    vy=Math.min(MAXV,vy+G*dt); by+=vy*dt; wing+=dt*(vy<0?26:10);
+    if(mode==='play' && by<14){ by=14; if(vy<0) vy=0; }
+
+    if(mode==='play'){
+      for(const p of pipes) p.x-=sp*dt;
+      const lastP=pipes[pipes.length-1];
+      if(!lastP||lastP.x<LW+30) spawnPipe((lastP?lastP.x:LW)+SPACING);
+      while(pipes.length&&pipes[0].x<-PW-20) pipes.shift();
+      for(const p of pipes){
+        if(!p.passed&&p.x+PW<bx-BR){ p.passed=true; score++; }
+        if(p.mel&&!p.taken){
+          const mx=p.x+PW/2;
+          if(Math.hypot(bx-mx,by-p.y)<28){
+            p.taken=true; got++; state.melons=(state.melons||0)+1;
+            $('tbGot').textContent=got; pops.push({x:mx,y:p.y,t:0});
+            try{saveState();}catch(e){}
+          }
+        }
+        if(bx+BR>p.x&&bx-BR<p.x+PW){
+          if(hitRect(bx,by,BR,p.x,-200,PW,p.y-p.gap/2+200)||hitRect(bx,by,BR,p.x,p.y+p.gap/2,PW,GY-(p.y+p.gap/2))){ die(false); break; }
+        }
+      }
+    }
+    if(by+BR>=GY){ by=GY-BR; if(mode==='play') die(true); vy=0; }
+  }
+
+  function pipeShape(x,y,w,h,cap){
+    const g=ctx.createLinearGradient(x,0,x+w,0);
+    g.addColorStop(0,'#3fa52a');g.addColorStop(.35,'#8ef06a');g.addColorStop(1,'#2f8a1f');
+    ctx.fillStyle=g; ctx.strokeStyle='#1f5a14'; ctx.lineWidth=3;
+    ctx.fillRect(x,y,w,h); ctx.strokeRect(x,y,w,h);
+    const cw=w+12, ch=26, cy=cap==='bottom'?y+h-ch:y;
+    ctx.fillStyle=g; ctx.fillRect(x-6,cy,cw,ch); ctx.strokeRect(x-6,cy,cw,ch);
+    ctx.fillStyle='rgba(255,255,255,.28)'; ctx.fillRect(x+6,y,5,h);
+  }
+
+  function draw(){
+    ctx.setTransform(dpr*S,0,0,dpr*S,0,0);
+    // небо
+    const sky=ctx.createLinearGradient(0,0,0,GY);
+    sky.addColorStop(0,'#38b6ff');sky.addColorStop(.6,'#9fe0ff');sky.addColorStop(1,'#ffe9a8');
+    ctx.fillStyle=sky; ctx.fillRect(0,0,LW,LH);
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.font=`56px ${EF}`; ctx.fillText('☀️',LW-52,56);
+    ctx.globalAlpha=.9;
+    for(const c of clouds){ ctx.font=`${c.s}px ${EF}`; ctx.fillText('☁️',c.x,c.y); }
+    ctx.globalAlpha=1;
+    // холмы
+    ctx.fillStyle='#8fdc7a'; ctx.beginPath(); ctx.moveTo(0,GY);
+    for(let x=0;x<=LW+6;x+=6) ctx.lineTo(x,GY-52-Math.sin((x+hOff)/70)*20-Math.sin((x+hOff)/29)*6);
+    ctx.lineTo(LW,GY); ctx.closePath(); ctx.fill();
+    ctx.fillStyle='#6cc65a'; ctx.beginPath(); ctx.moveTo(0,GY);
+    for(let x=0;x<=LW+6;x+=6) ctx.lineTo(x,GY-24-Math.sin((x+hOff*1.8)/45+2)*12);
+    ctx.lineTo(LW,GY); ctx.closePath(); ctx.fill();
+    // трубы + арбузы
+    for(const p of pipes){
+      pipeShape(p.x,-200,PW,p.y-p.gap/2+200,'bottom');
+      pipeShape(p.x,p.y+p.gap/2,PW,GY-(p.y+p.gap/2),'top');
+      if(p.mel&&!p.taken){ ctx.font=`30px ${EF}`; ctx.fillText('🍉',p.x+PW/2,p.y+Math.sin(tNow*4+p.x*.05)*4); }
+    }
+    // земля
+    ctx.fillStyle='#f4d58a'; ctx.fillRect(0,GY,LW,GH);
+    ctx.fillStyle='#e6bf6a';
+    for(let x=-44+(-gOff);x<LW+44;x+=44){ ctx.beginPath(); ctx.moveTo(x,GY+16); ctx.lineTo(x+22,GY+16); ctx.lineTo(x+10,GY+GH); ctx.lineTo(x-12,GY+GH); ctx.closePath(); ctx.fill(); }
+    ctx.fillStyle='#5cc83f'; ctx.fillRect(0,GY,LW,14);
+    ctx.fillStyle='#2f8a1f'; ctx.fillRect(0,GY+14,LW,3);
+    // птица
+    drawBird();
+    // +1
+    for(const o of pops){ ctx.globalAlpha=1-o.t/0.9; ctx.font=`900 22px Nunito,${EF}`; ctx.lineWidth=4; ctx.strokeStyle='#0b4a6f'; ctx.fillStyle='#fff'; const t='+1 🍉'; ctx.strokeText(t,o.x,o.y-o.t*50); ctx.fillText(t,o.x,o.y-o.t*50); ctx.globalAlpha=1; }
+    // счёт и подсказка
+    if(mode==='play'||mode==='dead'){
+      ctx.font='900 56px Nunito,sans-serif'; ctx.lineWidth=8; ctx.strokeStyle='#0b4a6f'; ctx.lineJoin='round'; ctx.fillStyle='#fff';
+      ctx.strokeText(score,LW/2,86); ctx.fillText(score,LW/2,86);
+    }
+    if(mode==='ready'){
+      ctx.font=`44px ${EF}`; ctx.fillText('👆',LW/2,LH*0.64+Math.sin(tNow*6)*6);
+      ctx.font='900 18px Nunito,sans-serif'; ctx.lineWidth=5; ctx.strokeStyle='#0b4a6f'; ctx.fillStyle='#fff';
+      ctx.strokeText('Тапни, чтобы лететь',LW/2,LH*0.72); ctx.fillText('Тапни, чтобы лететь',LW/2,LH*0.72);
+    }
+    if(flash>0){ ctx.fillStyle='rgba(255,255,255,'+(flash*.8)+')'; ctx.fillRect(0,0,LW,LH); }
+  }
+
+  function drawBird(){
+    ctx.save(); ctx.translate(bx,by);
+    const ang=(mode==='idle'||mode==='ready')?0:Math.max(-.45,Math.min(1.3,vy*0.0018));
+    ctx.rotate(ang); ctx.lineWidth=2.5; ctx.strokeStyle='#a56a00';
+    ctx.fillStyle='#ffd54a'; ctx.beginPath(); ctx.ellipse(0,0,19,15,0,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle='#fff3b8'; ctx.beginPath(); ctx.ellipse(3,6,11,7,0,0,Math.PI*2); ctx.fill();
+    const wy=Math.sin(wing)*5;
+    ctx.fillStyle='#ffb300'; ctx.beginPath(); ctx.ellipse(-6,3+wy*.4,10,6+Math.abs(wy)*.3,-.35+wy*.05,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(9,-5,6.5,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle='#1b1b1b'; ctx.beginPath(); ctx.arc(11,-5,2.8,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#ff7043'; ctx.beginPath(); ctx.moveTo(15,-1); ctx.lineTo(28,3); ctx.lineTo(15,8); ctx.closePath(); ctx.fill(); ctx.stroke();
+    if(mode==='dead'){ ctx.strokeStyle='#1b1b1b'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(6,-8);ctx.lineTo(12,-2);ctx.moveTo(12,-8);ctx.lineTo(6,-2);ctx.stroke(); }
+    ctx.restore();
+  }
+
+  function loop(t){
+    if(!running) return;
+    const dt=Math.min(.033,(t-last)/1000||0); last=t; tNow=t/1000;
+    if(W&&H){ update(dt); draw(); } else resize();
     raf=requestAnimationFrame(loop);
   }
 })();
