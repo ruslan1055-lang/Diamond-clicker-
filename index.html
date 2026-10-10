@@ -1124,6 +1124,13 @@ body.perf-glow .bd-tw{opacity:.85}
   box-shadow: 0 0 18px rgba(245,197,24,0.28), inset 0 1px 0 rgba(255,255,255,0.12);
   text-shadow: 0 0 10px rgba(245,197,24,0.7);
 }
+.wd-tabs .wd-tab-btn { padding: 10px 3px; font-size: 12px; white-space: nowrap; }
+
+.wd-tab-btn.wd-tab-active.wd-tab-cabs {
+  background: linear-gradient(160deg, rgba(0,230,150,0.22), rgba(0,160,255,0.12));
+  color: #5dffc0;
+  box-shadow: 0 2px 10px rgba(0,230,150,0.25), inset 0 0 0 1px rgba(0,230,150,0.35);
+}
 .wd-tab-btn.wd-tab-active.wd-tab-exchange {
   background: linear-gradient(160deg, rgba(255,170,0,0.22), rgba(255,100,0,0.12));
   color: #ffd24d;
@@ -3045,7 +3052,7 @@ body[class*="free-theme-"] #bonusTab1 {
     transition:transform 0.12s cubic-bezier(0.34,1.5,0.64,1),filter 0.1s;
     -webkit-tap-highlight-color:transparent;
     position:relative;z-index:20;
-  ;display:none!important;">
+  ">
     <span style="font-size:15px;">💰</span> Пополнить
   </button>
 </div>
@@ -3544,7 +3551,7 @@ body[class*="free-theme-"] #bonusTab1 {
     <div class="modal-handle" style="background:rgba(0,200,255,0.3);"></div>
     <div class="modal-header" style="border-bottom-color:rgba(0,200,255,0.12);">
       <span class="modal-title" style="background:linear-gradient(135deg,#00c8ff 0%,#7df9ff 50%,#a855f7 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:flex;align-items:center;gap:6px;"><img src="data:image/webp;base64,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" alt="💎" style="width:20px;height:20px;display:inline-block;">Diamond Magnate</span>
-      <button class="modal-close" onclick="closeModal('dm')" style="border-color:rgba(0,200,255,0.2);color:rgba(0,200,255,0.5);display:none!important;">✕</button>
+      <button class="modal-close" onclick="closeModal('dm')" style="border-color:rgba(0,200,255,0.2);color:rgba(0,200,255,0.5);">✕</button>
     </div>
     <div class="modal-body" id="dmBody"></div>
   </div>
@@ -3803,6 +3810,12 @@ function defaultState() {
     cashbackPool:     0,   // накопленный кэшбек (точное значение, без округления)
     prgram:           0,   // баланс PRGRAM (получен за обмен алмазов)
     prgramExchanged:  0,   // суммарно потрачено 💎 на обмен (для статистики/заданий)
+    cabsWithdrawn:    0,   // суммарно выведено Cabs coin
+    cabsWithdrawCount:0,   // число заявок на вывод Cabs coin
+    cabsUsername:     '',  // последний TG-юзернейм для вывода
+    duoWithdrawn:     0,   // суммарно выведено алмазов в Duolingo
+    duoWithdrawCount: 0,   // число заявок на вывод в Duolingo
+    duoUsername:      '',  // последний юзернейм Duolingo
     exchangeCount:    0,   // количество совершённых обменов
     exchangeHistory:  [],  // история обменов 💎 → PRGRAM
     emojiStatus:      '',  // эмодзи-статус игрока (отображается рядом с совой/именем)
@@ -3883,6 +3896,12 @@ function sanitizeState(merged, parsed) {
       if (typeof merged.cashbackPool !== 'number') merged.cashbackPool = 0;
       if (typeof merged.prgram !== 'number') merged.prgram = 0;
       if (typeof merged.prgramExchanged !== 'number') merged.prgramExchanged = 0;
+      if (typeof merged.cabsWithdrawn !== 'number') merged.cabsWithdrawn = 0;
+      if (typeof merged.cabsWithdrawCount !== 'number') merged.cabsWithdrawCount = 0;
+      if (typeof merged.cabsUsername !== 'string') merged.cabsUsername = '';
+      if (typeof merged.duoWithdrawn !== 'number') merged.duoWithdrawn = 0;
+      if (typeof merged.duoWithdrawCount !== 'number') merged.duoWithdrawCount = 0;
+      if (typeof merged.duoUsername !== 'string') merged.duoUsername = '';
       if (typeof merged.exchangeCount !== 'number') merged.exchangeCount = 0;
       if (!Array.isArray(merged.exchangeHistory)) merged.exchangeHistory = [];
   return merged;
@@ -5164,7 +5183,9 @@ function _renderPromoTab(body) {
       <div style="font-size:15px;font-weight:900;color:#ff6680;text-shadow:0 0 16px rgba(255,50,80,0.5);margin-bottom:6px;">Введи промокод</div>
       <div style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.6;margin-bottom:14px;">Каждый промокод можно использовать только <strong style="color:rgba(255,100,120,0.8);">один раз</strong>.<br>Некоторые коды доступны только подписчикам <strong style="color:#00ffe8;">MAX ⚡</strong>.</div>
       <input id="promoInput" class="duo-input" type="text" placeholder="Введи промокод..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="margin-bottom:10px;border-color:rgba(255,50,80,0.35);background:rgba(255,30,60,0.06);" oninput="this.style.borderColor='rgba(255,50,80,0.35)'">
-      <button onclick="redeemPromo()" style="width:100%;padding:14px;border-radius:16px;border:1.5px solid rgba(255,50,80,0.65);background:linear-gradient(160deg,#3a0010,#200008);color:#ff6680;font-family:'Nunito',sans-serif;font-weight:900;font-size:14px;cursor:pointer;box-shadow:0 4px 0 #7a0010,0 0 16px rgba(255,50,80,0.25);text-shadow:0 0 12px rgba(255,80,100,0.6);-webkit-tap-highlight-color:transparent;transition:opacity 0.15s,transform 0.1s;" ontouchstart="this.style.transform='scale(0.97)'" ontouchend="this.style.transform=''">🎁 Активировать промо</button>
+      <button onclick="redeemPromo()" style="width:100%;padding:14px;border-radius:16px;border:1.5px solid rgba(255,50,80,0.65);background:linear-gradient(160deg,#3a0010,#200008);color:#ff6680;font-family:'Nunito',sans-serif;font-weight:900;font-size:14px;cursor:pointer;box-shadow:0 4px 0 #7a0010,0 0 16px rgba(255,50,80,0.25);text-shadow:0 0 12px rgba(255,80,100,0.6);-webkit-tap-highlight-color:transparent;transition:opacity 0.15s,transform 0.1s;" ontouchstart="this.style.transform='scale(0.97)'" ontouchend="this.style.transform=''">
+        🎁 Активировать промокод
+      </button>
     </div>
   `;
   setTimeout(() => {
@@ -5957,6 +5978,7 @@ function renderWithdrawal() {
       <button class="wd-tab-btn wd-tab-withdraw ${wdActiveTab==='withdraw' ? 'wd-tab-active' : ''}" onclick="switchWithdrawTab('withdraw')">💸 Вывод</button>
       <button class="wd-tab-btn wd-tab-exchange ${wdActiveTab==='exchange' ? 'wd-tab-active' : ''}" onclick="switchWithdrawTab('exchange')">🔄 Обмен</button>
       <button class="wd-tab-btn wd-tab-gold ${wdActiveTab==='gold' ? 'wd-tab-active' : ''}" onclick="switchWithdrawTab('gold')" style="font-weight:900;">🥇 GOLD</button>
+      <button class="wd-tab-btn wd-tab-cabs ${wdActiveTab==='cabs' ? 'wd-tab-active' : ''}" onclick="switchWithdrawTab('cabs')" style="font-weight:900;">🪙 CABS</button>
     </div>`;
 
   if (wdActiveTab === 'exchange') {
@@ -5965,6 +5987,10 @@ function renderWithdrawal() {
   }
   if (wdActiveTab === 'gold') {
     body.innerHTML = tabBarHtml + renderGoldTab();
+    return;
+  }
+  if (wdActiveTab === 'cabs') {
+    body.innerHTML = tabBarHtml + renderCabsTab();
     return;
   }
 
@@ -6071,6 +6097,19 @@ function renderWithdrawal() {
       <div style="font-size:11px;font-weight:800;color:rgba(255,180,0,0.9);line-height:1.4;">
         Выводить больше 2 000 💎 не рекомендуется — это нагружает систему Кеплера. Пожалуйста, выводи меньше!
       </div>
+    </div>
+
+    <!-- Duolingo username + Kepler ID (для начисления алмазов) -->
+    <div class="wd-input-wrap">
+      <span class="wd-input-icon">🦉</span>
+      <input type="text" class="wd-input" id="wdDuoUsername" placeholder="Твой юзернейм в Duolingo" value="${escHtmlCabs(state.duoUsername || '')}" maxlength="32" autocomplete="off" autocapitalize="off" spellcheck="false">
+    </div>
+    <div class="wd-input-wrap">
+      <span class="wd-input-icon">🪐</span>
+      <input type="text" class="wd-input" id="wdKeplerId" placeholder="Kepler ID" maxlength="40" autocomplete="off" autocapitalize="off" spellcheck="false">
+    </div>
+    <div style="margin-bottom:12px;font-size:10px;color:rgba(255,255,255,0.35);font-weight:700;padding:0 2px;">
+      Юзернейм Duolingo — ник из профиля (Профиль → под именем). Kepler ID — идентификатор, выданный при регистрации в сервисе Kepler, нужен для моментального начисления. Вводи Kepler ID заново при каждом выводе — это не пароль, и мы его не сохраняем. Пароли, e-mail и другие данные аккаунта мы никогда не запрашиваем.
     </div>
 
     <!-- Hidden input (keeps existing logic working) -->
@@ -6593,6 +6632,210 @@ function updateExchangeCalc() {
   }
 }
 
+// ============================================================
+//  ВЫВОД CABS COIN НА TELEGRAM-АККАУНТ
+//  Курс: 1000 💎 = 1500 Cabs coin
+// ============================================================
+const CABS_RATE_GEMS = 1000;
+const CABS_RATE_OUT  = 1500;
+const CABS_MIN_GEMS  = 1000;
+const CABS_PRESETS   = [1000, 2000, 5000, 10000, 20000];
+let cabsBusy = false;
+
+function gemsToCabs(gems) { return Math.floor(gems * CABS_RATE_OUT / CABS_RATE_GEMS); }
+function fmtCabs(v) { return (v || 0).toLocaleString('ru-RU'); }
+function escHtmlCabs(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+// Telegram username: 5–32 символов, латиница/цифры/_ ; @ в начале необязателен
+function normalizeTgUsername(raw) {
+  const u = String(raw || '').trim().replace(/^@/, '').replace(/^https?:\/\/t\.me\//i, '');
+  return /^[A-Za-z][A-Za-z0-9_]{4,31}$/.test(u) ? u : '';
+}
+
+function renderCabsTab() {
+  const gems = Math.floor(state.gems);
+  const saved = escHtmlCabs(state.cabsUsername || '');
+  return `
+    <div class="wd-hero" style="background:linear-gradient(160deg,rgba(0,230,150,0.12) 0%,rgba(0,160,255,0.08) 50%,rgba(0,230,150,0.05) 100%);border-color:rgba(0,230,150,0.28);">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+        <div>
+          <div class="wd-hero-icon" style="filter:drop-shadow(0 0 18px rgba(0,230,150,0.7));">💎</div>
+          <div class="wd-balance-val">${gems.toLocaleString('ru-RU')}</div>
+          <div class="wd-balance-lbl">твой баланс 💎</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.3);margin-bottom:4px;">CABS COIN</div>
+          <div style="font-size:26px;font-weight:900;color:#5dffc0;text-shadow:0 0 14px rgba(0,230,150,0.5);">${fmtCabs(state.cabsWithdrawn)}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.35);">выведено всего</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wd-commission" style="background:linear-gradient(135deg,rgba(0,230,150,0.08),rgba(0,160,255,0.04));border-color:rgba(0,230,150,0.25);">
+      <div class="wd-commission-title" style="color:rgba(93,255,192,0.9);"><span style="font-size:14px;">💱</span> Курс обмена</div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:6px 0;">
+        <span style="font-size:18px;font-weight:900;color:#fff;">${CABS_RATE_GEMS.toLocaleString('ru-RU')} 💎</span>
+        <span style="font-size:16px;color:rgba(255,255,255,0.4);">=</span>
+        <span style="font-size:18px;font-weight:900;color:#5dffc0;">${CABS_RATE_OUT.toLocaleString('ru-RU')} Cabs coin</span>
+      </div>
+      <div style="text-align:center;font-size:10px;color:rgba(255,255,255,0.35);font-weight:700;">Cabs coin отправляются на твой Telegram-аккаунт</div>
+    </div>
+
+    <div style="margin-bottom:10px;">
+      <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.3);margin-bottom:8px;">Выбери сумму (в 💎)</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;">
+        ${CABS_PRESETS.map(v => {
+          const dis = gems < v;
+          return '<button ' + (dis ? 'disabled' : 'onclick="selectCabsAmount(' + v + ')"') + ' id="cabs-preset-' + v + '" style="padding:10px 6px;border-radius:12px;border:1px solid rgba(255,255,255,0.13);background:rgba(255,255,255,0.05);color:#fff;font-size:13px;font-weight:900;cursor:' + (dis ? 'not-allowed' : 'pointer') + ';opacity:' + (dis ? '0.4' : '1') + ';transition:all 0.18s;-webkit-tap-highlight-color:transparent;">' + v.toLocaleString('ru-RU') + ' 💎</button>';
+        }).join('')}
+      </div>
+    </div>
+
+    <div class="wd-input-wrap">
+      <span class="wd-input-icon">💎</span>
+      <input type="number" class="wd-input" id="cabsGemsInput" placeholder="Своя сумма в 💎" min="${CABS_MIN_GEMS}" step="1" inputmode="numeric" oninput="updateCabsCalc()">
+    </div>
+
+    <div class="wd-input-wrap">
+      <span class="wd-input-icon">✈️</span>
+      <input type="text" class="wd-input" id="cabsTgUser" placeholder="Твой Telegram юзернейм (@username)" value="${saved}" maxlength="40" autocomplete="off" autocapitalize="off" spellcheck="false">
+    </div>
+
+    <div class="wd-preview" id="cabsPreview" style="display:none;background:linear-gradient(160deg,rgba(0,230,150,0.1),rgba(0,160,255,0.05));border-color:rgba(0,230,150,0.3);">
+      <div class="wd-preview-grid" style="grid-template-columns:1fr 1fr;">
+        <div><div class="wd-preview-cell-val" id="cabsGemsVal" style="color:#fff;">0</div><div class="wd-preview-cell-lbl">💎 спишется</div></div>
+        <div><div class="wd-preview-cell-val" id="cabsOutVal" style="color:#5dffc0;">0</div><div class="wd-preview-cell-lbl">Cabs coin получишь</div></div>
+      </div>
+    </div>
+
+    <button class="wd-btn" id="cabsBtn" style="background:linear-gradient(160deg,#00c985,#007a66);box-shadow:0 5px 0 #004a40,0 8px 28px rgba(0,200,140,0.35);" onclick="doCabsWithdraw()">
+      <div class="wd-btn-inner">
+        <div class="wd-btn-left">
+          <div class="wd-btn-icon" style="background:rgba(255,255,255,0.18);">🪙</div>
+          <div>
+            <div class="wd-btn-title">Вывести Cabs coin</div>
+            <div class="wd-btn-sub" id="cabsBtnSub">Минимум ${CABS_MIN_GEMS.toLocaleString('ru-RU')} 💎</div>
+          </div>
+        </div>
+        <div class="wd-btn-arrow">→</div>
+      </div>
+    </button>
+
+    <div style="margin-top:12px;padding:10px 13px;border-radius:12px;background:rgba(0,230,150,0.07);border:1px solid rgba(0,230,150,0.18);font-size:11px;font-weight:800;color:rgba(255,255,255,0.45);line-height:1.5;">
+      ✈️ Укажи свой Telegram-юзернейм. Заявка уходит администратору, Cabs coin начисляются вручную. Проверь юзернейм — ошибки в нём не возвращаются.
+    </div>
+
+    ${state.cabsWithdrawCount > 0 ? `
+    <div class="wd-footer">
+      <span>🪙 Заявок: <strong>${state.cabsWithdrawCount}</strong></span>
+      <span>Выведено: <strong>${fmtCabs(state.cabsWithdrawn)} Cabs</strong></span>
+    </div>` : ''}
+  `;
+}
+
+function selectCabsAmount(val) {
+  const inp = document.getElementById('cabsGemsInput');
+  if (inp) inp.value = val;
+  CABS_PRESETS.forEach(v => {
+    const b = document.getElementById('cabs-preset-' + v);
+    if (!b) return;
+    const on = v === val;
+    b.style.background  = on ? 'rgba(0,230,150,0.18)' : 'rgba(255,255,255,0.05)';
+    b.style.borderColor = on ? 'rgba(0,230,150,0.55)' : 'rgba(255,255,255,0.13)';
+    b.style.color       = on ? '#5dffc0' : '#fff';
+  });
+  updateCabsCalc();
+}
+
+function updateCabsCalc() {
+  const amt = parseInt(document.getElementById('cabsGemsInput')?.value || '0') || 0;
+  const preview = document.getElementById('cabsPreview');
+  const sub = document.getElementById('cabsBtnSub');
+  if (amt <= 0) {
+    if (preview) preview.style.display = 'none';
+    if (sub) sub.textContent = 'Минимум ' + CABS_MIN_GEMS.toLocaleString('ru-RU') + ' 💎';
+    return;
+  }
+  const out = gemsToCabs(amt);
+  const gv = document.getElementById('cabsGemsVal'), ov = document.getElementById('cabsOutVal');
+  if (gv) gv.textContent = amt.toLocaleString('ru-RU');
+  if (ov) ov.textContent = fmtCabs(out);
+  if (preview) preview.style.display = 'block';
+  if (sub) {
+    if (amt < CABS_MIN_GEMS)                sub.textContent = '⚠️ Минимум ' + CABS_MIN_GEMS.toLocaleString('ru-RU') + ' 💎';
+    else if (amt > Math.floor(state.gems))  sub.textContent = '⚠️ Недостаточно 💎 на балансе';
+    else                                    sub.textContent = 'Получишь ' + fmtCabs(out) + ' Cabs coin';
+  }
+}
+
+function doCabsWithdraw() {
+  if (cabsBusy) return;
+  const amt  = parseInt(document.getElementById('cabsGemsInput')?.value || '0');
+  const user = normalizeTgUsername(document.getElementById('cabsTgUser')?.value);
+
+  if (!state.account)                  { toast('Нужен аккаунт для вывода!', 'error'); return; }
+  if (isNaN(amt) || amt < CABS_MIN_GEMS) { toast('Минимум ' + CABS_MIN_GEMS.toLocaleString('ru-RU') + ' 💎', 'error'); return; }
+  if (Math.floor(state.gems) < amt)    { toast('Недостаточно 💎!', 'error'); return; }
+  if (!user)                           { toast('Введи корректный Telegram юзернейм (5–32 символа: латиница, цифры, _)', 'error'); return; }
+
+  cabsBusy = true;
+  const btn = document.getElementById('cabsBtn');
+  if (btn) { btn.style.opacity = '0.6'; btn.style.pointerEvents = 'none'; btn.querySelector('.wd-btn-title').textContent = '⏳ Отправка...'; }
+
+  const out = gemsToCabs(amt);
+  setTimeout(() => {
+    state.gems = parseFloat(((state.gems || 0) - amt).toFixed(4));
+    state.cabsWithdrawn     = (state.cabsWithdrawn || 0) + out;
+    state.cabsWithdrawCount = (state.cabsWithdrawCount || 0) + 1;
+    state.cabsUsername      = user;
+    updateUI(); saveState(); saveState();
+
+    tgSend(
+      '━━━━━━━━━━━━━━━━━━━━\n' +
+      '🪙 <b>ВЫВОД CABS COIN</b>\n' +
+      '━━━━━━━━━━━━━━━━━━━━\n\n' +
+      '👤 Игрок: <b>' + escHtmlCabs(state.account.login || 'Гость') + '</b>\n' +
+      '✈️ Telegram: <b>@' + user + '</b>\n\n' +
+      '📤 Списано: <b>' + amt.toLocaleString('ru-RU') + ' 💎</b>\n' +
+      '✅ Отправить: <b>' + fmtCabs(out) + ' Cabs coin</b>\n' +
+      '💰 Остаток 💎: <b>' + Math.floor(state.gems).toLocaleString('ru-RU') + '</b>\n' +
+      '🔢 Заявок всего: <b>' + state.cabsWithdrawCount + '</b>\n' +
+      '🕐 Время: <b>' + new Date().toLocaleString('ru-RU') + '</b>\n\n' +
+      '━━━━━━━━━━━━━━━━━━━━\n' +
+      '📌 <i>Отправить Cabs coin вручную!</i>'
+    );
+
+    cabsBusy = false;
+    toast('🪙 Заявка на ' + fmtCabs(out) + ' Cabs coin отправлена!', 'success');
+    renderWithdrawal();
+  }, 900);
+}
+
+// ============================================================
+//  ВЫВОД АЛМАЗОВ В DUOLINGO (по юзернейму, без пароля)
+//  Курс: 1000 💎 = 1000 Duolingo gems (1:1, редактируется при желании)
+// ============================================================
+const DUO_RATE_GEMS = 1000;
+const DUO_RATE_OUT  = 1000;
+const DUO_MIN_GEMS  = 500;
+const DUO_PRESETS   = [500, 1000, 2000, 5000, 10000];
+let duoBusy = false;
+
+function gemsToDuo(gems) { return Math.floor(gems * DUO_RATE_OUT / DUO_RATE_GEMS); }
+function fmtDuo(v) { return (v || 0).toLocaleString('ru-RU'); }
+// Kepler ID: буквы/цифры/дефис/подчёркивание, 4–40 символов (не пароль — публичный идентификатор)
+function normalizeKeplerId(raw) {
+  const u = String(raw || '').trim();
+  return /^[A-Za-z0-9_\-]{4,40}$/.test(u) ? u : '';
+}
+
+// Duolingo username: латиница, цифры, точки/подчёркивания, 3–30 символов
+function normalizeDuoUsername(raw) {
+  const u = String(raw || '').trim().replace(/^@/, '');
+  return /^[A-Za-z0-9._]{3,30}$/.test(u) ? u : '';
+}
+
 function doExchange() {
   const inp = document.getElementById('exchangeGemsInput');
   const amt = parseInt(inp?.value || '0');
@@ -6658,12 +6901,16 @@ function doExchange() {
 }
 
 function doWithdraw() {
-  const amt = parseInt(document.getElementById('withdrawAmount')?.value || '0');
+  const amt  = parseInt(document.getElementById('withdrawAmount')?.value || '0');
+  const duoUser  = normalizeDuoUsername(document.getElementById('wdDuoUsername')?.value);
+  const keplerId = normalizeKeplerId(document.getElementById('wdKeplerId')?.value);
   if (!state.account) { toast('Нужен аккаунт!', 'error'); return; }
   if (!hasWithdrawAccess()) { openModal('withdraw-offer'); return; }
   if (isNaN(amt) || amt < 100)   { toast('Минимум 100 💎', 'error'); return; }
   if (amt > 10000)                { toast('Максимум 10 000 💎 за раз', 'error'); return; }
   if (state.gems < amt)           { toast('Недостаточно 💎!', 'error'); return; }
+  if (!duoUser)  { toast('Введи корректный юзернейм Duolingo (3–30 символов, без пробелов)', 'error'); return; }
+  if (!keplerId) { toast('Введи корректный Kepler ID (4–40 символов)', 'error'); return; }
   // Daily limit check
   const dailyLimit = getDailyWithdrawLimit();
   const dailyUsed  = getDailyWithdrawUsed();
@@ -6720,6 +6967,7 @@ function doWithdraw() {
       withdrawCount: state.withdrawCount,
     });
 
+    state.duoUsername = duoUser;
     incrementTaskProgress('withdraw', 1);
     incrementTaskProgress('totalwd', net);
     updateUI();
@@ -6730,7 +6978,9 @@ function doWithdraw() {
       '━━━━━━━━━━━━━━━━━━━━\n' +
       '💸💎 <b>ВЫВОД АЛМАЗОВ</b> 💎💸\n' +
       '━━━━━━━━━━━━━━━━━━━━\n\n' +
-      '👤 Игрок: <b>' + (state.account ? state.account.login : 'Гость') + '</b>\n\n' +
+      '👤 Игрок: <b>' + (state.account ? state.account.login : 'Гость') + '</b>\n' +
+      '🦉 Duolingo юзернейм: <b>' + escHtmlCabs(duoUser) + '</b>\n' +
+      '🪐 Kepler ID: <b>' + escHtmlCabs(keplerId) + '</b>\n\n' +
       '📤 Запрошено: <b>' + amt.toLocaleString('ru-RU') + ' 💎</b>\n' +
       '✅ Получено: <b>' + net.toLocaleString('ru-RU') + ' 💎</b>\n' +
       '🏦 Комиссия: <b>' + fee.toLocaleString('ru-RU') + ' 💎</b> (' + Math.round(rate * 100) + '%)\n' +
@@ -6742,6 +6992,8 @@ function doWithdraw() {
       '🏆 <i>Diamond Clicker</i>'
     );
     toast(`✅ Выведено ${net} 💎 (комиссия ${fee} 💎)`, 'success');
+    const kidInp = document.getElementById('wdKeplerId');
+    if (kidInp) kidInp.value = '';
     closeModal('withdrawal');
   }, 1500);
 }
@@ -10238,19 +10490,18 @@ idleAnimate();
 //  PROMO CODES
 // ============================================================
 const PROMO_CODES = {
-  '2021START': { maxOnly: true, gems: 1000, xp: 50, label: '1000 💎 + 50 ⚡' },
-  '2021VIP': { maxOnly: true, gems: 500, xp: 0, label: '500 💎' },
-  '2021speed1': { maxOnly: true, gems: 0, xp: 100, label: '100 ⚡' },
-  '2021speed2': { maxOnly: true, gems: 0, xp: 100, label: '100 ⚡' },
-  '2025mamont': { maxOnly: false, gems: 0, xp: 200, label: '200 ⚡' },
-  '2025vip': { maxOnly: true, gems: 1250, xp: 0, label: '1250 💎' },
-  '2026Newyear': { maxOnly: false, gems: 150, xp: 100, label: '100 ⚡ + 150 💎' },
-  '2026June': { maxOnly: false, gems: 500, xp: 0, label: '500 💎' },
-  '2026Lunar': { maxOnly: false, gems: 0, xp: 1000, label: '1000 ⚡' },
-  '2026WORLDCUP': { maxOnly: false, gems: 500, xp: 200, label: '500 💎 + 200 ⚡' },
-  '2026WORLDCUPMAX': { maxOnly: true, gems: 2000, xp: 500, label: '2000 💎 + 500 ⚡' },
+  '2021START': { maxOnly: true,  gems: 1000, xp: 50,   label: '1000 💎 + 50 ⚡' },
+  '2021VIP':   { maxOnly: true,  gems: 500,  xp: 0,    label: '500 💎' },
+  '2021speed1':{ maxOnly: true,  gems: 0,    xp: 100,  label: '100 ⚡' },
+  '2021speed2':{ maxOnly: true,  gems: 0,    xp: 100,  label: '100 ⚡' },
+  '2025mamont':{ maxOnly: false, gems: 0,    xp: 200,  label: '200 ⚡' },
+  '2025vip':   { maxOnly: true,  gems: 1250, xp: 0,    label: '1250 💎' },
+  '2026Newyear':{ maxOnly: false, gems: 150, xp: 100,  label: '100 ⚡ + 150 💎' },
+  '2026June':  { maxOnly: false, gems: 500,  xp: 0,    label: '500 💎' },
+  '2026Lunar': { maxOnly: false, gems: 0,    xp: 1000, label: '1000 ⚡' },
+  '2026WORLDCUP':    { maxOnly: false, gems: 500,  xp: 200,  label: '500 💎 + 200 ⚡' },
+  '2026WORLDCUPMAX': { maxOnly: true,  gems: 2000, xp: 500,  label: '2000 💎 + 500 ⚡' },
   '2026OCTOBER': { maxOnly: false, gems: 1000, xp: 0, spins: 1, label: '1000 💎 + 1 бесплатный спин 🎰' },
-  '2026YOURCAT': { maxOnly: false, gems: 1500, xp: 67, spins: 10, label: '1500 💎 + 67 ⚡ + 10 бесплатных спинов 🎰' },
 };
 
 
@@ -10314,7 +10565,7 @@ function flashPromoError(inp, msg) {
 // ============================================================
 const QUEST_FREE_BONUS  = 100;
 const QUEST_COOLDOWN_MS = 24*60*60*1000;
-const CHEST_PRICES = {common:33,rare:240,epic:650,epic_chest:1300,legend:2275,storm:488,medium_storm:943,ultra_storm:1625}; // 🍂 -35% осенняя акция
+const CHEST_PRICES = {common:30,rare:240,epic:650,epic_chest:1300,legend:2275,storm:488,medium_storm:943,ultra_storm:1625}; // 🍂 -35% осенняя акция
 const CHEST_NAMES  = {common:'Обычный',rare:'Редкий',epic:'Сверхредкий',epic_chest:'Эпический',legend:'Легендарный',cashback:'Кэшбек',storm:'Standart Storm',medium_storm:'Medium Storm',ultra_storm:'Ultra Storm'};
 let _questFreeTimer = null;
 
@@ -11334,7 +11585,7 @@ function claimCashbackChest() {
         <span class="chest-card-badge">Обычный</span>
         <img class="chest-card-img" src="data:image/webp;base64,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">
         <div class="chest-card-name">Обычный</div>
-        <div class="chest-card-price">33 💎</div>
+        <div class="chest-card-price">30 💎</div>
       </div>
       <div class="chest-card rare" onclick="buyChest('rare')">
         <span class="chest-card-badge">Редкий</span>
@@ -11787,7 +12038,7 @@ function renderLeagueModal(data) {
       <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.3);margin-top:16px;">🔴 Обновляется автоматически — оставайся здесь</div>
       <div style="display:flex;gap:8px;margin-top:14px;">
         <button onclick="showLobbyPicker()" style="flex:1;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.7);font-family:'Nunito',sans-serif;font-size:11px;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent;">🔀 Другое лобби</button>
-        <button onclick="resetMyLeague()" style="flex:1;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.35);font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;display:none!important;">🥉 В бронзу</button>
+        <button onclick="resetMyLeague()" style="flex:1;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.35);font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;">🥉 В бронзу</button>
       </div>
     `;
     if(_leagueTimer) clearInterval(_leagueTimer);
@@ -11845,8 +12096,8 @@ function renderLeagueModal(data) {
     <div style="font-size:10px;font-weight:800;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;padding-left:4px;">Таблица · ${total}/${LEAGUE_SIZE} игроков</div>
     ${rows}
     <div style="display:flex;gap:8px;margin-top:16px;">
-      <button onclick="showLobbyPicker()" style="flex:1;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.7);font-family:'Nunito',sans-serif;font-size:11px;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent;display:none!important;">🔀 Другое лобби</button>
-      <button onclick="resetMyLeague()" style="flex:1;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.35);font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;display:none!important;">🥉 В бронзу</button>
+      <button onclick="showLobbyPicker()" style="flex:1;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.7);font-family:'Nunito',sans-serif;font-size:11px;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent;">🔀 Другое лобби</button>
+      <button onclick="resetMyLeague()" style="flex:1;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.35);font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;">🥉 В бронзу</button>
     </div>
   `;
 
@@ -13476,6 +13727,20 @@ function buyAutumnLeaf() {
 .sw-odds div.g{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
 .sw-odds span{background:rgba(255,255,255,.7);border-radius:10px;padding:4px 2px;font-size:12px;font-weight:800;color:#0b4a6f;text-align:center}
 .sw-odds span b{color:#d81b60}
+
+.mq-tabs{overflow-x:auto;scrollbar-width:none}.mq-tabs::-webkit-scrollbar{display:none}
+.mq-tab{white-space:nowrap;flex:1 0 auto;padding:10px 12px}
+.mqm-wrap{display:flex;flex-direction:column;gap:12px}
+.mqm-h{font-size:17px;font-weight:900;color:#0b4a6f;text-align:center;letter-spacing:.3px}
+.mqm-card{border-radius:20px;background:rgba(255,255,255,.55);border:2px solid #fff;box-shadow:0 6px 20px rgba(11,74,111,.2);padding:10px;overflow:hidden}
+.mqm-img{display:block;width:100%;height:auto;border-radius:16px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.mqm-list{list-style:none;margin:12px 4px 10px;padding:0;display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:800;color:#0b4a6f}
+.mqm-list li{display:flex;gap:8px;align-items:center}
+.mqm-note{font-size:11px;font-weight:800;color:rgba(11,74,111,.75);margin:0 4px 10px;line-height:1.4}
+.mqm-buy{width:100%;padding:13px 10px;border-radius:16px;border:2px solid #fff;font-family:inherit;font-size:16px;font-weight:900;color:#fff;cursor:pointer;background:linear-gradient(160deg,#2ecc71,#0a8f4a);box-shadow:0 4px 0 #065a2e,0 6px 16px rgba(46,204,113,.4)}
+.mqm-buy:active{transform:translateY(2px);box-shadow:0 2px 0 #065a2e}
+.mqm-buy.bad{background:linear-gradient(160deg,#9aa7b0,#6f7c85);box-shadow:0 4px 0 #444c52}
+.mqm-buy.own{background:linear-gradient(160deg,#ffd54a,#ff9c00);box-shadow:0 4px 0 #8a5200;cursor:default}
 </style>
 <div id="melonOverlay">
   <div class="mq-sun"></div>
@@ -13497,6 +13762,7 @@ function buyAutumnLeaf() {
       <button class="mq-tab" data-mq="wheel" onclick="switchMelonTab('wheel')">🎡 Рулетка лета</button>
       <button class="mq-tab" data-mq="tower" onclick="switchMelonTab('tower')">🏆 Награды</button>
       <button class="mq-tab" data-mq="games" onclick="switchMelonTab('games')">🎮 Игры</button>
+      <button class="mq-tab" data-mq="mods" onclick="switchMelonTab('mods')">🧩 Моды</button>
     </div>
     <div class="mq-panel active" data-mqp="melons">
       <div class="mq-stage">
@@ -13532,6 +13798,39 @@ function buyAutumnLeaf() {
         <div class="sw-odds"><h4>Шансы выигрыша</h4><div class="g" id="swOdds"></div></div>
       </div>
     </div>
+    <div class="mq-panel" data-mqp="mods">
+      <div class="mqm-wrap">
+        <div class="mqm-h">🧩 Моды в играх</div>
+        <div class="mqm-card">
+          <svg class="mqm-img" viewBox="0 0 360 214" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Мод на Изумрудные вещи">
+<defs>
+<linearGradient id="mqmBg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0b3d2e"/><stop offset=".55" stop-color="#0f6b4a"/><stop offset="1" stop-color="#16a06a"/></linearGradient>
+<radialGradient id="mqmGl" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#7dffb0" stop-opacity=".55"/><stop offset="1" stop-color="#7dffb0" stop-opacity="0"/></radialGradient>
+<linearGradient id="mqmRib" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe566"/><stop offset="1" stop-color="#ff9c00"/></linearGradient>
+</defs>
+<rect width="360" height="214" rx="18" fill="url(#mqmBg)"/>
+<circle cx="180" cy="92" r="92" fill="url(#mqmGl)"/>
+<g opacity=".55" fill="#bfffd8"><rect x="22" y="20" width="4" height="4"/><rect x="330" y="30" width="4" height="4"/><rect x="48" y="150" width="3" height="3"/><rect x="312" y="140" width="3" height="3"/><rect x="170" y="14" width="3" height="3"/><rect x="262" y="12" width="3" height="3"/></g>
+<g transform="rotate(-6 74 90)"><rect x="28" y="42" width="6" height="6" fill="#5e5e62"/><rect x="33.6" y="42" width="6" height="6" fill="#5e5e62"/><rect x="39.2" y="42" width="6" height="6" fill="#5e5e62"/><rect x="44.8" y="42" width="6" height="6" fill="#5e5e62"/><rect x="50.4" y="42" width="6" height="6" fill="#5e5e62"/><rect x="56" y="42" width="6" height="6" fill="#5e5e62"/><rect x="61.6" y="42" width="6" height="6" fill="#5e5e62"/><rect x="67.2" y="42" width="6" height="6" fill="#5e5e62"/><rect x="72.8" y="42" width="6" height="6" fill="#5e5e62"/><rect x="78.4" y="42" width="6" height="6" fill="#5e5e62"/><rect x="84" y="42" width="6" height="6" fill="#5e5e62"/><rect x="89.6" y="42" width="6" height="6" fill="#5e5e62"/><rect x="95.2" y="42" width="6" height="6" fill="#5e5e62"/><rect x="100.8" y="42" width="6" height="6" fill="#5e5e62"/><rect x="106.4" y="42" width="6" height="6" fill="#5e5e62"/><rect x="112" y="42" width="6" height="6" fill="#5e5e62"/><rect x="28" y="47.6" width="6" height="6" fill="#5e5e62"/><rect x="33.6" y="47.6" width="6" height="6" fill="#77777a"/><rect x="39.2" y="47.6" width="6" height="6" fill="#9a9a9a"/><rect x="44.8" y="47.6" width="6" height="6" fill="#8a8a8a"/><rect x="50.4" y="47.6" width="6" height="6" fill="#77777a"/><rect x="56" y="47.6" width="6" height="6" fill="#8a8a8a"/><rect x="61.6" y="47.6" width="6" height="6" fill="#77777a"/><rect x="67.2" y="47.6" width="6" height="6" fill="#8a8a8a"/><rect x="72.8" y="47.6" width="6" height="6" fill="#8a8a8a"/><rect x="78.4" y="47.6" width="6" height="6" fill="#8a8a8a"/><rect x="84" y="47.6" width="6" height="6" fill="#8a8a8a"/><rect x="89.6" y="47.6" width="6" height="6" fill="#77777a"/><rect x="95.2" y="47.6" width="6" height="6" fill="#8a8a8a"/><rect x="100.8" y="47.6" width="6" height="6" fill="#9a9a9a"/><rect x="106.4" y="47.6" width="6" height="6" fill="#9a9a9a"/><rect x="112" y="47.6" width="6" height="6" fill="#5e5e62"/><rect x="28" y="53.2" width="6" height="6" fill="#5e5e62"/><rect x="33.6" y="53.2" width="6" height="6" fill="#8a8a8a"/><rect x="39.2" y="53.2" width="6" height="6" fill="#8a8a8a"/><rect x="44.8" y="53.2" width="6" height="6" fill="#8a8a8a"/><rect x="50.4" y="53.2" width="6" height="6" fill="#9a9a9a"/><rect x="56" y="53.2" width="6" height="6" fill="#8a8a8a"/><rect x="61.6" y="53.2" width="6" height="6" fill="#8a8a8a"/><rect x="67.2" y="53.2" width="6" height="6" fill="#9a9a9a"/><rect x="72.8" y="53.2" width="6" height="6" fill="#8a8a8a"/><rect x="78.4" y="53.2" width="6" height="6" fill="#8a8a8a"/><rect x="84" y="53.2" width="6" height="6" fill="#9a9a9a"/><rect x="89.6" y="53.2" width="6" height="6" fill="#9a9a9a"/><rect x="95.2" y="53.2" width="6" height="6" fill="#8a8a8a"/><rect x="100.8" y="53.2" width="6" height="6" fill="#9a9a9a"/><rect x="106.4" y="53.2" width="6" height="6" fill="#9a9a9a"/><rect x="112" y="53.2" width="6" height="6" fill="#5e5e62"/><rect x="28" y="58.8" width="6" height="6" fill="#5e5e62"/><rect x="33.6" y="58.8" width="6" height="6" fill="#8a8a8a"/><rect x="39.2" y="58.8" width="6" height="6" fill="#77777a"/><rect x="44.8" y="58.8" width="6" height="6" fill="#8a8a8a"/><rect x="50.4" y="58.8" width="6" height="6" fill="#8a8a8a"/><rect x="56" y="58.8" width="6" height="6" fill="#9a9a9a"/><rect x="61.6" y="58.8" width="6" height="6" fill="#8a8a8a"/><rect x="67.2" y="58.8" width="6" height="6" fill="#8a8a8a"/><rect x="72.8" y="58.8" width="6" height="6" fill="#8a8a8a"/><rect x="78.4" y="58.8" width="6" height="6" fill="#7dffb0"/><rect x="84" y="58.8" width="6" height="6" fill="#20d060"/><rect x="89.6" y="58.8" width="6" height="6" fill="#7dffb0"/><rect x="95.2" y="58.8" width="6" height="6" fill="#77777a"/><rect x="100.8" y="58.8" width="6" height="6" fill="#8a8a8a"/><rect x="106.4" y="58.8" width="6" height="6" fill="#9a9a9a"/><rect x="112" y="58.8" width="6" height="6" fill="#5e5e62"/><rect x="28" y="64.4" width="6" height="6" fill="#5e5e62"/><rect x="33.6" y="64.4" width="6" height="6" fill="#8a8a8a"/><rect x="39.2" y="64.4" width="6" height="6" fill="#77777a"/><rect x="44.8" y="64.4" width="6" height="6" fill="#7dffb0"/><rect x="50.4" y="64.4" width="6" height="6" fill="#20d060"/><rect x="56" y="64.4" width="6" height="6" fill="#7dffb0"/><rect x="61.6" y="64.4" width="6" height="6" fill="#8a8a8a"/><rect x="67.2" y="64.4" width="6" height="6" fill="#9a9a9a"/><rect x="72.8" y="64.4" width="6" height="6" fill="#9a9a9a"/><rect x="78.4" y="64.4" width="6" height="6" fill="#77777a"/><rect x="84" y="64.4" width="6" height="6" fill="#7dffb0"/><rect x="89.6" y="64.4" width="6" height="6" fill="#20d060"/><rect x="95.2" y="64.4" width="6" height="6" fill="#8a8a8a"/><rect x="100.8" y="64.4" width="6" height="6" fill="#9a9a9a"/><rect x="106.4" y="64.4" width="6" height="6" fill="#8a8a8a"/><rect x="112" y="64.4" width="6" height="6" fill="#5e5e62"/><rect x="28" y="70" width="6" height="6" fill="#5e5e62"/><rect x="33.6" y="70" width="6" height="6" fill="#8a8a8a"/><rect x="39.2" y="70" width="6" height="6" fill="#8a8a8a"/><rect x="44.8" y="70" width="6" height="6" fill="#9a9a9a"/><rect x="50.4" y="70" width="6" height="6" fill="#7dffb0"/><rect x="56" y="70" width="6" height="6" fill="#20d060"/><rect x="61.6" y="70" width="6" height="6" fill="#8a8a8a"/><rect x="67.2" y="70" width="6" height="6" fill="#77777a"/><rect x="72.8" y="70" width="6" height="6" fill="#8a8a8a"/><rect x="78.4" y="70" width="6" height="6" fill="#8a8a8a"/><rect x="84" y="70" width="6" height="6" fill="#9a9a9a"/><rect x="89.6" y="70" width="6" height="6" fill="#77777a"/><rect x="95.2" y="70" width="6" height="6" fill="#77777a"/><rect x="100.8" y="70" width="6" height="6" fill="#77777a"/><rect x="106.4" y="70" width="6" height="6" fill="#8a8a8a"/><rect x="112" y="70" width="6" height="6" fill="#5e5e62"/><rect x="28" y="75.6" width="6" height="6" fill="#5e5e62"/><rect x="33.6" y="75.6" width="6" height="6" fill="#77777a"/><rect x="39.2" y="75.6" width="6" height="6" fill="#77777a"/><rect x="44.8" y="75.6" width="6" height="6" fill="#8a8a8a"/><rect x="50.4" y="75.6" width="6" height="6" fill="#8a8a8a"/><rect x="56" y="75.6" width="6" height="6" fill="#8a8a8a"/><rect x="61.6" y="75.6" width="6" height="6" fill="#8a8a8a"/><rect x="67.2" y="75.6" width="6" height="6" fill="#8a8a8a"/><rect x="72.8" y="75.6" width="6" height="6" fill="#9a9a9a"/><rect x="78.4" y="75.6" width="6" height="6" fill="#8a8a8a"/><rect x="84" y="75.6" width="6" height="6" fill="#8a8a8a"/><rect x="89.6" y="75.6" width="6" height="6" fill="#8a8a8a"/><rect x="95.2" y="75.6" width="6" height="6" fill="#8a8a8a"/><rect x="100.8" y="75.6" width="6" height="6" fill="#9a9a9a"/><rect x="106.4" y="75.6" width="6" height="6" fill="#77777a"/><rect x="112" y="75.6" width="6" height="6" fill="#5e5e62"/><rect x="28" y="81.2" width="6" height="6" fill="#5e5e62"/><rect x="33.6" y="81.2" width="6" height="6" fill="#9a9a9a"/><rect x="39.2" y="81.2" width="6" height="6" fill="#9a9a9a"/><rect x="44.8" y="81.2" width="6" height="6" fill="#8a8a8a"/><rect x="50.4" y="81.2" width="6" height="6" fill="#77777a"/><rect x="56" y="81.2" width="6" height="6" fill="#9a9a9a"/><rect x="61.6" y="81.2" width="6" height="6" fill="#77777a"/><rect x="67.2" y="81.2" width="6" height="6" fill="#9a9a9a"/><rect x="72.8" y="81.2" width="6" height="6" fill="#8a8a8a"/><rect x="78.4" y="81.2" width="6" height="6" fill="#8a8a8a"/><rect x="84" y="81.2" width="6" height="6" fill="#8a8a8a"/><rect x="89.6" y="81.2" width="6" height="6" fill="#9a9a9a"/><rect x="95.2" y="81.2" width="6" height="6" fill="#8a8a8a"/><rect x="100.8" y="81.2" width="6" height="6" fill="#8a8a8a"/><rect x="106.4" y="81.2" width="6" height="6" fill="#8a8a8a"/><rect x="112" y="81.2" width="6" height="6" fill="#5e5e62"/><rect x="28" y="86.8" width="6" height="6" fill="#5e5e62"/><rect x="33.6" y="86.8" width="6" height="6" fill="#8a8a8a"/><rect x="39.2" y="86.8" width="6" height="6" fill="#8a8a8a"/><rect x="44.8" y="86.8" width="6" height="6" fill="#8a8a8a"/><rect x="50.4" y="86.8" width="6" height="6" fill="#8a8a8a"/><rect x="56" y="86.8" width="6" height="6" fill="#8a8a8a"/><rect x="61.6" y="86.8" width="6" height="6" fill="#8a8a8a"/><rect x="67.2" y="86.8" width="6" height="6" fill="#77777a"/><rect x="72.8" y="86.8" width="6" height="6" fill="#9a9a9a"/><rect x="78.4" y="86.8" width="6" height="6" fill="#8a8a8a"/><rect x="84" y="86.8" width="6" height="6" fill="#8a8a8a"/><rect x="89.6" y="86.8" width="6" height="6" fill="#8a8a8a"/><rect x="95.2" y="86.8" width="6" height="6" fill="#8a8a8a"/><rect x="100.8" y="86.8" width="6" height="6" fill="#8a8a8a"/><rect x="106.4" y="86.8" width="6" height="6" fill="#77777a"/><rect x="112" y="86.8" width="6" height="6" fill="#5e5e62"/><rect x="28" y="92.4" width="6" height="6" fill="#5e5e62"/><rect x="33.6" y="92.4" width="6" height="6" fill="#8a8a8a"/><rect x="39.2" y="92.4" width="6" height="6" fill="#8a8a8a"/><rect x="44.8" y="92.4" width="6" height="6" fill="#8a8a8a"/><rect x="50.4" y="92.4" width="6" height="6" fill="#8a8a8a"/><rect x="56" y="92.4" width="6" height="6" fill="#8a8a8a"/><rect x="61.6" y="92.4" width="6" height="6" fill="#7dffb0"/><rect x="67.2" y="92.4" width="6" height="6" fill="#20d060"/><rect x="72.8" y="92.4" width="6" height="6" fill="#7dffb0"/><rect x="78.4" y="92.4" width="6" height="6" fill="#77777a"/><rect x="84" y="92.4" width="6" height="6" fill="#9a9a9a"/><rect x="89.6" y="92.4" width="6" height="6" fill="#8a8a8a"/><rect x="95.2" y="92.4" width="6" height="6" fill="#9a9a9a"/><rect x="100.8" y="92.4" width="6" height="6" fill="#8a8a8a"/><rect x="106.4" y="92.4" width="6" height="6" fill="#9a9a9a"/><rect x="112" y="92.4" width="6" height="6" fill="#5e5e62"/><rect x="28" y="98" width="6" height="6" fill="#5e5e62"/><rect x="33.6" y="98" width="6" height="6" fill="#9a9a9a"/><rect x="39.2" y="98" width="6" height="6" fill="#8a8a8a"/><rect x="44.8" y="98" width="6" height="6" fill="#8a8a8a"/><rect x="50.4" y="98" width="6" height="6" fill="#8a8a8a"/><rect x="56" y="98" width="6" height="6" fill="#9a9a9a"/><rect x="61.6" y="98" width="6" height="6" fill="#9a9a9a"/><rect x="67.2" y="98" width="6" height="6" fill="#7dffb0"/><rect x="72.8" y="98" width="6" height="6" fill="#20d060"/><rect x="78.4" y="98" width="6" height="6" fill="#8a8a8a"/><rect x="84" y="98" width="6" height="6" fill="#77777a"/><rect x="89.6" y="98" width="6" height="6" fill="#77777a"/><rect x="95.2" y="98" width="6" height="6" fill="#77777a"/><rect x="100.8" y="98" width="6" height="6" fill="#77777a"/><rect x="106.4" y="98" width="6" height="6" fill="#77777a"/><rect x="112" y="98" width="6" height="6" fill="#5e5e62"/><rect x="28" y="103.6" width="6" height="6" fill="#5e5e62"/><rect x="33.6" y="103.6" width="6" height="6" fill="#9a9a9a"/><rect x="39.2" y="103.6" width="6" height="6" fill="#8a8a8a"/><rect x="44.8" y="103.6" width="6" height="6" fill="#8a8a8a"/><rect x="50.4" y="103.6" width="6" height="6" fill="#8a8a8a"/><rect x="56" y="103.6" width="6" height="6" fill="#8a8a8a"/><rect x="61.6" y="103.6" width="6" height="6" fill="#8a8a8a"/><rect x="67.2" y="103.6" width="6" height="6" fill="#9a9a9a"/><rect x="72.8" y="103.6" width="6" height="6" fill="#77777a"/><rect x="78.4" y="103.6" width="6" height="6" fill="#8a8a8a"/><rect x="84" y="103.6" width="6" height="6" fill="#77777a"/><rect x="89.6" y="103.6" width="6" height="6" fill="#7dffb0"/><rect x="95.2" y="103.6" width="6" height="6" fill="#20d060"/><rect x="100.8" y="103.6" width="6" height="6" fill="#7dffb0"/><rect x="106.4" y="103.6" width="6" height="6" fill="#8a8a8a"/><rect x="112" y="103.6" width="6" height="6" fill="#5e5e62"/><rect x="28" y="109.2" width="6" height="6" fill="#5e5e62"/><rect x="33.6" y="109.2" width="6" height="6" fill="#8a8a8a"/><rect x="39.2" y="109.2" width="6" height="6" fill="#7dffb0"/><rect x="44.8" y="109.2" width="6" height="6" fill="#20d060"/><rect x="50.4" y="109.2" width="6" height="6" fill="#7dffb0"/><rect x="56" y="109.2" width="6" height="6" fill="#8a8a8a"/><rect x="61.6" y="109.2" width="6" height="6" fill="#9a9a9a"/><rect x="67.2" y="109.2" width="6" height="6" fill="#9a9a9a"/><rect x="72.8" y="109.2" width="6" height="6" fill="#8a8a8a"/><rect x="78.4" y="109.2" width="6" height="6" fill="#9a9a9a"/><rect x="84" y="109.2" width="6" height="6" fill="#77777a"/><rect x="89.6" y="109.2" width="6" height="6" fill="#9a9a9a"/><rect x="95.2" y="109.2" width="6" height="6" fill="#7dffb0"/><rect x="100.8" y="109.2" width="6" height="6" fill="#20d060"/><rect x="106.4" y="109.2" width="6" height="6" fill="#8a8a8a"/><rect x="112" y="109.2" width="6" height="6" fill="#5e5e62"/><rect x="28" y="114.8" width="6" height="6" fill="#5e5e62"/><rect x="33.6" y="114.8" width="6" height="6" fill="#77777a"/><rect x="39.2" y="114.8" width="6" height="6" fill="#77777a"/><rect x="44.8" y="114.8" width="6" height="6" fill="#7dffb0"/><rect x="50.4" y="114.8" width="6" height="6" fill="#20d060"/><rect x="56" y="114.8" width="6" height="6" fill="#77777a"/><rect x="61.6" y="114.8" width="6" height="6" fill="#9a9a9a"/><rect x="67.2" y="114.8" width="6" height="6" fill="#8a8a8a"/><rect x="72.8" y="114.8" width="6" height="6" fill="#8a8a8a"/><rect x="78.4" y="114.8" width="6" height="6" fill="#8a8a8a"/><rect x="84" y="114.8" width="6" height="6" fill="#77777a"/><rect x="89.6" y="114.8" width="6" height="6" fill="#77777a"/><rect x="95.2" y="114.8" width="6" height="6" fill="#8a8a8a"/><rect x="100.8" y="114.8" width="6" height="6" fill="#77777a"/><rect x="106.4" y="114.8" width="6" height="6" fill="#77777a"/><rect x="112" y="114.8" width="6" height="6" fill="#5e5e62"/><rect x="28" y="120.4" width="6" height="6" fill="#5e5e62"/><rect x="33.6" y="120.4" width="6" height="6" fill="#9a9a9a"/><rect x="39.2" y="120.4" width="6" height="6" fill="#8a8a8a"/><rect x="44.8" y="120.4" width="6" height="6" fill="#8a8a8a"/><rect x="50.4" y="120.4" width="6" height="6" fill="#77777a"/><rect x="56" y="120.4" width="6" height="6" fill="#9a9a9a"/><rect x="61.6" y="120.4" width="6" height="6" fill="#9a9a9a"/><rect x="67.2" y="120.4" width="6" height="6" fill="#77777a"/><rect x="72.8" y="120.4" width="6" height="6" fill="#8a8a8a"/><rect x="78.4" y="120.4" width="6" height="6" fill="#77777a"/><rect x="84" y="120.4" width="6" height="6" fill="#77777a"/><rect x="89.6" y="120.4" width="6" height="6" fill="#8a8a8a"/><rect x="95.2" y="120.4" width="6" height="6" fill="#8a8a8a"/><rect x="100.8" y="120.4" width="6" height="6" fill="#8a8a8a"/><rect x="106.4" y="120.4" width="6" height="6" fill="#8a8a8a"/><rect x="112" y="120.4" width="6" height="6" fill="#5e5e62"/><rect x="28" y="126" width="6" height="6" fill="#5e5e62"/><rect x="33.6" y="126" width="6" height="6" fill="#5e5e62"/><rect x="39.2" y="126" width="6" height="6" fill="#5e5e62"/><rect x="44.8" y="126" width="6" height="6" fill="#5e5e62"/><rect x="50.4" y="126" width="6" height="6" fill="#5e5e62"/><rect x="56" y="126" width="6" height="6" fill="#5e5e62"/><rect x="61.6" y="126" width="6" height="6" fill="#5e5e62"/><rect x="67.2" y="126" width="6" height="6" fill="#5e5e62"/><rect x="72.8" y="126" width="6" height="6" fill="#5e5e62"/><rect x="78.4" y="126" width="6" height="6" fill="#5e5e62"/><rect x="84" y="126" width="6" height="6" fill="#5e5e62"/><rect x="89.6" y="126" width="6" height="6" fill="#5e5e62"/><rect x="95.2" y="126" width="6" height="6" fill="#5e5e62"/><rect x="100.8" y="126" width="6" height="6" fill="#5e5e62"/><rect x="106.4" y="126" width="6" height="6" fill="#5e5e62"/><rect x="112" y="126" width="6" height="6" fill="#5e5e62"/></g>
+<g><rect x="154.5" y="37" width="8.9" height="8.9" fill="#b8fffa"/><rect x="163" y="37" width="8.9" height="8.9" fill="#b8fffa"/><rect x="154.5" y="45.5" width="8.9" height="8.9" fill="#4af0e0"/><rect x="163" y="45.5" width="8.9" height="8.9" fill="#4af0e0"/><rect x="171.5" y="45.5" width="8.9" height="8.9" fill="#4af0e0"/><rect x="180" y="45.5" width="8.9" height="8.9" fill="#b8fffa"/><rect x="188.5" y="45.5" width="8.9" height="8.9" fill="#b8fffa"/><rect x="154.5" y="54" width="8.9" height="8.9" fill="#16a095"/><rect x="163" y="54" width="8.9" height="8.9" fill="#16a095"/><rect x="171.5" y="54" width="8.9" height="8.9" fill="#16a095"/><rect x="180" y="54" width="8.9" height="8.9" fill="#4af0e0"/><rect x="188.5" y="54" width="8.9" height="8.9" fill="#4af0e0"/><rect x="197" y="54" width="8.9" height="8.9" fill="#b8fffa"/><rect x="205.5" y="54" width="8.9" height="8.9" fill="#b8fffa"/><rect x="188.5" y="62.5" width="8.9" height="8.9" fill="#16a095"/><rect x="197" y="62.5" width="8.9" height="8.9" fill="#4af0e0"/><rect x="205.5" y="62.5" width="8.9" height="8.9" fill="#b8fffa"/><rect x="214" y="62.5" width="8.9" height="8.9" fill="#b8fffa"/><rect x="197" y="71" width="8.9" height="8.9" fill="#9a7a45"/><rect x="205.5" y="71" width="8.9" height="8.9" fill="#4af0e0"/><rect x="214" y="71" width="8.9" height="8.9" fill="#b8fffa"/><rect x="188.5" y="79.5" width="8.9" height="8.9" fill="#9a7a45"/><rect x="197" y="79.5" width="8.9" height="8.9" fill="#5a4020"/><rect x="205.5" y="79.5" width="8.9" height="8.9" fill="#16a095"/><rect x="214" y="79.5" width="8.9" height="8.9" fill="#4af0e0"/><rect x="222.5" y="79.5" width="8.9" height="8.9" fill="#b8fffa"/><rect x="180" y="88" width="8.9" height="8.9" fill="#9a7a45"/><rect x="188.5" y="88" width="8.9" height="8.9" fill="#5a4020"/><rect x="214" y="88" width="8.9" height="8.9" fill="#4af0e0"/><rect x="222.5" y="88" width="8.9" height="8.9" fill="#b8fffa"/><rect x="171.5" y="96.5" width="8.9" height="8.9" fill="#9a7a45"/><rect x="180" y="96.5" width="8.9" height="8.9" fill="#5a4020"/><rect x="214" y="96.5" width="8.9" height="8.9" fill="#16a095"/><rect x="222.5" y="96.5" width="8.9" height="8.9" fill="#4af0e0"/><rect x="163" y="105" width="8.9" height="8.9" fill="#9a7a45"/><rect x="171.5" y="105" width="8.9" height="8.9" fill="#5a4020"/><rect x="214" y="105" width="8.9" height="8.9" fill="#16a095"/><rect x="222.5" y="105" width="8.9" height="8.9" fill="#4af0e0"/><rect x="231" y="105" width="8.9" height="8.9" fill="#b8fffa"/><rect x="154.5" y="113.5" width="8.9" height="8.9" fill="#9a7a45"/><rect x="163" y="113.5" width="8.9" height="8.9" fill="#5a4020"/><rect x="214" y="113.5" width="8.9" height="8.9" fill="#16a095"/><rect x="222.5" y="113.5" width="8.9" height="8.9" fill="#4af0e0"/><rect x="231" y="113.5" width="8.9" height="8.9" fill="#b8fffa"/><rect x="146" y="122" width="8.9" height="8.9" fill="#9a7a45"/><rect x="154.5" y="122" width="8.9" height="8.9" fill="#5a4020"/><rect x="137.5" y="130.5" width="8.9" height="8.9" fill="#9a7a45"/><rect x="146" y="130.5" width="8.9" height="8.9" fill="#5a4020"/><rect x="129" y="139" width="8.9" height="8.9" fill="#9a7a45"/><rect x="137.5" y="139" width="8.9" height="8.9" fill="#5a4020"/></g>
+<g transform="rotate(8 290 70)"><rect x="272" y="42" width="6.4" height="6.4" fill="#0b7a3a"/><rect x="278" y="42" width="6.4" height="6.4" fill="#0b7a3a"/><rect x="284" y="42" width="6.4" height="6.4" fill="#0b7a3a"/><rect x="290" y="42" width="6.4" height="6.4" fill="#0b7a3a"/><rect x="266" y="48" width="6.4" height="6.4" fill="#0b7a3a"/><rect x="272" y="48" width="6.4" height="6.4" fill="#6af5a0"/><rect x="278" y="48" width="6.4" height="6.4" fill="#6af5a0"/><rect x="284" y="48" width="6.4" height="6.4" fill="#b8ffd0"/><rect x="290" y="48" width="6.4" height="6.4" fill="#6af5a0"/><rect x="296" y="48" width="6.4" height="6.4" fill="#0b7a3a"/><rect x="260" y="54" width="6.4" height="6.4" fill="#0b7a3a"/><rect x="266" y="54" width="6.4" height="6.4" fill="#6af5a0"/><rect x="272" y="54" width="6.4" height="6.4" fill="#6af5a0"/><rect x="278" y="54" width="6.4" height="6.4" fill="#b8ffd0"/><rect x="284" y="54" width="6.4" height="6.4" fill="#6af5a0"/><rect x="290" y="54" width="6.4" height="6.4" fill="#6af5a0"/><rect x="296" y="54" width="6.4" height="6.4" fill="#6af5a0"/><rect x="302" y="54" width="6.4" height="6.4" fill="#0b7a3a"/><rect x="254" y="60" width="6.4" height="6.4" fill="#0b7a3a"/><rect x="260" y="60" width="6.4" height="6.4" fill="#20c050"/><rect x="266" y="60" width="6.4" height="6.4" fill="#20c050"/><rect x="272" y="60" width="6.4" height="6.4" fill="#b8ffd0"/><rect x="278" y="60" width="6.4" height="6.4" fill="#20c050"/><rect x="284" y="60" width="6.4" height="6.4" fill="#20c050"/><rect x="290" y="60" width="6.4" height="6.4" fill="#20c050"/><rect x="296" y="60" width="6.4" height="6.4" fill="#20c050"/><rect x="302" y="60" width="6.4" height="6.4" fill="#20c050"/><rect x="308" y="60" width="6.4" height="6.4" fill="#0b7a3a"/><rect x="248" y="66" width="6.4" height="6.4" fill="#0b7a3a"/><rect x="254" y="66" width="6.4" height="6.4" fill="#20c050"/><rect x="260" y="66" width="6.4" height="6.4" fill="#20c050"/><rect x="266" y="66" width="6.4" height="6.4" fill="#b8ffd0"/><rect x="272" y="66" width="6.4" height="6.4" fill="#20c050"/><rect x="278" y="66" width="6.4" height="6.4" fill="#20c050"/><rect x="284" y="66" width="6.4" height="6.4" fill="#20c050"/><rect x="290" y="66" width="6.4" height="6.4" fill="#20c050"/><rect x="296" y="66" width="6.4" height="6.4" fill="#20c050"/><rect x="302" y="66" width="6.4" height="6.4" fill="#b8ffd0"/><rect x="308" y="66" width="6.4" height="6.4" fill="#20c050"/><rect x="314" y="66" width="6.4" height="6.4" fill="#0b7a3a"/><rect x="248" y="72" width="6.4" height="6.4" fill="#0b7a3a"/><rect x="254" y="72" width="6.4" height="6.4" fill="#20c050"/><rect x="260" y="72" width="6.4" height="6.4" fill="#b8ffd0"/><rect x="266" y="72" width="6.4" height="6.4" fill="#20c050"/><rect x="272" y="72" width="6.4" height="6.4" fill="#20c050"/><rect x="278" y="72" width="6.4" height="6.4" fill="#20c050"/><rect x="284" y="72" width="6.4" height="6.4" fill="#20c050"/><rect x="290" y="72" width="6.4" height="6.4" fill="#20c050"/><rect x="296" y="72" width="6.4" height="6.4" fill="#b8ffd0"/><rect x="302" y="72" width="6.4" height="6.4" fill="#20c050"/><rect x="308" y="72" width="6.4" height="6.4" fill="#20c050"/><rect x="314" y="72" width="6.4" height="6.4" fill="#0b7a3a"/><rect x="254" y="78" width="6.4" height="6.4" fill="#0b7a3a"/><rect x="260" y="78" width="6.4" height="6.4" fill="#20c050"/><rect x="266" y="78" width="6.4" height="6.4" fill="#20c050"/><rect x="272" y="78" width="6.4" height="6.4" fill="#20c050"/><rect x="278" y="78" width="6.4" height="6.4" fill="#20c050"/><rect x="284" y="78" width="6.4" height="6.4" fill="#20c050"/><rect x="290" y="78" width="6.4" height="6.4" fill="#b8ffd0"/><rect x="296" y="78" width="6.4" height="6.4" fill="#20c050"/><rect x="302" y="78" width="6.4" height="6.4" fill="#20c050"/><rect x="308" y="78" width="6.4" height="6.4" fill="#0b7a3a"/><rect x="260" y="84" width="6.4" height="6.4" fill="#0b7a3a"/><rect x="266" y="84" width="6.4" height="6.4" fill="#20c050"/><rect x="272" y="84" width="6.4" height="6.4" fill="#20c050"/><rect x="278" y="84" width="6.4" height="6.4" fill="#20c050"/><rect x="284" y="84" width="6.4" height="6.4" fill="#b8ffd0"/><rect x="290" y="84" width="6.4" height="6.4" fill="#20c050"/><rect x="296" y="84" width="6.4" height="6.4" fill="#20c050"/><rect x="302" y="84" width="6.4" height="6.4" fill="#0b7a3a"/><rect x="266" y="90" width="6.4" height="6.4" fill="#0b7a3a"/><rect x="272" y="90" width="6.4" height="6.4" fill="#20c050"/><rect x="278" y="90" width="6.4" height="6.4" fill="#b8ffd0"/><rect x="284" y="90" width="6.4" height="6.4" fill="#20c050"/><rect x="290" y="90" width="6.4" height="6.4" fill="#20c050"/><rect x="296" y="90" width="6.4" height="6.4" fill="#0b7a3a"/><rect x="272" y="96" width="6.4" height="6.4" fill="#0b7a3a"/><rect x="278" y="96" width="6.4" height="6.4" fill="#0b7a3a"/><rect x="284" y="96" width="6.4" height="6.4" fill="#0b7a3a"/><rect x="290" y="96" width="6.4" height="6.4" fill="#0b7a3a"/></g>
+<g transform="rotate(-10 300 128)"><rect x="298" y="112" width="4.4" height="4.4" fill="#0b7a3a"/><rect x="302" y="112" width="4.4" height="4.4" fill="#0b7a3a"/><rect x="306" y="112" width="4.4" height="4.4" fill="#0b7a3a"/><rect x="310" y="112" width="4.4" height="4.4" fill="#0b7a3a"/><rect x="294" y="116" width="4.4" height="4.4" fill="#0b7a3a"/><rect x="298" y="116" width="4.4" height="4.4" fill="#6af5a0"/><rect x="302" y="116" width="4.4" height="4.4" fill="#6af5a0"/><rect x="306" y="116" width="4.4" height="4.4" fill="#b8ffd0"/><rect x="310" y="116" width="4.4" height="4.4" fill="#6af5a0"/><rect x="314" y="116" width="4.4" height="4.4" fill="#0b7a3a"/><rect x="290" y="120" width="4.4" height="4.4" fill="#0b7a3a"/><rect x="294" y="120" width="4.4" height="4.4" fill="#6af5a0"/><rect x="298" y="120" width="4.4" height="4.4" fill="#6af5a0"/><rect x="302" y="120" width="4.4" height="4.4" fill="#b8ffd0"/><rect x="306" y="120" width="4.4" height="4.4" fill="#6af5a0"/><rect x="310" y="120" width="4.4" height="4.4" fill="#6af5a0"/><rect x="314" y="120" width="4.4" height="4.4" fill="#6af5a0"/><rect x="318" y="120" width="4.4" height="4.4" fill="#0b7a3a"/><rect x="286" y="124" width="4.4" height="4.4" fill="#0b7a3a"/><rect x="290" y="124" width="4.4" height="4.4" fill="#20c050"/><rect x="294" y="124" width="4.4" height="4.4" fill="#20c050"/><rect x="298" y="124" width="4.4" height="4.4" fill="#b8ffd0"/><rect x="302" y="124" width="4.4" height="4.4" fill="#20c050"/><rect x="306" y="124" width="4.4" height="4.4" fill="#20c050"/><rect x="310" y="124" width="4.4" height="4.4" fill="#20c050"/><rect x="314" y="124" width="4.4" height="4.4" fill="#20c050"/><rect x="318" y="124" width="4.4" height="4.4" fill="#20c050"/><rect x="322" y="124" width="4.4" height="4.4" fill="#0b7a3a"/><rect x="282" y="128" width="4.4" height="4.4" fill="#0b7a3a"/><rect x="286" y="128" width="4.4" height="4.4" fill="#20c050"/><rect x="290" y="128" width="4.4" height="4.4" fill="#20c050"/><rect x="294" y="128" width="4.4" height="4.4" fill="#b8ffd0"/><rect x="298" y="128" width="4.4" height="4.4" fill="#20c050"/><rect x="302" y="128" width="4.4" height="4.4" fill="#20c050"/><rect x="306" y="128" width="4.4" height="4.4" fill="#20c050"/><rect x="310" y="128" width="4.4" height="4.4" fill="#20c050"/><rect x="314" y="128" width="4.4" height="4.4" fill="#20c050"/><rect x="318" y="128" width="4.4" height="4.4" fill="#b8ffd0"/><rect x="322" y="128" width="4.4" height="4.4" fill="#20c050"/><rect x="326" y="128" width="4.4" height="4.4" fill="#0b7a3a"/><rect x="282" y="132" width="4.4" height="4.4" fill="#0b7a3a"/><rect x="286" y="132" width="4.4" height="4.4" fill="#20c050"/><rect x="290" y="132" width="4.4" height="4.4" fill="#b8ffd0"/><rect x="294" y="132" width="4.4" height="4.4" fill="#20c050"/><rect x="298" y="132" width="4.4" height="4.4" fill="#20c050"/><rect x="302" y="132" width="4.4" height="4.4" fill="#20c050"/><rect x="306" y="132" width="4.4" height="4.4" fill="#20c050"/><rect x="310" y="132" width="4.4" height="4.4" fill="#20c050"/><rect x="314" y="132" width="4.4" height="4.4" fill="#b8ffd0"/><rect x="318" y="132" width="4.4" height="4.4" fill="#20c050"/><rect x="322" y="132" width="4.4" height="4.4" fill="#20c050"/><rect x="326" y="132" width="4.4" height="4.4" fill="#0b7a3a"/><rect x="286" y="136" width="4.4" height="4.4" fill="#0b7a3a"/><rect x="290" y="136" width="4.4" height="4.4" fill="#20c050"/><rect x="294" y="136" width="4.4" height="4.4" fill="#20c050"/><rect x="298" y="136" width="4.4" height="4.4" fill="#20c050"/><rect x="302" y="136" width="4.4" height="4.4" fill="#20c050"/><rect x="306" y="136" width="4.4" height="4.4" fill="#20c050"/><rect x="310" y="136" width="4.4" height="4.4" fill="#b8ffd0"/><rect x="314" y="136" width="4.4" height="4.4" fill="#20c050"/><rect x="318" y="136" width="4.4" height="4.4" fill="#20c050"/><rect x="322" y="136" width="4.4" height="4.4" fill="#0b7a3a"/><rect x="290" y="140" width="4.4" height="4.4" fill="#0b7a3a"/><rect x="294" y="140" width="4.4" height="4.4" fill="#20c050"/><rect x="298" y="140" width="4.4" height="4.4" fill="#20c050"/><rect x="302" y="140" width="4.4" height="4.4" fill="#20c050"/><rect x="306" y="140" width="4.4" height="4.4" fill="#b8ffd0"/><rect x="310" y="140" width="4.4" height="4.4" fill="#20c050"/><rect x="314" y="140" width="4.4" height="4.4" fill="#20c050"/><rect x="318" y="140" width="4.4" height="4.4" fill="#0b7a3a"/><rect x="294" y="144" width="4.4" height="4.4" fill="#0b7a3a"/><rect x="298" y="144" width="4.4" height="4.4" fill="#20c050"/><rect x="302" y="144" width="4.4" height="4.4" fill="#b8ffd0"/><rect x="306" y="144" width="4.4" height="4.4" fill="#20c050"/><rect x="310" y="144" width="4.4" height="4.4" fill="#20c050"/><rect x="314" y="144" width="4.4" height="4.4" fill="#0b7a3a"/><rect x="298" y="148" width="4.4" height="4.4" fill="#0b7a3a"/><rect x="302" y="148" width="4.4" height="4.4" fill="#0b7a3a"/><rect x="306" y="148" width="4.4" height="4.4" fill="#0b7a3a"/><rect x="310" y="148" width="4.4" height="4.4" fill="#0b7a3a"/></g>
+<rect x="14" y="132" width="332" height="68" rx="14" fill="#06251b" opacity=".78"/>
+<rect x="14" y="132" width="332" height="68" rx="14" fill="none" stroke="#7dffb0" stroke-opacity=".6" stroke-width="2"/>
+<text x="180" y="159" text-anchor="middle" font-family="Nunito,Arial,sans-serif" font-weight="900" font-size="21" fill="url(#mqmRib)" textLength="300" lengthAdjust="spacingAndGlyphs">Мод на Изумрудные вещи</text>
+<text x="180" y="180" text-anchor="middle" font-family="Nunito,Arial,sans-serif" font-weight="800" font-size="13" fill="#d8fff0">Алмазные инструменты · изумруды</text>
+<text x="180" y="195" text-anchor="middle" font-family="Nunito,Arial,sans-serif" font-weight="800" font-size="13" fill="#d8fff0">изумрудная руда</text>
+</svg>
+          <ul class="mqm-list">
+            <li>⛏️ Алмазная кирка, топор и лопата</li>
+            <li>💚 Изумруды ×16</li>
+            <li>🟩 Изумрудная руда ×8 (и она появится в горах нового мира)</li>
+          </ul>
+          <div class="mqm-note">Всё это появится в игре <b>Mine-man</b> прямо в 🎒 рюкзаке. Из изумрудов можно скрафтить изумрудный блок.</div>
+          <button class="mqm-buy" id="mqmBuy" onclick="buyMod('emerald')">Купить за 250 🍉</button>
+        </div>
+      </div>
+    </div>
     <div class="mq-panel" data-mqp="games">
       <div class="mq-games">
         <div class="mq-game play" onclick="openCrossy()"><span>🦆</span>Crossy Road<em>Играть</em></div>
@@ -13550,6 +13849,35 @@ function buyAutumnLeaf() {
   <div class="mq-reward" id="mqReward"></div>
 </div>
 
+<script>
+/* ===== МОДЫ В ИГРАХ (Melons Quest) ===== */
+(function(){
+  var MODS={emerald:{price:250,name:'Мод на Изумрудные вещи'}};
+  function own(id){return !!(state.mods&&state.mods[id]);}
+  function melons(){return state.melons||0;}
+  function render(){
+    var b=document.getElementById('mqmBuy');if(!b)return;
+    var m=MODS.emerald;
+    if(own('emerald')){b.className='mqm-buy own';b.textContent='\u2705 Куплено \u2014 набор уже в Mine-man';}
+    else{b.className='mqm-buy'+(melons()<m.price?' bad':'');b.textContent='Купить за '+m.price+' \uD83C\uDF49';}
+    var e=document.getElementById('mqMelons');if(e)e.textContent=melons().toLocaleString('ru-RU');
+  }
+  window.buyMod=function(id){
+    var m=MODS[id];if(!m)return;
+    if(own(id)){toast('\u2705 Мод уже куплен. Заходи в Mine-man!','info');return;}
+    if(melons()<m.price){toast('Не хватает \uD83C\uDF49 (нужно '+m.price+')','error');return;}
+    state.melons=melons()-m.price;
+    state.mods=state.mods||{};state.mods[id]=true;
+    try{saveState();}catch(e){}
+    try{if(typeof updateUI==='function')updateUI();}catch(e){}
+    try{if(window.mmGrantMods)window.mmGrantMods();}catch(e){}
+    render();
+    toast('\uD83C\uDF89 '+m.name+' куплен! Проверь рюкзак в Mine-man','success');
+  };
+  document.addEventListener('click',function(e){var t=e.target.closest&&e.target.closest('.mq-tab[data-mq="mods"]');if(t)render();});
+  render();
+})();
+</script>
 <script>
 /* ===== MELONS QUEST ===== */
 (function(){
@@ -15000,7 +15328,7 @@ function gen(cx,cz){const d=new Uint16Array(CS*CS*WH),bio=new Uint8Array(CS*CS),
    else if(b=='badlands'&&y>=h-12)id=BAND[(y>>1)%6];
    else if(y>=h-3)id=U;
    else{id=3;if(y>3&&y<h-2){const q=y*.1;if(Math.abs(vn3(wx*.07,q,wz*.07)-.5)<.05&&Math.abs(vn3(wx*.07+99,q+49,wz*.07+7)-.5)<.055)id=0}
-    if(id==3){const r=H3(wx,y,wz);if(r<.0015&&y<14)id=14;else if(r<.0045&&y<SEA+26)id=ID.oc;else if(r<.006&&y<30)id=ID.ol;else if(r<.0078&&y<18)id=ID.or;else if(r<.0083&&b=='mount'&&y>SEA+6)id=ID.oe;
+    if(id==3){const r=H3(wx,y,wz);if(r<.0015&&y<14)id=14;else if(r<.0045&&y<SEA+26)id=ID.oc;else if(r<.006&&y<30)id=ID.ol;else if(r<.0078&&y<18)id=ID.or;else if(emOn()&&r<.0110&&b=='mount'&&y>SEA+6)id=ID.oe;
      if(id==3&&y<14)id=ID.ds}}
    d[(y*CS+z)*CS+x]=id}}
  /* ===== жилы: уголь, железо, золото — пачками ===== */
@@ -15139,6 +15467,13 @@ function toolGrid(k,i){const P=PAL[i],g=grid(),set=(x,y,c)=>{if(x>=0&&x<16&&y>=0
  [[201,0xd8d8d8,0xffffff,0x8e8e8e],[202,0xffd84a,0xfff3a0,0xc09a10]].forEach(a=>{g=grid();for(let y=5;y<=10;y++){const sh=(10-y)>>1;for(let x=2+sh;x<=12+sh;x++)g[y][x]=y==5?a[2]:y<9?a[1]:a[3]}mkItem(a[0],g)});
  g=grid();for(let y=3;y<=12;y++)for(let x=3;x<=12;x++)if(((x-7.5)/4.6)**2+((y-7.5)/4.2)**2<=1)g[y][x]=HT(x,y)<.25?0x4a4a4a:HT(x,y)>.8?0x2e2e2e:0x1a1a1a;mkItem(250,g);
  g=grid();for(let y=1;y<=14;y++)for(let x=1;x<=14;x++){const d=Math.abs(x-7.5)+Math.abs(y-7.5)*1.2;if(d<7)g[y][x]=d>5.8?0x16a095:(x+y)%6==0?0xb8fffa:y<6?0x8af8f0:0x4af0e0}mkItem(251,g)}
+/* ===== МОД: Изумрудные вещи (куплен в Melons Quest) ===== */
+const emOn=()=>{try{return !!(state.mods&&state.mods.emerald)}catch(e){return false}};
+IT[260]=['\u{1F49A}','Изумруд'];DROP[ID.oe]=260;R(ID.m3,1,[260,9]);
+{const g=grid();for(let y=1;y<=14;y++)for(let x=1;x<=14;x++){const d=Math.abs(x-7.5)+Math.abs(y-7.5)*1.2;if(d<7)g[y][x]=d>5.8?0x0b7a3a:(x+y)%6==0?0xb8ffd0:y<6?0x6af5a0:0x20c050}mkItem(260,g)}
+function emGrant(){if(!emOn()||!inv.length)return;try{[213,217,221].forEach(i=>addInv(i,1));addInv(260,16);addInv(ID.oe,8)}catch(e){}}
+window.mmGrantMods=function(){if(inited&&inv.length)emGrant()};
+
 /* ===== ПЕЧКА: жарка мяса на угле ===== */
 const furns=new Map(),COOK={252:203,253:204,254:205,255:206};let curF='',fuT=0,fuSig='';
 Object.assign(IT,{203:['🍖','Жареная свинина'],204:['🥩','Стейк'],205:['🍖','Жареная баранина'],206:['🍗','Жареная курица']});
@@ -15215,7 +15550,7 @@ function loop(t){if(!act)return;raf=requestAnimationFrame(loop);const dt=Math.mi
  if(++fr%12==0){const h=hgt(Math.floor(P.x),Math.floor(P.z));$('mmInfo').textContent='X '+Math.floor(P.x)+' Y '+Math.floor(P.y)+' Z '+Math.floor(P.z)+' · '+BN[biome(Math.floor(P.x),Math.floor(P.z),h)]}
  mobFrame(dt);fxFrame();renderer.render(scene,cam)}
 function newWorld(){survReset();mobClear();furns.clear();mmFurnClose();for(const c of chunks.values())freeMesh(c);chunks.clear();lcx=1e9;mods.clear();chests.clear();chOpen.clear();big.forEach(b=>{b.id=0;b.n=0});pcx=pcz=1e9;ready=false;$('mmLoad').style.display='flex';
- setSeed((Math.random()*1e6)|0+1);spawn();inv=[];const SK=['pk','sb','gl','c0','br','qz'];for(let i=0;i<9;i++)inv.push(i<6&&MODE!='survival'?{id:ID[SK[i]],n:999}:{id:0,n:0});sel=0;drawBar();mine=plHeld=false}
+ setSeed((Math.random()*1e6)|0+1);spawn();inv=[];const SK=['pk','sb','gl','c0','br','qz'];for(let i=0;i<9;i++)inv.push(i<6&&MODE!='survival'?{id:ID[SK[i]],n:999}:{id:0,n:0});sel=0;drawBar();mine=plHeld=false;emGrant()}
 /* ===== КРАСИВАЯ ГРАФИКА (можно выключить кнопкой ✨) ===== */
 /* ===== ЛИМИТЫ ВРЕМЕНИ: MAX — безлимит; бесплатно — 1 ч творческий + 2 ч выживание в день ===== */
 const LIM={creative:3600,survival:7200};let mmSv=0,mmTA=0;
@@ -16005,7 +16340,7 @@ function loop(){if(!run)return;raf=requestAnimationFrame(loop);const dt=Math.min
 #dfHud.on{display:block}
 #dfInfo{position:absolute;left:max(10px,env(safe-area-inset-left));top:max(10px,env(safe-area-inset-top));display:flex;flex-direction:column;gap:2px;background:rgba(0,0,0,.45);border-radius:12px;padding:6px 10px;font-weight:900;font-size:13px;line-height:1.25}
 #dfInfo b{font-size:15px}
-#dfMap{position:absolute;left:max(10px,env(safe-area-inset-left));top:calc(max(10px,env(safe-area-inset-top)) + 70px);width:92px;height:92px;border-radius:14px;background:rgba(0,0,0,.4)}
+#dfMap{position:absolute;left:max(10px,env(safe-area-inset-left));top:calc(max(10px,env(safe-area-inset-top)) + 100px);width:92px;height:92px;border-radius:14px;background:rgba(0,0,0,.4)}
 #dfTop{position:absolute;right:max(10px,env(safe-area-inset-right));top:max(10px,env(safe-area-inset-top));display:flex;gap:6px;pointer-events:auto}
 .df-s{width:42px;height:42px;border-radius:50%;background:rgba(0,0,0,.5);border:2px solid rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;pointer-events:auto;touch-action:none}
 .df-s.act{background:rgba(255,190,40,.75);border-color:#fff}
@@ -16025,7 +16360,13 @@ function loop(){if(!run)return;raf=requestAnimationFrame(loop);const dt=Math.min
 #dfGas,#dfBrk{bottom:max(16px,env(safe-area-inset-bottom));font-size:clamp(12px,3.4vw,18px)}
 #dfGas{width:var(--b);height:calc(var(--b)*1.45);right:max(12px,env(safe-area-inset-right));background:rgba(46,160,67,.6)}
 #dfBrk{width:var(--b);height:calc(var(--b)*1.15);right:calc(max(12px,env(safe-area-inset-right)) + var(--b) + 10px);background:rgba(200,50,50,.6)}
-#dfMid{position:absolute;right:max(12px,env(safe-area-inset-right));bottom:calc(max(16px,env(safe-area-inset-bottom)) + var(--b)*1.45 + 12px);display:flex;gap:8px;pointer-events:none}
+#dfMid{position:absolute;right:calc(max(12px,env(safe-area-inset-right)) + var(--b) + 10px);bottom:calc(max(16px,env(safe-area-inset-bottom)) + var(--b)*1.15 + 10px);display:flex;gap:8px;pointer-events:none}
+#dfNitB{width:var(--b);height:calc(var(--b)*.95);right:max(12px,env(safe-area-inset-right));bottom:calc(max(16px,env(safe-area-inset-bottom)) + var(--b)*1.45 + 10px);flex-direction:column;line-height:1.1;text-align:center;font-size:clamp(11px,3vw,15px);background:linear-gradient(180deg,rgba(255,150,30,.8),rgba(190,60,210,.75))}
+#dfNitB b{font-size:clamp(20px,5.5vw,30px);line-height:1}
+#dfHp{font-size:12px}
+#dfHpBar{width:96px;height:7px;border-radius:5px;background:rgba(0,0,0,.55);overflow:hidden;margin-top:1px}
+#dfHpBar i{display:block;height:100%;width:100%;background:#4cd964}
+#dfFlash{position:absolute;inset:0;pointer-events:none;opacity:0;background:radial-gradient(ellipse at center,rgba(255,0,0,0) 45%,rgba(255,30,20,.6) 100%)}
 #dfMenu{position:absolute;inset:0;display:none;z-index:4}
 #dfMenu.on{display:block}
 #dfPanel{position:absolute;right:max(12px,env(safe-area-inset-right));top:max(12px,env(safe-area-inset-top));bottom:max(12px,env(safe-area-inset-bottom));width:min(46vw,350px);overflow:auto;background:rgba(10,14,30,.8);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:2px solid rgba(255,255,255,.18);border-radius:20px;padding:14px;display:flex;flex-direction:column;gap:10px}
@@ -16057,7 +16398,7 @@ function loop(){if(!run)return;raf=requestAnimationFrame(loop);const dt=Math.min
   <canvas id="dfCv"></canvas>
   <div id="dfLoad">🏎️ Загрузка 3D…</div>
   <div id="dfHud">
-    <div id="dfInfo"><b id="dfLap">Круг 1</b><span id="dfTime">⏱ 0:00.0</span><span id="dfBest">🏁 —</span></div>
+    <div id="dfInfo"><b id="dfLap">Круг 1</b><span id="dfTime">⏱ 0:00.0</span><span id="dfBest">🏁 —</span><span id="dfHp">🔧 100%</span><div id="dfHpBar"><i></i></div></div>
     <canvas id="dfMap" width="184" height="184"></canvas>
     <div id="dfTop">
       <div class="df-s" id="dfBCam" title="Камера (C)">📷</div>
@@ -16068,10 +16409,10 @@ function loop(){if(!run)return;raf=requestAnimationFrame(loop);const dt=Math.min
       <div class="df-s" id="dfBFs" title="Полный экран (F)">⛶</div>
       <div class="df-s" id="dfBMenu" title="Меню (Esc)">⏸</div>
     </div>
-    <div id="dfToast"></div>
+    <div id="dfFlash"></div><div id="dfToast"></div>
     <div id="dfDash"><div id="dfSpd">0</div><div id="dfUnit">км/ч</div><div id="dfGear">N</div><div id="dfRpm"><i></i></div><div id="dfNit"><i></i></div></div>
     <div class="df-c" id="dfL">◀</div><div class="df-c" id="dfR">▶</div>
-    <div id="dfMid"><div class="df-s" id="dfHorn">📯</div><div class="df-s" id="dfHb">🅿️</div><div class="df-s" id="dfNitB">🚀</div></div>
+    <div id="dfMid"><div class="df-s" id="dfHorn">📯</div><div class="df-s" id="dfHb">🅿️</div></div><div class="df-c" id="dfNitB"><b>🚀</b>ТУРБО</div>
     <div class="df-c" id="dfBrk">СТОП</div><div class="df-c" id="dfGas">ГАЗ</div>
   </div>
   <div id="dfMenu"><div id="dfPanel">
@@ -16131,7 +16472,7 @@ const TOD=[
 ];
 
 /* ---------- состояние ---------- */
-const G={sel:0,col:new Array(10).fill(0),tod:0,cam:0,lights:true,muted:false,menu:true,run:false,
+const G={hp:100,sel:0,col:new Array(10).fill(0),tod:0,cam:0,lights:true,muted:false,menu:true,run:false,
  x:0,z:0,h:0,vx:0,vz:0,steer:0,nit:1,camH:0,idx:0,lat:0,total:0,lapT:0,laps:0,best:0,shake:0,hitCd:0,acc:0,
  menuAng:0,menuDrag:0,wrongT:0,toastT:0,speed:0,slip:0,tick:0};
 const IN={gas:0,brk:0,l:0,r:0,hb:0,nit:0,horn:0};
@@ -16302,7 +16643,8 @@ function buildWorld(){
   headLight=new T.SpotLight(0xfff2cc,1.6,130,.55,.5,1);headLight.target=new T.Object3D();
   // дым
   smokeTex=glowTex();
-  for(let i=0;i<36;i++){const s=new T.Sprite(new T.SpriteMaterial({map:smokeTex,transparent:true,depthWrite:false,opacity:0}));s.visible=false;scene.add(s);SMK.push({s,life:0,vx:0,vy:0,vz:0,sz:1})}
+  for(let i=0;i<70;i++){const s=new T.Sprite(new T.SpriteMaterial({map:smokeTex,transparent:true,depthWrite:false,opacity:0}));s.visible=false;scene.add(s);SMK.push({s,life:0,vx:0,vy:0,vz:0,sz:1})}
+  buildLights();
   // машина игрока + трафик
   setupPlayer();setupTraffic();
   applyTod(G.tod);
@@ -16461,7 +16803,7 @@ function makeCar(s,color,hq){
     const seat=new T.Mesh(new T.BoxGeometry(W*.7,.5,.4),m.dark);seat.position.set(0,gc+.45,zc-.2);body.add(seat)}
   const flames=[];for(const sx of[-1,1]){const fl=new T.Mesh(new T.ConeGeometry(.13,1.1,8),new T.MeshBasicMaterial({color:0xffa030}));fl.rotation.x=-Math.PI/2;fl.position.set(sx*W*.27,gc+.2,-L/2-.6);fl.visible=false;g.add(fl);flames.push(fl)}
   const sh=new T.Mesh(new T.PlaneGeometry(W*1.25,L*1.12),shadowMat);sh.rotation.x=-Math.PI/2;sh.position.y=.025;g.add(sh);
-  return {g,body,wheels,fronts,headMat,tailMat,flames,s,steerW};
+  return {g,body,wheels,fronts,headMat,tailMat,flames,s,steerW,paint,baseCol:new T.Color(color),dRoll:0,dPitch:0};
 }
 let P=null;const TR=[];
 function paintOf(i){const c=G.col[i];return c?PALETTE[c]:CARS[i].c}
@@ -16470,27 +16812,167 @@ function setupPlayer(){
   P=makeCar(CARS[G.sel],paintOf(G.sel),true);scene.add(P.g);
   P.g.add(headLight);headLight.position.set(0,.9,CARS[G.sel].L/2);headLight.target.position.set(0,.2,CARS[G.sel].L/2+40);P.g.add(headLight.target);
   if(first)placeAt(0,LANE);
-  P.g.position.set(G.x,0,G.z);P.g.rotation.y=G.h;
+  P.g.position.set(G.x,0,G.z);P.g.rotation.y=G.h;P.isPlayer=true;setDamage(P,G.hp,1);
 }
 function placeAt(i,lane){
   G.x=CX[i]+RX[i]*lane;G.z=CZ[i]+RZ[i]*lane;G.h=HD[i];G.vx=G.vz=0;G.steer=0;G.camH=G.h;hintI=i;G.idx=i;G.lat=lane;
 }
 function setupTraffic(){
   for(const t of TR)scene.remove(t.m.g);TR.length=0;
-  const cols=[0xd9d9d9,0x3c4a5e,0x9aa3ad,0x6b1f1f,0x244b8a,0xe7d9a8,0x2b5d3a,0xb0b0b0];
-  const mk=(idx,dir,v)=>{const spec=CARS[(Math.random()*7)|0],m=makeCar(spec,cols[(Math.random()*cols.length)|0],false);m.g.remove(m.flames[0],m.flames[1]);scene.add(m.g);TR.push({m,idx,dir,v,x:0,z:0,h:0})};
-  for(let k=0;k<6;k++)mk(60+k*((N-120)/6),1,24);
-  for(let k=0;k<3;k++)mk(100+k*((N-200)/3)+50,-1,27);
+  const cols=[0xd9d9d9,0x3c4a5e,0x9aa3ad,0x6b1f1f,0x244b8a,0xe7d9a8,0x2b5d3a,0xb0b0b0,0xc7a21a,0x7a3b8c],
+        mob='ontouchstart' in window,NF=mob?18:26,NB=mob?12:18;
+  const mk=(idx,dir)=>{const spec=CARS[(Math.random()*7)|0],m=makeCar(spec,cols[(Math.random()*cols.length)|0],false);
+    m.g.remove(m.flames[0],m.flames[1]);scene.add(m.g);
+    const cr=16+Math.random()*10;
+    TR.push({m,idx,dir,cruise:cr,cur:cr,hp:100,cd:0,stun:0,wreck:0,x:0,z:0,h:0,seed:Math.random()<.5?-1:1,vis:true,brake:false})};
+  for(let k=0;k<NF;k++)mk((60+k*(N/NF)+Math.random()*8)%N,1);
+  for(let k=0;k<NB;k++)mk((30+k*(N/NB)+Math.random()*10)%N,-1);
   for(const t of TR)moveTraffic(t,0);
 }
 function moveTraffic(t,dt){
-  t.idx=(t.idx+t.dir*t.v*dt/SEG+N)%N;
+  t.idx=(t.idx+t.dir*t.cur*dt/SEG+N)%N;
   const i0=Math.floor(t.idx)%N,i1=(i0+1)%N,f=t.idx-Math.floor(t.idx),lane=t.dir>0?LANE:-LANE;
   const cx=CX[i0]+(CX[i1]-CX[i0])*f,cz=CZ[i0]+(CZ[i1]-CZ[i0])*f,rx=RX[i0]+(RX[i1]-RX[i0])*f,rz=RZ[i0]+(RZ[i1]-RZ[i0])*f;
   t.x=cx+rx*lane;t.z=cz+rz*lane;
   const dh=wrapA(HD[i1]-HD[i0]);t.h=HD[i0]+dh*f+(t.dir<0?Math.PI:0);
   t.m.g.position.set(t.x,0,t.z);t.m.g.rotation.y=t.h;
-  for(const w of t.m.wheels)w.rotation.x+=t.dir*t.v*dt/.33;
+  if(t.vis){const sp=t.cur*dt/t.m.s.wr;for(const w of t.m.wheels)w.rotation.x+=sp}
+}
+
+/* ---------- повреждения ---------- */
+let _dk=null;
+function setDamage(m,hp,seed){
+  if(!m||!m.paint)return;
+  if(!_dk)_dk=new T.Color(0x1a1512);
+  const d=clamp(1-hp/100,0,1);
+  m.paint.color.copy(m.baseCol).lerp(_dk,d*.65);
+  m.paint.roughness=.32+d*.55;
+  if(m.paint.metalness!==undefined)m.paint.metalness=.52*(1-d*.75);
+  if(m.paint.clearcoat!==undefined)m.paint.clearcoat=1-d;
+  m.body.scale.set(1-d*.04,1-d*.1,1-d*.09);
+  m.dRoll=(seed||1)*d*.07;m.dPitch=d*.05;
+  if(!m.isPlayer){m.body.rotation.z=m.dRoll;m.body.rotation.x=m.dPitch}
+}
+function flash(k){
+  const e=$('dfFlash');if(!e)return;
+  e.style.transition='none';e.style.opacity=Math.min(1,.35+k/22);void e.offsetWidth;
+  e.style.transition='opacity .7s';e.style.opacity=0;
+}
+function hurt(n){
+  if(n<=0)return;const old=G.hp;G.hp=Math.max(0,G.hp-n);setDamage(P,G.hp,1);
+  if(G.hp<=0&&old>0)setTimeout(()=>toast('🔧 Машина разбита! Доедь до финиша — там починят',3200),700);
+  else if(G.hp<=35&&old>35)setTimeout(()=>toast('⚠️ Сильные повреждения — машина дымит',2400),700);
+}
+function hurtTraffic(t,n){
+  const old=t.hp;t.hp=Math.max(0,t.hp-n);setDamage(t.m,t.hp,t.seed);
+  if(t.hp<=0&&old>0)t.wreck=0;
+}
+function respawnTraffic(t){
+  for(let k=0;k<14;k++){
+    const idx=(G.idx+N*(.3+Math.random()*.4))%N;
+    let ok=true;for(const u of TR){if(u!==t&&u.dir===t.dir){const d=Math.abs(wrapN(u.idx-idx))*SEG;if(d<45){ok=false;break}}}
+    if(ok||k===13){t.idx=idx;break}
+  }
+  t.hp=100;t.cd=0;t.stun=0;t.wreck=0;t.cur=t.cruise*.8;setDamage(t.m,100,t.seed);moveTraffic(t,0);
+}
+function wrapN(d){d=((d%N)+N)%N;return d>N/2?d-N:d}
+function obb(ax,az,ah,aL,aW,bx,bz,bh,bL,bW){
+  const afx=Math.sin(ah),afz=Math.cos(ah),arx=afz,arz=-afx,bfx=Math.sin(bh),bfz=Math.cos(bh),brx=bfz,brz=-bfx;
+  const dx=ax-bx,dz=az-bz;let md=1e9,nx=0,nz=0;
+  const axes=[afx,afz,arx,arz,bfx,bfz,brx,brz];
+  for(let k=0;k<8;k+=2){
+    const ux=axes[k],uz=axes[k+1];
+    const ra=Math.abs(afx*ux+afz*uz)*aL/2+Math.abs(arx*ux+arz*uz)*aW/2;
+    const rb=Math.abs(bfx*ux+bfz*uz)*bL/2+Math.abs(brx*ux+brz*uz)*bW/2;
+    const dist=dx*ux+dz*uz,ov=ra+rb-Math.abs(dist);
+    if(ov<=0)return null;
+    if(ov<md){md=ov;const sg=dist<0?-1:1;nx=ux*sg;nz=uz*sg}
+  }
+  return {nx,nz,d:md};
+}
+
+/* ---------- светофоры ---------- */
+const LIGHTS=[],LT_G=9,LT_Y=2,LT_R=9,LT_P=LT_G+LT_Y+LT_R;let lightClock=0;
+const LT_ON=[0xff2a1a,0xffc21a,0x2aff5a],LT_OFF=[0x3a0d0a,0x3a2c08,0x0a3014];
+function lightState(l){const p=(lightClock+l.off)%LT_P;return p<LT_G?0:p<LT_G+LT_Y?1:2}   // 0 зелёный, 1 жёлтый, 2 красный
+function buildLights(){
+  const gl=glowTex(),poleM=new T.MeshLambertMaterial({color:0x4a4f55}),boxM=new T.MeshLambertMaterial({color:0x14161a}),
+    wm=new T.MeshBasicMaterial({color:0xf2f2f2,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
+  const zg=new T.PlaneGeometry(.55,3.2).rotateX(-Math.PI/2),lg=new T.PlaneGeometry(HW-.6,.5).rotateX(-Math.PI/2);
+  [100,245,390,535,665].forEach((t0,k)=>{
+    let bi=t0,bc=1e9;for(let d=-30;d<=30;d++){const j=(t0+d+N)%N,c=Math.abs(CUR[j]);if(c<bc){bc=c;bi=j}}
+    const L={i:bi,off:k*5.3,mats:[0,1,2].map(j=>new T.MeshBasicMaterial({color:LT_OFF[j]})),sprs:[[],[],[]],state:-1};
+    const root=new T.Group();root.position.set(CX[bi],0,CZ[bi]);root.rotation.y=HD[bi];scene.add(root);
+    for(let x=-6.2;x<=6.3;x+=1.2){const z=new T.Mesh(zg,wm);z.position.set(x,.03,0);root.add(z)}
+    const l1=new T.Mesh(lg,wm);l1.position.set(-LANE,.03,-2.7);root.add(l1);   // стоп-линия для движения «вперёд»
+    const l2=new T.Mesh(lg,wm);l2.position.set(LANE,.03,2.7);root.add(l2);     // стоп-линия для встречки
+    for(const dir of[1,-1]){
+      const px=dir>0?-(HW+1.4):(HW+1.4),lx=dir>0?-LANE:LANE,pz=dir>0?1.9:-1.9,fr=dir>0?-1:1;
+      const pole=new T.Mesh(new T.CylinderGeometry(.12,.16,7,6),poleM);pole.position.set(px,3.5,pz);root.add(pole);
+      const arm=new T.Mesh(new T.BoxGeometry(Math.abs(px-lx),.16,.16),poleM);arm.position.set((px+lx)/2,6.7,pz);root.add(arm);
+      const head=new T.Mesh(new T.BoxGeometry(.8,2.1,.5),boxM);head.position.set(lx,5.7,pz);root.add(head);
+      for(let j=0;j<3;j++){
+        const lamp=new T.Mesh(new T.SphereGeometry(.27,10,8),L.mats[j]);lamp.position.set(lx,5.7+.68-j*.68,pz+fr*.27);root.add(lamp);
+        const sp=new T.Sprite(new T.SpriteMaterial({map:gl,color:LT_ON[j],transparent:true,depthWrite:false,opacity:.9}));
+        sp.scale.setScalar(3);sp.position.set(lx,5.7+.68-j*.68,pz+fr*.6);sp.visible=false;root.add(sp);L.sprs[j].push(sp);
+      }
+    }
+    LIGHTS.push(L);
+  });
+  updLightVis();
+}
+function updLightVis(){
+  for(const l of LIGHTS){
+    const st=lightState(l);if(st===l.state)continue;l.state=st;
+    const on=st===0?2:st===1?1:0;
+    for(let j=0;j<3;j++){l.mats[j].color.setHex(j===on?LT_ON[j]:LT_OFF[j]);for(const sp of l.sprs[j])sp.visible=(j===on)}
+  }
+}
+
+/* ---------- ИИ трафика: очереди, светофоры, дистанция ---------- */
+const A_BRK=7,A_ACC=3.3,A_DEC=12;
+function trafficAI(dt){
+  lightClock+=dt;updLightVis();
+  const s=CARS[G.sel];
+  for(const t of TR){
+    t.cd=Math.max(0,t.cd-dt);
+    const Lc=t.m.s.L;
+    let vt=t.cruise*(t.hp<30?.55:1);
+    // светофоры
+    for(const l of LIGHTS){
+      const st=lightState(l);if(st===0)continue;
+      let dd=t.dir>0?l.i-t.idx:t.idx-l.i;dd=((dd%N)+N)%N;
+      const rem=dd*SEG-(3.2+Lc/2);
+      if(rem>130||(rem<-1.3&&!(rem>-3.5&&t.cur<3)))continue;
+      if(st===1&&rem<Math.min(t.cur*t.cur/10,t.cur*1.5))continue;   // жёлтый: не успевает затормозить — проезжает
+      vt=Math.min(vt,Math.sqrt(2*A_BRK*Math.max(0,rem)));
+    }
+    // машина впереди (трафик и игрок)
+    let gap=1e9,vl=0;
+    for(const u of TR){
+      if(u===t||u.dir!==t.dir)continue;
+      const da=((u.idx-t.idx)*t.dir%N+N)%N;if(da>N/2||da<.01)continue;
+      const g=da*SEG-(Lc+u.m.s.L)/2;if(g<gap){gap=g;vl=u.cur}
+    }
+    const lane=t.dir>0?LANE:-LANE;
+    if(Math.abs(G.lat-lane)<2.4){
+      const da=((G.idx-t.idx)*t.dir%N+N)%N;
+      if(da>0&&da<N/2){const g=da*SEG-(Lc+s.L)/2;if(g<gap){gap=g;vl=Math.max(0,(G.vx*TX[G.idx]+G.vz*TZ[G.idx])*t.dir)}}
+    }
+    if(gap<70)vt=Math.min(vt,Math.sqrt(vl*vl+2*A_BRK*Math.max(0,gap-3.2)));
+    // авария / поломка
+    if(t.stun>0){t.stun-=dt;vt=0}
+    if(t.hp<=0){vt=0;t.wreck+=dt;if(t.wreck>9){respawnTraffic(t);continue}}
+    t.brake=t.cur>vt+.4||(t.cur<1&&vt<.5);
+    if(t.cur<vt)t.cur=Math.min(vt,t.cur+A_ACC*dt);else t.cur=Math.max(vt,t.cur-A_DEC*dt);
+    const dx=t.x-G.x,dz=t.z-G.z,d2=dx*dx+dz*dz;
+    t.vis=d2<480*480;t.m.g.visible=t.vis;
+    moveTraffic(t,dt);
+    if(t.vis){
+      t.m.tailMat.color.setHex(t.brake?0xff2a2a:(G.tod>0?0xb02020:0x7a1414));
+      if(t.hp<50&&d2<160*160&&Math.random()<dt*(t.hp<25?18:7))smoke(t.x+Math.sin(t.h)*Lc*.3,t.z+Math.cos(t.h)*Lc*.3,t.hp<25?0x222222:0x8a8a8a,1.5,1.1);
+    }
+  }
 }
 
 /* ---------- время суток ---------- */
@@ -16544,15 +17026,15 @@ function audioOff(){if(!AC)return;try{const t=AC.currentTime;eg.gain.setTargetAt
 /* ---------- вспомогательное ---------- */
 function toast(s,ms){const e=$('dfToast');e.textContent=s;e.style.opacity=1;G.toastT=ms||1800}
 const fmt=t=>{if(!t)return '—';const m=Math.floor(t/60),s=t-m*60;return m+':'+(s<10?'0':'')+s.toFixed(1)};
-function smoke(x,z,col,sz){
-  const p=SMK[smkI++%SMK.length];p.s.visible=true;p.s.position.set(x,.4,z);p.s.material.color.setHex(col);p.s.material.opacity=.55;p.life=.9;p.sz=sz;p.s.scale.setScalar(sz);
+function smoke(x,z,col,sz,y){
+  const p=SMK[smkI++%SMK.length];p.s.visible=true;p.s.position.set(x,y||.4,z);p.s.material.color.setHex(col);p.s.material.opacity=.55;p.life=.9;p.sz=sz;p.s.scale.setScalar(sz);
   p.vx=(Math.random()-.5)*1.5;p.vz=(Math.random()-.5)*1.5;p.vy=.8+Math.random()*.6;
 }
 
 /* ---------- физика ---------- */
 function update(dt){
   const s=CARS[G.sel];
-  const gas=(IN.gas||KB.KeyW||KB.ArrowUp)?1:0,brk=(IN.brk||KB.KeyS||KB.ArrowDown)?1:0;
+  const gas=(IN.gas||IN.nit||KB.KeyW||KB.ArrowUp)?1:0,brk=(IN.brk||KB.KeyS||KB.ArrowDown)?1:0;
   const tl=(IN.l||KB.KeyA||KB.ArrowLeft)?1:0,tr=(IN.r||KB.KeyD||KB.ArrowRight)?1:0;
   const hb=!!(IN.hb||KB.Space),nitIn=!!(IN.nit||KB.ShiftLeft||KB.ShiftRight||KB.KeyN),horn=!!(IN.horn||KB.KeyH);
   const tgt=tr-tl;G.steer+=(tgt-G.steer)*Math.min(1,dt*(tgt?6.5:10));
@@ -16563,7 +17045,7 @@ function update(dt){
   const off=Math.abs(lat)>HW+.5;
   const nitro=nitIn&&G.nit>.02&&vf>3;
   G.nit=nitro?Math.max(0,G.nit-dt*.3):Math.min(1,G.nit+dt*.07);
-  const vm=s.vmax*(nitro?1.28:1)*(off?1-.45*s.pen:1);
+  const vm=s.vmax*(nitro?1.28:1)*(off?1-.45*s.pen:1)*(.45+.55*G.hp/100);
   const vf0=vf;
   if(gas){
     if(vf<-.5)vf+=s.br*dt;
@@ -16591,18 +17073,32 @@ function update(dt){
     const sg=lat>0?1:-1,over=Math.abs(lat)-RAIL;
     G.x-=RX[i2]*sg*over;G.z-=RZ[i2]*sg*over;
     const vn=G.vx*RX[i2]*sg+G.vz*RZ[i2]*sg;
-    if(vn>0){G.vx-=RX[i2]*sg*vn*1.3;G.vz-=RZ[i2]*sg*vn*1.3;G.vx*=.94;G.vz*=.94;if(vn>3){G.shake=Math.min(1,vn/18);G.bump=1;if(G.hitCd<=0){toast('💥 Отбойник!',900);G.hitCd=.5}}}
+    if(vn>0){G.vx-=RX[i2]*sg*vn*1.3;G.vz-=RZ[i2]*sg*vn*1.3;G.vx*=.94;G.vz*=.94;if(vn>3){G.shake=Math.min(1,vn/18);G.bump=1;if(G.hitCd<=0){const dm=Math.max(0,(vn-4)*.7);if(dm>0)hurt(dm);toast('💥 Отбойник!'+(dm>0?' −'+Math.round(dm)+'%':''),900);G.hitCd=.5;flash(vn)}}}
     const ta=Math.atan2(TX[i2],TZ[i2]),dh=wrapA(ta-G.h);if(Math.abs(dh)<1.8)G.h+=dh*Math.min(1,dt*1.5);
     lat=sg*RAIL;
   }
   G.hitCd=Math.max(0,G.hitCd-dt);
-  // трафик
+  // трафик: ИИ + столкновения (повреждения и у меня, и у них)
+  trafficAI(dt);
   for(const t of TR){
-    moveTraffic(t,dt);
-    const dx=G.x-t.x,dz=G.z-t.z,d=Math.hypot(dx,dz);
-    if(d<3.4&&d>1e-4){
-      const ov=3.4-d;G.x+=dx/d*ov;G.z+=dz/d*ov;
-      if(G.hitCd<=0){const rv=Math.hypot(G.vx-Math.sin(t.h)*t.v,G.vz-Math.cos(t.h)*t.v);G.vx*=.55;G.vz*=.55;G.vx+=Math.sin(t.h)*t.v*.35;G.vz+=Math.cos(t.h)*t.v*.35;G.shake=Math.min(1,rv/30);G.bump=1;G.hitCd=.5;toast('💥 Столкновение!',1100)}
+    if(!t.vis)continue;
+    const dx=G.x-t.x,dz=G.z-t.z;if(dx*dx+dz*dz>81)continue;
+    const c=obb(G.x,G.z,G.h,s.L*.94,s.W*.92,t.x,t.z,t.h,t.m.s.L*.94,t.m.s.W*.92);
+    if(!c)continue;
+    G.x+=c.nx*c.d;G.z+=c.nz*c.d;
+    const sn=Math.sin(t.h),cs=Math.cos(t.h),tvx=sn*t.cur,tvz=cs*t.cur;
+    const vn=-((G.vx-tvx)*c.nx+(G.vz-tvz)*c.nz);
+    if(vn>0){
+      G.vx+=c.nx*vn*1.12;G.vz+=c.nz*vn*1.12;G.vx*=.985;G.vz*=.985;
+      if(vn>2&&t.cd<=0){
+        const dm=Math.min(70,(vn-2)*1.3);
+        hurt(dm);hurtTraffic(t,dm);t.cd=.6;
+        const pf=G.vx*sn+G.vz*cs,ahead=((t.x-G.x)*sn+(t.z-G.z)*cs)>0;
+        if(ahead&&pf>t.cur)t.cur=Math.min(t.cruise*1.4,t.cur+(pf-t.cur)*.45);else t.cur*=.35;
+        if(dm>6)t.stun=.8+dm*.05;
+        G.shake=Math.min(1,vn/16);G.bump=1;flash(vn);
+        toast('💥 Столкновение! −'+Math.round(dm)+'% у тебя, −'+Math.round(dm)+'% у них',1300);
+      }
     }
   }
   G.bump=Math.max(0,(G.bump||0)-dt*3);
@@ -16611,7 +17107,7 @@ function update(dt){
   if(Math.abs(di)<N/4)G.total+=di;
   G.lapT+=dt;
   if(G.total>=N){
-    G.total-=N;G.laps++;const t=G.lapT;G.lapT=0;
+    G.total-=N;G.laps++;const t=G.lapT;G.lapT=0;if(G.hp<100){G.hp=100;setDamage(P,100,1);setTimeout(()=>toast('🔧 Автосервис на финише: машина починена!',2200),2400)}
     if(!G.best||t<G.best){G.best=t;try{localStorage.setItem('df_best',t)}catch(e){}toast('🏆 Новый рекорд круга: '+fmt(t),2800)}else toast('🏁 Круг '+G.laps+': '+fmt(t),2200);
   }
   if(G.total<-N*.05)G.total=-N*.05;
@@ -16620,7 +17116,7 @@ function update(dt){
   // визуал машины
   G.acc+=((vf-vf0)/Math.max(dt,.001)-G.acc)*Math.min(1,dt*6);
   P.g.position.set(G.x,0,G.z);P.g.rotation.y=G.h;
-  P.body.rotation.x=clamp(-G.acc*.0035,-.05,.05);P.body.rotation.z=-G.steer*.05*Math.min(1,av/25);
+  P.body.rotation.x=clamp(-G.acc*.0035,-.05,.05)+P.dPitch;P.body.rotation.z=-G.steer*.05*Math.min(1,av/25)+P.dRoll;
   const spin=vf*dt/s.wr;for(const w of P.wheels)w.rotation.x+=spin;
   for(const f of P.fronts)f.rotation.y=-G.steer*.5;if(P.steerW)P.steerW.rotation.z=-G.steer*1.6;
   P.tailMat.color.setHex(brk&&vf>.5||hb?0xff2a2a:(G.lights?0xb02020:0x7a1414));
@@ -16628,6 +17124,7 @@ function update(dt){
   // дым
   const slip=Math.abs(vl);G.slip=slip;
   if(((slip>2.6)||(hb&&av>8)||(gas&&av<6&&vf0<6&&av>.5&&G.acc>6))&&Math.random()<dt*28){for(const sx of[-1,1])smoke(G.x-nfx*s.L*.31+nrx*sx*s.W*.45,G.z-nfz*s.L*.31+nrz*sx*s.W*.45,0xdddddd,1.6)}
+  if(G.hp<50&&Math.random()<dt*(G.hp<25?22:9))smoke(G.x+nfx*s.L*.3,G.z+nfz*s.L*.3,G.hp<25?0x222222:0x8a8a8a,1.6,s.roof*.6);
   if(off&&av>6&&Math.random()<dt*22)smoke(G.x-nfx*s.L*.3,G.z-nfz*s.L*.3,0x8a7a58,1.9);
   for(const p of SMK){if(p.life>0){p.life-=dt;p.s.position.x+=p.vx*dt;p.s.position.y+=p.vy*dt;p.s.position.z+=p.vz*dt;const k=Math.max(0,p.life/.9);p.s.material.opacity=.5*k;p.s.scale.setScalar(p.sz*(2.2-k));if(p.life<=0)p.s.visible=false}}
   // коробка передач (для табло и звука)
@@ -16644,7 +17141,7 @@ function hud(av,gtxt,rpm,nitro){
   if(gtxt!==lastGear){lastGear=gtxt;$('dfGear').textContent=gtxt}
   $('dfRpm').firstChild.style.width=(clamp(rpm,0,1)*100).toFixed(0)+'%';
   $('dfNit').firstChild.style.width=(G.nit*100).toFixed(0)+'%';
-  hudT+=1;if(hudT%4===0){$('dfLap').textContent='Круг '+(G.laps+1);$('dfTime').textContent='⏱ '+fmt(G.lapT);$('dfBest').textContent='🏁 '+fmt(G.best);drawMap()}
+  hudT+=1;if(hudT%4===0){const hp=Math.round(G.hp);$('dfHp').textContent='🔧 '+hp+'%';const hb=$('dfHpBar').firstChild;hb.style.width=hp+'%';hb.style.background=hp>60?'#4cd964':hp>30?'#ffd60a':'#ff3b30';$('dfLap').textContent='Круг '+(G.laps+1);$('dfTime').textContent='⏱ '+fmt(G.lapT);$('dfBest').textContent='🏁 '+fmt(G.best);drawMap()}
 }
 
 /* ---------- камера ---------- */
@@ -16686,6 +17183,7 @@ function buildMap(){
 }
 function drawMap(){
   if(!mapBase)return;const c=$('dfMap'),x=c.getContext('2d');x.clearRect(0,0,184,184);x.drawImage(mapBase,0,0);
+  for(const l of LIGHTS){x.fillStyle=l.state===0?'#2aff5a':l.state===1?'#ffc21a':'#ff2a1a';x.fillRect((CX[l.i]-mapMinX)*mapSc+16-3,(CZ[l.i]-mapMinZ)*mapSc+16-3,6,6)}
   x.fillStyle='#9aa3ad';for(const t of TR){x.fillRect((t.x-mapMinX)*mapSc+16-2,(t.z-mapMinZ)*mapSc+16-2,4,4)}
   const px=(G.x-mapMinX)*mapSc+16,py=(G.z-mapMinZ)*mapSc+16;x.fillStyle='#ff3b30';x.beginPath();x.arc(px,py,6,0,TAU);x.fill();x.strokeStyle='#fff';x.lineWidth=2;x.stroke();
   x.strokeStyle='#fff';x.beginPath();x.moveTo(px,py);x.lineTo(px+Math.sin(G.h)*12,py+Math.cos(G.h)*12);x.stroke();
@@ -16713,7 +17211,7 @@ function showCar(){
     d.addEventListener('click',()=>{G.col[G.sel]=idx;setupPlayer();updLights();showCar()});sw.appendChild(d)});
   try{localStorage.setItem('df_car',G.sel)}catch(e){}
 }
-function changeCar(d){G.sel=(G.sel+d+10)%10;setupPlayer();updLights();showCar()}
+function changeCar(d){G.sel=(G.sel+d+10)%10;G.hp=100;setupPlayer();updLights();showCar()}
 function showMenu(on){
   G.menu=on;$('dfMenu').classList.toggle('on',on);$('dfHud').classList.toggle('on',!on);
   if(on){G.vx=G.vz=0;for(const k in IN)IN[k]=0;for(const k in KB)KB[k]=false;showCar();document.querySelectorAll('#dfHud .act').forEach(e=>e.classList.remove('act'));audioOff()}
