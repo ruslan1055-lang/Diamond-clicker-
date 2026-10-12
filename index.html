@@ -3023,189 +3023,6 @@ body[class*="free-theme-"] #bonusTab1 {
 </style>
 </head>
 <body>
-<!-- MAINTENANCE_BANNER_START -->
-<div id="maintenance-overlay" style="position:fixed;inset:0;z-index:999999;background:rgba(6,11,20,0.97);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;">
-  <div style="font-size:64px;margin-bottom:18px;animation:spin 3s linear infinite;">🔧</div>
-  <div style="font-size:28px;font-weight:900;color:#ffaa00;margin-bottom:12px;">Технические работы</div>
-  <div style="font-size:16px;color:rgba(255,255,255,0.55);max-width:380px;text-align:center;line-height:1.6;">Сервер перегрет, пожалуйста подождите чуть чуть</div>
-</div>
-<style>#maintenance-overlay{backdrop-filter:blur(6px);}@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>
-<!-- MAINTENANCE_BANNER_END -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -14199,6 +14016,21 @@ function buyAutumnLeaf() {
           <div class="mqm-note">Всё это появится в игре <b>Mine-man</b> прямо в 🎒 рюкзаке. Из изумрудов можно скрафтить изумрудный блок.</div>
           <button class="mqm-buy" id="mqmBuy" onclick="buyMod('emerald')">Купить за 250 🍉</button>
         </div>
+        <div class="mqm-card">
+          <div style="position:relative;border-radius:16px;padding:16px 10px 14px;text-align:center;background:linear-gradient(160deg,#ff9a3c,#d9480f 55%,#7a1f2b);box-shadow:0 4px 14px rgba(0,0,0,.25)">
+            <span style="position:absolute;top:8px;left:8px;font-size:10px;font-weight:900;letter-spacing:1px;padding:3px 8px;border-radius:8px;background:#ffe566;color:#7a3a00">НОВИНКА</span>
+            <div style="font-size:30px;line-height:1.25;margin-top:14px;letter-spacing:2px">🍎🍌🍔🍕🍣<br>🍜🥐🍩🍰🍦</div>
+            <div style="font-size:21px;font-weight:900;color:#fff;margin-top:8px;text-shadow:0 2px 4px rgba(0,0,0,.4)">Мод на 35+ еды</div>
+            <div style="font-size:13px;font-weight:800;color:#ffe9c8">для игры Mine-man</div>
+          </div>
+          <ul class="mqm-list">
+            <li>🍽️ 35 новых видов еды: фрукты, овощи, выпечка, фастфуд, суши и десерты</li>
+            <li>📦 По 10 штук каждого вида</li>
+            <li>😋 Еда восстанавливает голод в режиме выживания</li>
+          </ul>
+          <div class="mqm-note">Это не добавится в инвентарь приложения: вся еда появится в игре <b>Mine-man</b> прямо в 🎒 рюкзаке (режим выживания). Все 35 видов добавятся по-настоящему.</div>
+          <button class="mqm-buy" id="mqmBuyFood" onclick="buyMod('food')">Купить за 300 🍉</button>
+        </div>
       </div>
     </div>
     <div class="mq-panel" data-mqp="games">
@@ -14222,7 +14054,7 @@ function buyAutumnLeaf() {
 <script>
 /* ===== МОДЫ В ИГРАХ (Melons Quest) ===== */
 (function(){
-  var MODS={emerald:{price:250,name:'Мод на Изумрудные вещи'}};
+  var MODS={emerald:{price:250,name:'Мод на Изумрудные вещи'},food:{price:300,name:'Мод на 35+ еды'}};
   function own(id){return !!(state.mods&&state.mods[id]);}
   function melons(){return state.melons||0;}
   function render(){
@@ -14230,6 +14062,10 @@ function buyAutumnLeaf() {
     var m=MODS.emerald;
     if(own('emerald')){b.className='mqm-buy own';b.textContent='\u2705 Куплено \u2014 набор уже в Mine-man';}
     else{b.className='mqm-buy'+(melons()<m.price?' bad':'');b.textContent='Купить за '+m.price+' \uD83C\uDF49';}
+    var fb=document.getElementById('mqmBuyFood');
+    if(fb){var fm=MODS.food;
+      if(own('food')){fb.className='mqm-buy own';fb.textContent='\u2705 Куплено \u2014 еда уже в Mine-man';}
+      else{fb.className='mqm-buy'+(melons()<fm.price?' bad':'');fb.textContent='Купить за '+fm.price+' \uD83C\uDF49';}}
     var e=document.getElementById('mqMelons');if(e)e.textContent=melons().toLocaleString('ru-RU');
   }
   window.buyMod=function(id){
@@ -15841,7 +15677,7 @@ function toolGrid(k,i){const P=PAL[i],g=grid(),set=(x,y,c)=>{if(x>=0&&x<16&&y>=0
 const emOn=()=>{try{return !!(state.mods&&state.mods.emerald)}catch(e){return false}};
 IT[260]=['\u{1F49A}','Изумруд'];DROP[ID.oe]=260;R(ID.m3,1,[260,9]);
 {const g=grid();for(let y=1;y<=14;y++)for(let x=1;x<=14;x++){const d=Math.abs(x-7.5)+Math.abs(y-7.5)*1.2;if(d<7)g[y][x]=d>5.8?0x0b7a3a:(x+y)%6==0?0xb8ffd0:y<6?0x6af5a0:0x20c050}mkItem(260,g)}
-function emGrant(){if(!emOn()||!inv.length)return;try{[213,217,221].forEach(i=>addInv(i,1));addInv(260,16);addInv(ID.oe,8)}catch(e){}}
+function emGrant(){if(inv.length&&MODE=='survival')try{foodGrant()}catch(e){}if(!emOn()||!inv.length)return;try{[213,217,221].forEach(i=>addInv(i,1));addInv(260,16);addInv(ID.oe,8)}catch(e){}}
 window.mmGrantMods=function(){if(inited&&inv.length)emGrant()};
 
 /* ===== ПЕЧКА: жарка мяса на угле ===== */
@@ -15892,7 +15728,7 @@ function openChest(x,y,z){const k=x+','+y+','+z,c=chests.get(k);if(!c){toast('�
 function place(){if(mobHit())return;if(tryEat())return;const tg=ray(),s=inv[sel];if(tg){const fb=getB(tg.x,tg.y,tg.z);if(fb==ID.fu||fb==ID.fv){openFurn(tg.x,tg.y,tg.z);return}}if(tg&&getB(tg.x,tg.y,tg.z)==ID.wb){if($('mmBig').style.display!='flex')window.mmBigTog();return}if(tg&&getB(tg.x,tg.y,tg.z)==ID.ch){openChest(tg.x,tg.y,tg.z);return}if(!tg||!s||!s.id||!s.n||!BL[s.id])return;const X=tg.x+tg.nx,Y=tg.y+tg.ny,Z=tg.z+tg.nz,b=getB(X,Y,Z);if(b!=0&&b!=6)return;
  if(P.x-HW<X+1&&P.x+HW>X&&P.y<Y+1&&P.y+HH>Y&&P.z-HW<Z+1&&P.z+HW>Z)return;if(Y<1||Y>=WH)return;
  setB(X,Y,Z,s.id);if(s.n<900&&--s.n<=0){s.n=0;s.id=0}flush();drawBar()}
-function drawIc(c,id){c.imageSmoothingEnabled=false;if(ITX[id]!==undefined){const t=ITX[id];c.drawImage(AT,(t&15)*16,(t>>4)*16,16,16,0,0,32,32)}else if(IT[id]){c.font='24px sans-serif';c.textAlign='center';c.fillText(IT[id][0],16,26)}else{const t=id==1?0:BL[id][1];c.drawImage(AT,(t&15)*16,(t>>4)*16,16,16,2,2,28,28)}}
+function drawIc(c,id){c.imageSmoothingEnabled=false;if(typeof FDI!='undefined'&&FDI&&FDI[id])c.drawImage(FDI[id],0,0,16,16,0,0,32,32);else if(ITX[id]!==undefined){const t=ITX[id];c.drawImage(AT,(t&15)*16,(t>>4)*16,16,16,0,0,32,32)}else if(IT[id]){c.font='24px sans-serif';c.textAlign='center';c.fillText(IT[id][0],16,26)}else{const t=id==1?0:BL[id][1];c.drawImage(AT,(t&15)*16,(t>>4)*16,16,16,2,2,28,28)}}
 function icon(e,s,cl){const cv=e.firstChild,c=cv.getContext('2d');c.clearRect(0,0,32,32);e.lastChild.textContent=s.id&&s.n>1?(s.n>=900?'∞':s.n):'';if(!s.id)return;drawIc(c,s.id)}
 function drawBig(){const g0=$('mmBigG');if(g0&&typeof drawCraft=='function'&&$('mmBig').style.display=='flex')drawCraft();const g=$('mmBigG');if(g)for(let i=0;i<35;i++)icon(g.children[i],big[i])}
 function drawSlot(i){const e=$('mmBar').children[i],s=inv[i];if(i==8){const c=e.firstChild.getContext('2d');c.clearRect(0,0,32,32);c.fillStyle='#fff';for(let k=0;k<3;k++){c.beginPath();c.arc(7+k*9,16,2.6,0,7);c.fill()}e.lastChild.textContent='';e.classList.toggle('sel',$('mmBig').style.display=='flex');return}
@@ -16061,6 +15897,44 @@ function mobFrame(dt){if(!THREE_)return;survTick(dt);furnTick(dt);mobAcc+=dt;
   m.g.position.set(m.x,m.y,m.z);const hv=m.hurt>0?0x772222:0;for(const q of m.mats)q.emissive.setHex(hv)}}
 /* ===== ВЫЖИВАНИЕ: здоровье, голод, еда ===== */
 const FOODV={252:2,253:2,254:2,255:2,203:8,204:8,205:6,206:6};
+/* ===== МОД: 35+ еды (куплен в Melons Quest) ===== */
+var FDI=FDI||{};const fdOn=()=>{try{return !!(state.mods&&state.mods.food)}catch(e){return false}};
+/* [id, эмодзи, название, сытость, форма, цвет1, цвет2, цвет3] */
+const FD=[
+[262,'🍎','Яблоко',4,'r',0xd62828,0xff6b6b,0x2f9e44],[263,'🍐','Груша',4,'r',0xa9d63a,0xdcf27a,0x6b4a1f],
+[264,'🍌','Банан',3,'b',0xffd93b,0xfff08a,0x6b4a1f],[265,'🍊','Апельсин',4,'r',0xff8c1a,0xffc266,0x2f9e44],
+[266,'🍋','Лимон',2,'r',0xf5e04a,0xfff59a,0x2f9e44],[267,'🍉','Арбуз',5,'w',0xe03c4a,0xff7a85,0x2f9e44],
+[268,'🍇','Виноград',3,'r',0x7b3fb5,0xb07ae0,0x2f9e44],[269,'🍓','Клубника',3,'r',0xe0203c,0xff6f81,0x2f9e44],
+[270,'🍒','Вишня',2,'r',0xa4122a,0xe04060,0x2f9e44],[271,'🍑','Персик',4,'r',0xffa27a,0xffd0b0,0x2f9e44],
+[272,'🍍','Ананас',6,'r',0xf2b630,0xffe27a,0x2f9e44],[273,'🥭','Манго',5,'r',0xf7a01c,0xffd05a,0xd94a2a],
+[274,'🥕','Морковь',3,'b',0xff7a1a,0xffb066,0x2f9e44],[275,'🥔','Печёная картошка',6,'r',0xb8854a,0xe0b878,0xfff0b0],
+[276,'🌽','Кукуруза',5,'b',0xffd93b,0xfff08a,0x6bbf3a],[277,'🍅','Помидор',3,'r',0xe02a1a,0xff7a66,0x2f9e44],
+[278,'🍆','Баклажан',3,'b',0x6a2c91,0xa05cc8,0x2f9e44],[279,'🍞','Хлеб',5,'b',0xd9a15a,0xf0c987,0x9a6530],
+[280,'🥐','Круассан',5,'w',0xe0a04a,0xf5c880,0x9a6530],[281,'🥯','Бублик',5,'o',0xd9a15a,0xf0c987,0xfff0d0],
+[282,'🥞','Блины',6,'k',0xe8b86a,0xf7d99a,0x6b3a1a],[283,'🧀','Сыр',4,'w',0xffd23f,0xfff08a,0xe0a800],
+[284,'🥚','Варёное яйцо',3,'r',0xf6f1e4,0xffffff,0xffc83a],[285,'🥓','Бекон',4,'b',0xc8453c,0xf08a80,0xf3d9c0],
+[286,'🍔','Бургер',8,'k',0xd9a15a,0x6b3a1a,0x4caf3a],[287,'🍕','Пицца',7,'w',0xffc83a,0xe0402a,0xd9a15a],
+[288,'🌭','Хот-дог',6,'b',0xd9a15a,0xc8453c,0xffd23f],[289,'🥪','Сэндвич',6,'k',0xf0c987,0x4caf3a,0xe0402a],
+[290,'🌮','Тако',6,'w',0xf0c987,0x4caf3a,0xe0402a],[291,'🍣','Суши',4,'k',0xf6f1e4,0xff7a5a,0x1c3a2a],
+[292,'🍜','Рамен',8,'u',0xffd98a,0xf6f1e4,0xc8453c],[293,'🍪','Печенье',2,'r',0xd9a15a,0xf0c987,0x5a3418],
+[294,'🍩','Пончик',4,'o',0xff7fb0,0xffc0d8,0xd9a15a],[295,'🍰','Торт',7,'w',0xfff0d0,0xff7fb0,0xe0402a],
+[296,'🍦','Мороженое',3,'w',0xfff0d0,0xffb6d0,0xd9a15a]];
+{const dk=(c,t)=>hx(c,0,t),lt=(c,t)=>hx(c,0xffffff,t);
+ const shapes={
+  r(g,a,b,c){for(let y=0;y<16;y++)for(let x=0;x<16;x++){const d=((x-7.5)/5.6)**2+((y-8.5)/5.2)**2;if(d>1)continue;g[y][x]=d>.72?dk(a,.28):(x<8&&y<8&&d<.45)?b:(HT(x,y)<.1?dk(a,.12):a)}for(let k=0;k<3;k++){g[2+k][7+(k>>1)]=c}g[3][9]=g[4][9]=c},
+  o(g,a,b,c){for(let y=0;y<16;y++)for(let x=0;x<16;x++){const d=Math.hypot(x-7.5,y-8),e=d/6.4;if(e>1||d<2.4)continue;g[y][x]=e>.85?dk(a,.3):(d<4.2&&HT(x,y)<.55)?b:(HT(x,y)<.12?c:a)}},
+  b(g,a,b,c){for(let i=0;i<12;i++){const x=2+i,y=13-i;for(let t=-1;t<=1;t++){g[y+(t>0?0:0)][x]=a;if(y+t>=0&&y+t<16){g[y+t][x]=t<0?b:t>0?dk(a,.3):a}}}for(let k=0;k<3;k++){g[1+k][13-k]=c;g[1+k][14-k]=c}},
+  w(g,a,b,c){for(let y=1;y<=14;y++){const hw=Math.round((y)/14*6.5);for(let x=8-hw;x<=8+hw;x++){if(x<0||x>15)continue;g[y][x]=y>11?c:((x+y)%5==0&&y>3)?b:a}}for(let x=2;x<=13;x++)if(!g[14][x])g[14][x]=dk(a,.3)},
+  k(g,a,b,c){for(let y=3;y<=12;y++){const l=y<=5?a:y<=7?b:y<=9?c:y<=10?b:a;for(let x=2;x<=13;x++){const cc=(y==3||y==12)&&(x==2||x==13)?null:l;if(cc!==null)g[y][x]=(y<=5&&HT(x,y)<.16)?lt(a,.5):cc}}for(let x=2;x<=13;x++)g[12][x]=dk(a,.3)},
+  u(g,a,b,c){for(let y=7;y<=13;y++)for(let x=1;x<=14;x++){const d=((x-7.5)/6.8)**2+((y-7)/6.2)**2;if(d>1)continue;g[y][x]=y==7?a:(y>=10?(d>.8?dk(b,.35):b):a)}for(let x=3;x<=12;x++)g[6][x]=(x%3==0)?c:a;g[3][5]=g[4][6]=g[2][9]=g[3][10]=0xe8e8e8}};
+ FD.forEach(f=>{IT[f[0]]=[f[1],f[2]];FOODV[f[0]]=f[3];const g=grid();shapes[f[4]](g,f[5],f[6],f[7]);
+  const cv=document.createElement('canvas');cv.width=cv.height=16;const cx=cv.getContext('2d');
+  for(let y=0;y<16;y++)for(let x=0;x<16;x++){let c=g[y][x];if(c==null&&[[1,0],[-1,0],[0,1],[0,-1]].some(d=>(g[y+d[1]]||[])[x+d[0]]!=null))c=0x1c1c1c;if(c!=null){cx.fillStyle='#'+(c&0xffffff).toString(16).padStart(6,'0');cx.fillRect(x,y,1,1)}}
+  FDI[f[0]]=cv})}
+function foodGrant(){if(!fdOn()||!inv.length||MODE!='survival')return;
+ const room=id=>{const a=inv.slice(0,8).concat(big);return a.some(s=>s.id==id)||a.some(s=>!s.id||!s.n)};
+ FD.forEach(f=>{if(room(f[0]))addInv(f[0],10)})}
+
 let HP=20,FOOD=20,hgT=0,rgT=0,stT=0,invul=0,peakY=0,wasGr=true,eatT=0,eatId=0,eatB=0,dead=false,hudKey='',AC=null;
 function pxIcon(kind,fill){const c=document.createElement('canvas');c.width=c.height=9;const x=c.getContext('2d');
  const H=['.XX...XX.','XXXX.XXXX','XXXXXXXXX','XXXXXXXXX','.XXXXXXX.','..XXXXX..','...XXX...','....X....'];
@@ -16081,7 +15955,7 @@ function hurt(n,why){if(MODE!='survival'||dead||invul>0)return;HP=Math.max(0,HP-
 window.mmRespawn=function(){HP=20;FOOD=20;dead=false;invul=2;hudKey='';$('mmDead').style.display='none';spawn()};
 function crunch(){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const n=AC.sampleRate*.09|0,b=AC.createBuffer(1,n,AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,3);const s=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain();f.type='bandpass';f.frequency.value=1800;g.gain.value=.6;s.buffer=b;s.connect(f);f.connect(g);g.connect(AC.destination);s.start()}catch(e){}}
 function tryEat(){const s=inv[sel];if(MODE!='survival'||!s||!s.id||FOODV[s.id]===undefined||!s.n)return false;if(dead)return true;if(eatT>0)return true;if(FOOD>=20){mmToast('Ты не голоден 😋');return true}
- eatT=1.6;eatId=s.id;eatB=0;const c=$('mmEat'),x=c.getContext('2d');x.clearRect(0,0,64,64);x.imageSmoothingEnabled=false;const t=ITX[eatId];x.drawImage(AT,(t&15)*16,(t>>4)*16,16,16,0,0,64,64);$('mmEatW').style.display='block';return true}
+ eatT=1.6;eatId=s.id;eatB=0;const c=$('mmEat'),x=c.getContext('2d');x.clearRect(0,0,64,64);x.imageSmoothingEnabled=false;const t=ITX[eatId];if(FDI[eatId])x.drawImage(FDI[eatId],0,0,16,16,0,0,64,64);else if(t!==undefined)x.drawImage(AT,(t&15)*16,(t>>4)*16,16,16,0,0,64,64);else{x.font='48px sans-serif';x.textAlign='center';x.fillText(IT[eatId][0],32,50)}$('mmEatW').style.display='block';return true}
 function crumbs(){const w=$('mmEatW'),col=eatId>=250?'#e08a90':'#b0653a';for(let i=0;i<6;i++){const e=document.createElement('div');e.className='mm-cr';e.style.cssText='left:'+(10+Math.random()*16)+'px;top:'+(8+Math.random()*14)+'px;background:'+(i%2?col:'#f0d8b0');w.appendChild(e);requestAnimationFrame(()=>{e.style.transform='translate('+(-30+Math.random()*50)+'px,'+(20+Math.random()*40)+'px) rotate('+(Math.random()*360)+'deg)';e.style.opacity=0});setTimeout(()=>e.remove(),600)}}
 function survTick(dt){hudUpd();if(MODE!='survival'){if(eatT>0){eatT=0;$('mmEatW').style.display='none'}return}if(dead)return;invul=Math.max(0,invul-dt);
  const inW=getB(Math.floor(P.x),Math.floor(P.y+.4),Math.floor(P.z))==6;
