@@ -1474,6 +1474,25 @@ body.perf-glow .bd-tw{opacity:.85}
 @keyframes toastIn  { from{opacity:0;transform:translateX(-50%) translateY(-14px) scale(0.9)} to{opacity:1;transform:translateX(-50%) translateY(0) scale(1)} }
 @keyframes toastOut { from{opacity:1} to{opacity:0;transform:translateX(-50%) translateY(-8px)} }
 
+
+/* ===== GIFTS ===== */
+.acc-tabs{display:flex;gap:6px;margin-bottom:16px;background:rgba(255,255,255,0.04);border-radius:14px;padding:4px;border:1px solid rgba(255,255,255,0.07);}
+.acc-tab{flex:1;padding:10px;border-radius:11px;cursor:pointer;font-family:'Nunito',sans-serif;font-weight:900;font-size:13px;border:1.5px solid transparent;background:transparent;color:rgba(255,255,255,0.4);transition:all .2s;-webkit-tap-highlight-color:transparent;}
+.acc-tab.active{border-color:rgba(0,200,255,0.45);background:linear-gradient(135deg,rgba(0,200,255,0.2),rgba(0,120,220,0.12));color:var(--blue);box-shadow:0 0 12px rgba(0,200,255,0.15);}
+.gift-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.gift-card{aspect-ratio:1/1;border-radius:20px;border:1.5px solid rgba(255,255,255,0.1);background:linear-gradient(145deg,rgba(0,200,255,0.1),rgba(120,0,200,0.08));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;font-family:'Nunito',sans-serif;color:#fff;padding:8px;-webkit-tap-highlight-color:transparent;transition:transform .12s,border-color .2s;box-shadow:0 4px 18px rgba(0,0,0,0.25);}
+.gift-card:active{transform:scale(0.95);}
+.gift-card:hover{border-color:rgba(0,200,255,0.5);}
+.gift-emoji{font-size:58px;line-height:1;filter:drop-shadow(0 4px 10px rgba(0,0,0,0.4));}
+.gift-price{font-size:13px;font-weight:900;color:#ffe566;background:rgba(255,229,102,0.1);border:1px solid rgba(255,220,0,0.2);border-radius:100px;padding:3px 10px;}
+.gift-own-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.gift-own{aspect-ratio:1/1;border-radius:16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;padding:4px;text-align:center;}
+.gift-own .ge{font-size:34px;line-height:1;}
+.gift-own .gc{position:absolute;top:5px;right:7px;font-size:11px;font-weight:900;color:#ffe566;}
+.gift-own .gf{font-size:9px;color:rgba(255,255,255,0.45);margin-top:4px;font-weight:800;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#giftSendOverlay{position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,0.78);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px;}
+#giftSendOverlay .gs-box{width:100%;max-width:360px;background:#14181f;border:1.5px solid rgba(0,200,255,0.3);border-radius:22px;padding:20px;text-align:center;}
+
 /* ===== ACCOUNT ===== */
 .welcome-screen { text-align:center; padding:10px 0; }
 .welcome-avatar-wrap {
@@ -5494,7 +5513,281 @@ function toggleOwlBgPicker() {
   if (isHidden) _renderOwlBgPicker();
 }
 
+
+// ============================================================
+//  🎁 ГИФТЫ (подарки между игроками, как в Telegram)
+//  Коллекция Firestore "gifts": {fromLogin,toLogin,giftId,emoji,name,price,createdAt}
+//  Получатель видит подарки в Аккаунт → Профиль (под статистикой).
+//  Уведомление в Telegram приходит, если игрок привязал бота
+//  (коллекция "tgLinks", документ = логин игрока).
+// ============================================================
+const GIFT_CATALOG = [
+  { id: 'backpack',   emoji: '🎒', name: 'Рюкзак', price: 1500 },
+  { id: 'watermelon', emoji: '🍉', name: 'Арбуз',  price: 3500 }
+];
+let _accTab = 'profile';          // 'profile' | 'gifts'
+let _rcvGiftsCache = null;        // {login, t, list}
+let _tgLinkCache = null;          // {login, linked}
+let _tgBotUsername = null;
+
+function _giftById(id) { return GIFT_CATALOG.find(g => g.id === id); }
+
+function setAccTab(tab) {
+  _accTab = tab;
+  renderAccount();
+}
+
 function renderAccount() {
+  const body = document.getElementById('accountBody');
+  if (!state.account) { _accTab = 'profile'; _renderAccountMain(); return; }
+
+  const tabs = `
+    <div class="acc-tabs">
+      <button class="acc-tab ${_accTab === 'profile' ? 'active' : ''}" onclick="setAccTab('profile')">👤 Профиль</button>
+      <button class="acc-tab ${_accTab === 'gifts' ? 'active' : ''}" onclick="setAccTab('gifts')">🎁 Гифты</button>
+    </div>`;
+
+  if (_accTab === 'gifts') {
+    body.innerHTML = tabs + '<div id="giftsTabBody"></div>';
+    renderGiftsTab();
+    return;
+  }
+  _renderAccountMain();
+  body.insertAdjacentHTML('afterbegin', tabs);
+  renderReceivedGifts();
+}
+
+// ---------- Вкладка «Гифты» (магазин) ----------
+function renderGiftsTab() {
+  const el = document.getElementById('giftsTabBody');
+  if (!el) return;
+  const bal = Math.floor(state.gems || 0);
+  el.innerHTML = `
+    <div style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.5;">
+      Выбери подарок и отправь его игроку по логину. У тебя: <b style="color:#ffe566;">${bal.toLocaleString('ru-RU')} 💎</b>
+    </div>
+    <div class="gift-grid">
+      ${GIFT_CATALOG.map(g => `
+        <button class="gift-card" onclick="openGiftSend('${g.id}')">
+          <div class="gift-emoji">${g.emoji}</div>
+          <div class="gift-price">${g.price.toLocaleString('ru-RU')} 💎</div>
+        </button>`).join('')}
+    </div>
+    <div id="tgLinkBlock" style="margin-top:18px;"></div>`;
+  renderTgLinkBlock();
+}
+
+// ---------- Окно отправки ----------
+function openGiftSend(giftId) {
+  const g = _giftById(giftId);
+  if (!g || !state.account) return;
+  closeGiftSend();
+  const ov = document.createElement('div');
+  ov.id = 'giftSendOverlay';
+  ov.innerHTML = `
+    <div class="gs-box">
+      <div style="font-size:64px;line-height:1;margin-bottom:6px;">${g.emoji}</div>
+      <div style="font-size:16px;font-weight:900;margin-bottom:2px;">${g.name}</div>
+      <div style="font-size:13px;color:#ffe566;font-weight:900;margin-bottom:14px;">${g.price.toLocaleString('ru-RU')} 💎</div>
+      <input class="duo-input" id="giftToLogin" type="text" placeholder="Логин получателя" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="20" style="margin-bottom:8px;">
+      <div id="giftSendError" style="color:var(--red);font-size:12px;font-weight:800;min-height:16px;margin:2px 2px 8px;"></div>
+      <button class="duo-btn green" id="giftSendBtn" onclick="giftSendConfirm('${g.id}')">
+        <div class="btn-left"><span class="btn-icon">🎁</span><span class="btn-title">Подарить</span></div>
+        <span class="btn-cost">→</span>
+      </button>
+      <button onclick="closeGiftSend()" style="width:100%;margin-top:8px;padding:11px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.5);font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;cursor:pointer;">Отмена</button>
+    </div>`;
+  ov.addEventListener('click', e => { if (e.target === ov) closeGiftSend(); });
+  document.body.appendChild(ov);
+  setTimeout(() => { const i = document.getElementById('giftToLogin'); if (i) i.focus(); }, 60);
+}
+function closeGiftSend() {
+  const ov = document.getElementById('giftSendOverlay');
+  if (ov) ov.remove();
+}
+
+// Первый клик: проверка и подтверждение (чтобы алмазы не пропали из-за опечатки в логине)
+function giftSendConfirm(giftId) {
+  const g = _giftById(giftId);
+  const errEl = document.getElementById('giftSendError');
+  if (errEl) errEl.textContent = '';
+  if (!g || !state.account) return;
+  const to = dcSanitizeUsername(document.getElementById('giftToLogin')?.value);
+  if (to.length < 3) { if (errEl) errEl.textContent = 'Введи корректный логин получателя'; return; }
+  if (to === state.account.login) { if (errEl) errEl.textContent = 'Нельзя подарить самому себе'; return; }
+  if (Math.floor(state.gems || 0) < g.price) { if (errEl) errEl.textContent = 'Недостаточно 💎'; return; }
+
+  const box = document.querySelector('#giftSendOverlay .gs-box');
+  box.innerHTML = `
+    <div style="font-size:64px;line-height:1;margin-bottom:8px;">${g.emoji}</div>
+    <div style="font-size:14px;line-height:1.6;margin-bottom:14px;">
+      Подарить <b>${g.name}</b> игроку <b style="color:var(--blue);">@${_escHtml(to)}</b><br>
+      за <b style="color:#ffe566;">${g.price.toLocaleString('ru-RU')} 💎</b>?
+    </div>
+    <div id="giftSendError" style="color:var(--red);font-size:12px;font-weight:800;min-height:16px;margin:2px 2px 8px;"></div>
+    <button class="duo-btn green" id="giftSendBtn" onclick="doSendGift('${g.id}','${_escHtml(to)}')">
+      <div class="btn-left"><span class="btn-icon">✅</span><span class="btn-title">Да, отправить</span></div>
+      <span class="btn-cost">→</span>
+    </button>
+    <button onclick="openGiftSend('${g.id}')" style="width:100%;margin-top:8px;padding:11px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.5);font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;cursor:pointer;">Назад</button>`;
+}
+
+function doSendGift(giftId, to) {
+  const g = _giftById(giftId);
+  const errEl = document.getElementById('giftSendError');
+  if (!g || !state.account) return;
+  if (Math.floor(state.gems || 0) < g.price) { if (errEl) errEl.textContent = 'Недостаточно 💎'; return; }
+  const btn = document.getElementById('giftSendBtn');
+  if (btn) btn.disabled = true;
+
+  // Списываем сразу; при ошибке облака — возвращаем
+  state.gems = Math.max(0, (state.gems || 0) - g.price);
+  saveState(); pushStateToCloud(); updateUI();
+
+  const from = state.account.login;
+  dcDb.collection('gifts').add({
+    fromLogin: from,
+    toLogin: to,
+    giftId: g.id,
+    emoji: g.emoji,
+    name: g.name,
+    price: g.price,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(() => {
+    closeGiftSend();
+    toast(`🎁 ${g.emoji} ${g.name} отправлен игроку ${to}!`, 'success');
+    notifyGiftRecipient(to, from, g);
+    renderGiftsTab();
+  }).catch(() => {
+    state.gems = (state.gems || 0) + g.price;
+    saveState(); pushStateToCloud(); updateUI();
+    if (btn) btn.disabled = false;
+    if (errEl) errEl.textContent = 'Не удалось отправить. Проверь интернет и попробуй снова.';
+  });
+}
+
+// ---------- Мои подарки (профиль, под статистикой) ----------
+function renderReceivedGifts() {
+  const el = document.getElementById('receivedGiftsBlock');
+  if (!el || !state.account) return;
+  const login = state.account.login;
+  const fresh = _rcvGiftsCache && _rcvGiftsCache.login === login && (Date.now() - _rcvGiftsCache.t) < 30000;
+  if (_rcvGiftsCache && _rcvGiftsCache.login === login) _paintReceivedGifts(el, _rcvGiftsCache.list);
+  else el.innerHTML = '';
+  if (fresh) return;
+
+  dcDb.collection('gifts').where('toLogin', '==', login).get().then(snap => {
+    const list = [];
+    snap.forEach(d => list.push(d.data()));
+    list.sort((a, b) => ((b.createdAt && b.createdAt.seconds) || 0) - ((a.createdAt && a.createdAt.seconds) || 0));
+    _rcvGiftsCache = { login, t: Date.now(), list };
+    const el2 = document.getElementById('receivedGiftsBlock');
+    if (el2) _paintReceivedGifts(el2, list);
+  }).catch(() => {});
+}
+
+function _paintReceivedGifts(el, list) {
+  const head = `<div style="font-size:11px;color:rgba(0,200,255,0.6);margin:14px 0 10px;text-transform:uppercase;letter-spacing:1.5px;font-weight:900;text-align:left;">🎁 Мои подарки</div>`;
+  if (!list.length) {
+    el.innerHTML = `<div style="background:rgba(255,255,255,0.03);border:1px dashed rgba(255,255,255,0.12);border-radius:16px;padding:14px;text-align:left;">${head.replace('margin:14px 0 10px','margin:0 0 8px')}<div style="font-size:12px;color:var(--text2);line-height:1.5;">Пока пусто. Подарки от других игроков появятся здесь.</div></div>`;
+    return;
+  }
+  const groups = {};
+  list.forEach(d => {
+    const k = d.giftId || d.emoji;
+    if (!groups[k]) groups[k] = { emoji: d.emoji, count: 0, from: d.fromLogin };
+    groups[k].count++;
+  });
+  el.innerHTML = `<div style="background:linear-gradient(135deg,rgba(199,125,255,0.07),rgba(0,200,255,0.04));border:1px solid rgba(199,125,255,0.15);border-radius:18px;padding:4px 14px 14px;">${head.replace('margin:14px 0 10px','margin:12px 0 10px')}
+    <div class="gift-own-grid">${Object.values(groups).map(g => `
+      <div class="gift-own"><div class="ge">${g.emoji}</div>${g.count > 1 ? `<div class="gc">×${g.count}</div>` : ''}<div class="gf">от @${_escHtml(g.from)}</div></div>`).join('')}
+    </div></div>`;
+}
+
+// ---------- Telegram-уведомления получателю ----------
+function tgSendTo(chatId, text) {
+  return fetch('https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: chatId, text: text, parse_mode: 'HTML' })
+  }).then(r => r.json()).catch(() => null);
+}
+
+function notifyGiftRecipient(to, from, g) {
+  dcDb.collection('tgLinks').doc(to).get().then(doc => {
+    if (!doc.exists) return;
+    const chatId = doc.data().chatId;
+    if (!chatId) return;
+    tgSendTo(chatId,
+      '━━━━━━━━━━━━━━━━━━━━\n' +
+      '🎁 <b>Вам подарили гифт!</b>\n' +
+      '━━━━━━━━━━━━━━━━━━━━\n\n' +
+      '👤 От: <b>@' + _escHtml(from) + '</b>\n' +
+      g.emoji + ' Подарок: <b>' + g.name + '</b>\n\n' +
+      '📲 Открой Diamond Clicker → Аккаунт, чтобы увидеть его в «Мои подарки».\n\n' +
+      '🏆 <i>Diamond Clicker</i>'
+    );
+  }).catch(() => {});
+}
+
+function renderTgLinkBlock() {
+  const el = document.getElementById('tgLinkBlock');
+  if (!el || !state.account) return;
+  const login = state.account.login;
+  const draw = linked => {
+    const e = document.getElementById('tgLinkBlock');
+    if (!e) return;
+    e.innerHTML = linked
+      ? `<div style="background:rgba(0,230,120,0.07);border:1px solid rgba(0,230,120,0.25);border-radius:14px;padding:12px 14px;font-size:12px;color:#5dffa0;font-weight:800;">🔔 Уведомления в Telegram подключены — ты узнаешь, когда тебе подарят гифт.</div>`
+      : `<div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:14px;">
+          <div style="font-size:13px;font-weight:900;margin-bottom:4px;">🔔 Уведомления о подарках</div>
+          <div style="font-size:11px;color:var(--text2);line-height:1.5;margin-bottom:10px;">Подключи бота, чтобы получать сообщение в Telegram, когда тебе дарят гифт.</div>
+          <button class="duo-btn green" id="tgLinkBtn" onclick="startTgLink()"><div class="btn-left"><span class="btn-icon">✈️</span><span class="btn-title">Подключить Telegram</span></div><span class="btn-cost">→</span></button>
+          <button onclick="checkTgLink()" style="width:100%;margin-top:8px;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.55);font-family:'Nunito',sans-serif;font-weight:800;font-size:12px;cursor:pointer;">Я нажал Start — проверить</button>
+        </div>`;
+  };
+  if (_tgLinkCache && _tgLinkCache.login === login) { draw(_tgLinkCache.linked); return; }
+  dcDb.collection('tgLinks').doc(login).get().then(doc => {
+    _tgLinkCache = { login, linked: doc.exists && !!doc.data().chatId };
+    draw(_tgLinkCache.linked);
+  }).catch(() => draw(false));
+}
+
+function startTgLink() {
+  if (!state.account) return;
+  const open = () => window.open('https://t.me/' + _tgBotUsername + '?start=' + encodeURIComponent(state.account.uid), '_blank');
+  if (_tgBotUsername) { open(); return; }
+  fetch('https://api.telegram.org/bot' + TG_TOKEN + '/getMe').then(r => r.json()).then(j => {
+    if (j && j.ok) { _tgBotUsername = j.result.username; open(); }
+    else toast('Не удалось найти бота', 'error');
+  }).catch(() => toast('Нет связи с Telegram', 'error'));
+}
+
+// Ищем в последних апдейтах бота сообщение «/start <uid>» от этого игрока
+function checkTgLink() {
+  if (!state.account) return;
+  const want = '/start ' + state.account.uid;
+  fetch('https://api.telegram.org/bot' + TG_TOKEN + '/getUpdates?offset=-100&limit=100')
+    .then(r => r.json()).then(j => {
+      if (!j || !j.ok) { toast('Бот пока не может проверить подключение', 'error'); return; }
+      let chatId = null;
+      (j.result || []).forEach(u => {
+        const m = u.message;
+        if (m && m.chat && m.chat.type === 'private' && (m.text || '').trim() === want) chatId = m.chat.id;
+      });
+      if (!chatId) { toast('Start не найден. Нажми «Подключить», затем Start в боте', 'error'); return; }
+      dcDb.collection('tgLinks').doc(state.account.login).set({
+        chatId: chatId, uid: state.account.uid, linkedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(() => {
+        _tgLinkCache = { login: state.account.login, linked: true };
+        toast('🔔 Telegram подключён!', 'success');
+        tgSendTo(chatId, '🔔 <b>Уведомления подключены!</b>\nТеперь ты узнаешь, когда тебе подарят гифт 🎁');
+        renderTgLinkBlock();
+      }).catch(() => toast('Не удалось сохранить подключение', 'error'));
+    }).catch(() => toast('Нет связи с Telegram', 'error'));
+}
+
+function _renderAccountMain() {
   const body = document.getElementById('accountBody');
   if (state.account) {
     body.innerHTML = `
@@ -5574,6 +5867,7 @@ function renderAccount() {
           </div>
         </div>
 
+        <div id="receivedGiftsBlock"></div>
         <button class="logout-btn" onclick="logout()">🚪 Выйти из аккаунта</button>
 
         <!-- Owl Background Picker -->
