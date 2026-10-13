@@ -1477,7 +1477,7 @@ body.perf-glow .bd-tw{opacity:.85}
 
 /* ===== GIFTS ===== */
 .acc-tabs{display:flex;gap:6px;margin-bottom:16px;background:rgba(255,255,255,0.04);border-radius:14px;padding:4px;border:1px solid rgba(255,255,255,0.07);}
-.acc-tab{flex:1;padding:10px;border-radius:11px;cursor:pointer;font-family:'Nunito',sans-serif;font-weight:900;font-size:13px;border:1.5px solid transparent;background:transparent;color:rgba(255,255,255,0.4);transition:all .2s;-webkit-tap-highlight-color:transparent;}
+.acc-tab{flex:1;padding:10px 4px;border-radius:11px;cursor:pointer;font-family:'Nunito',sans-serif;font-weight:900;font-size:12px;border:1.5px solid transparent;background:transparent;color:rgba(255,255,255,0.4);transition:all .2s;-webkit-tap-highlight-color:transparent;}
 .acc-tab.active{border-color:rgba(0,200,255,0.45);background:linear-gradient(135deg,rgba(0,200,255,0.2),rgba(0,120,220,0.12));color:var(--blue);box-shadow:0 0 12px rgba(0,200,255,0.15);}
 .gift-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .gift-card{aspect-ratio:1/1;border-radius:20px;border:1.5px solid rgba(255,255,255,0.1);background:linear-gradient(145deg,rgba(0,200,255,0.1),rgba(120,0,200,0.08));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;font-family:'Nunito',sans-serif;color:#fff;padding:8px;-webkit-tap-highlight-color:transparent;transition:transform .12s,border-color .2s;box-shadow:0 4px 18px rgba(0,0,0,0.25);}
@@ -1490,8 +1490,8 @@ body.perf-glow .bd-tw{opacity:.85}
 .gift-own .ge{font-size:34px;line-height:1;}
 .gift-own .gc{position:absolute;top:5px;right:7px;font-size:11px;font-weight:900;color:#ffe566;}
 .gift-own .gf{font-size:9px;color:rgba(255,255,255,0.45);margin-top:4px;font-weight:800;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-#giftSendOverlay{position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,0.78);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px;}
-#giftSendOverlay .gs-box{width:100%;max-width:360px;background:#14181f;border:1.5px solid rgba(0,200,255,0.3);border-radius:22px;padding:20px;text-align:center;}
+#giftSendOverlay,#giftInfoOverlay{position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,0.78);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px;}
+#giftSendOverlay .gs-box,#giftInfoOverlay .gs-box{width:100%;max-width:360px;background:#14181f;border:1.5px solid rgba(0,200,255,0.3);border-radius:22px;padding:20px;text-align:center;}
 
 /* ===== ACCOUNT ===== */
 .welcome-screen { text-align:center; padding:10px 0; }
@@ -5522,8 +5522,13 @@ function toggleOwlBgPicker() {
 //  (коллекция "tgLinks", документ = логин игрока).
 // ============================================================
 const GIFT_CATALOG = [
-  { id: 'backpack',   emoji: '🎒', name: 'Рюкзак', price: 1500 },
-  { id: 'watermelon', emoji: '🍉', name: 'Арбуз',  price: 3500 }
+  { id: 'backpack',   emoji: '🎒',  name: 'Рюкзак',            price: 1500,  desc: 'Надёжный рюкзак для долгих приключений.' },
+  { id: 'watermelon', emoji: '🍉',  name: 'Арбуз',             price: 3500,  desc: 'Сочный летний арбуз — свежо и сладко.' },
+  { id: 'heart',      emoji: '💝',  name: 'Сердце',            price: 1500,  desc: 'Знак внимания и тёплых чувств.' },
+  { id: 'sword',      emoji: '🗡️', name: 'Меч правосудия',    price: 5500,  desc: 'Клинок, который всегда на стороне справедливости.' },
+  { id: 'aster',      emoji: '🏵️', name: 'Астра',             price: 10000, desc: 'Редкий цветок для особенного человека.' },
+  { id: 'cookie',     emoji: '🍪',  name: 'Печенька Сяо Сэра', price: 12500, desc: 'Фирменная печенька. Говорят, приносит удачу.' },
+  { id: 'ring',       emoji: '💍',  name: 'Кольцо',            price: 15000, desc: 'Самый ценный подарок в коллекции.' }
 ];
 let _accTab = 'profile';          // 'profile' | 'gifts'
 let _rcvGiftsCache = null;        // {login, t, list}
@@ -5545,6 +5550,7 @@ function renderAccount() {
     <div class="acc-tabs">
       <button class="acc-tab ${_accTab === 'profile' ? 'active' : ''}" onclick="setAccTab('profile')">👤 Профиль</button>
       <button class="acc-tab ${_accTab === 'gifts' ? 'active' : ''}" onclick="setAccTab('gifts')">🎁 Гифты</button>
+      <button class="acc-tab ${_accTab === 'mygifts' ? 'active' : ''}" onclick="setAccTab('mygifts')">🎒 Мои гифты</button>
     </div>`;
 
   if (_accTab === 'gifts') {
@@ -5552,9 +5558,13 @@ function renderAccount() {
     renderGiftsTab();
     return;
   }
+  if (_accTab === 'mygifts') {
+    body.innerHTML = tabs + '<div id="giftsTabBody"></div>';
+    renderMyGiftsTab();
+    return;
+  }
   _renderAccountMain();
   body.insertAdjacentHTML('afterbegin', tabs);
-  renderReceivedGifts();
 }
 
 // ---------- Вкладка «Гифты» (магазин) ----------
@@ -5666,42 +5676,76 @@ function doSendGift(giftId, to) {
   });
 }
 
-// ---------- Мои подарки (профиль, под статистикой) ----------
-function renderReceivedGifts() {
-  const el = document.getElementById('receivedGiftsBlock');
+// ---------- Вкладка «Мои гифты» ----------
+let _myGiftsList = [];
+
+function renderMyGiftsTab() {
+  const el = document.getElementById('giftsTabBody');
   if (!el || !state.account) return;
   const login = state.account.login;
-  const fresh = _rcvGiftsCache && _rcvGiftsCache.login === login && (Date.now() - _rcvGiftsCache.t) < 30000;
-  if (_rcvGiftsCache && _rcvGiftsCache.login === login) _paintReceivedGifts(el, _rcvGiftsCache.list);
-  else el.innerHTML = '';
-  if (fresh) return;
+  if (_rcvGiftsCache && _rcvGiftsCache.login === login) _paintMyGifts(el, _rcvGiftsCache.list);
+  else el.innerHTML = '<div style="text-align:center;padding:30px 0;color:var(--text2);">Загрузка...</div>';
 
   dcDb.collection('gifts').where('toLogin', '==', login).get().then(snap => {
     const list = [];
     snap.forEach(d => list.push(d.data()));
     list.sort((a, b) => ((b.createdAt && b.createdAt.seconds) || 0) - ((a.createdAt && a.createdAt.seconds) || 0));
     _rcvGiftsCache = { login, t: Date.now(), list };
-    const el2 = document.getElementById('receivedGiftsBlock');
-    if (el2) _paintReceivedGifts(el2, list);
-  }).catch(() => {});
+    const el2 = document.getElementById('giftsTabBody');
+    if (el2 && _accTab === 'mygifts') _paintMyGifts(el2, list);
+  }).catch(() => {
+    const el2 = document.getElementById('giftsTabBody');
+    if (el2 && !_rcvGiftsCache) el2.innerHTML = '<div style="text-align:center;padding:30px 10px;color:var(--red);">Не удалось загрузить гифты. Проверь интернет.</div>';
+  });
 }
 
-function _paintReceivedGifts(el, list) {
-  const head = `<div style="font-size:11px;color:rgba(0,200,255,0.6);margin:14px 0 10px;text-transform:uppercase;letter-spacing:1.5px;font-weight:900;text-align:left;">🎁 Мои подарки</div>`;
+function _paintMyGifts(el, list) {
+  _myGiftsList = list;
   if (!list.length) {
-    el.innerHTML = `<div style="background:rgba(255,255,255,0.03);border:1px dashed rgba(255,255,255,0.12);border-radius:16px;padding:14px;text-align:left;">${head.replace('margin:14px 0 10px','margin:0 0 8px')}<div style="font-size:12px;color:var(--text2);line-height:1.5;">Пока пусто. Подарки от других игроков появятся здесь.</div></div>`;
+    el.innerHTML = `<div style="text-align:center;padding:36px 10px;color:var(--text2);">
+      <div style="font-size:46px;margin-bottom:10px;">🎁</div>
+      <div style="font-weight:800;margin-bottom:6px;">Пока пусто</div>
+      <div style="font-size:13px;opacity:0.7;">Подарки от других игроков появятся здесь.</div></div>`;
     return;
   }
-  const groups = {};
-  list.forEach(d => {
-    const k = d.giftId || d.emoji;
-    if (!groups[k]) groups[k] = { emoji: d.emoji, count: 0, from: d.fromLogin };
-    groups[k].count++;
-  });
-  el.innerHTML = `<div style="background:linear-gradient(135deg,rgba(199,125,255,0.07),rgba(0,200,255,0.04));border:1px solid rgba(199,125,255,0.15);border-radius:18px;padding:4px 14px 14px;">${head.replace('margin:14px 0 10px','margin:12px 0 10px')}
-    <div class="gift-own-grid">${Object.values(groups).map(g => `
-      <div class="gift-own"><div class="ge">${g.emoji}</div>${g.count > 1 ? `<div class="gc">×${g.count}</div>` : ''}<div class="gf">от @${_escHtml(g.from)}</div></div>`).join('')}
-    </div></div>`;
+  el.innerHTML = `
+    <div style="font-size:12px;color:var(--text2);margin-bottom:12px;">Всего подарков: <b style="color:#ffe566;">${list.length}</b>. Нажми на подарок, чтобы посмотреть информацию.</div>
+    <div class="gift-own-grid">${list.map((d, i) => `
+      <button class="gift-own" style="cursor:pointer;font-family:'Nunito',sans-serif;color:#fff;" onclick="openGiftInfo(${i})">
+        <div class="ge">${d.emoji || '🎁'}</div>
+        <div class="gf">от @${_escHtml(d.fromLogin || '?')}</div>
+      </button>`).join('')}
+    </div>`;
+}
+
+function openGiftInfo(i) {
+  const d = _myGiftsList[i];
+  if (!d) return;
+  const cat = _giftById(d.giftId) || {};
+  const name = d.name || cat.name || 'Подарок';
+  const price = d.price || cat.price || 0;
+  const date = (d.createdAt && d.createdAt.seconds)
+    ? new Date(d.createdAt.seconds * 1000).toLocaleString('ru-RU')
+    : 'только что';
+  const old = document.getElementById('giftInfoOverlay'); if (old) old.remove();
+  const ov = document.createElement('div');
+  ov.id = 'giftInfoOverlay';
+  ov.innerHTML = `
+    <div class="gs-box">
+      <div style="font-size:72px;line-height:1;margin-bottom:8px;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.45));">${d.emoji || '🎁'}</div>
+      <div style="font-size:18px;font-weight:900;margin-bottom:4px;">${_escHtml(name)}</div>
+      ${cat.desc ? `<div style="font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:12px;">${_escHtml(cat.desc)}</div>` : '<div style="margin-bottom:12px;"></div>'}
+      <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:4px 14px;text-align:left;margin-bottom:14px;">
+        <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.06);font-size:13px;"><span style="color:var(--text2);">От кого</span><b style="color:var(--blue);">@${_escHtml(d.fromLogin || '?')}</b></div>
+        <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.06);font-size:13px;"><span style="color:var(--text2);">Стоимость</span><b style="color:#ffe566;">${price.toLocaleString('ru-RU')} 💎</b></div>
+        <div style="display:flex;justify-content:space-between;padding:9px 0;font-size:13px;"><span style="color:var(--text2);">Получен</span><b>${date}</b></div>
+      </div>
+      <button class="duo-btn green" onclick="document.getElementById('giftInfoOverlay').remove()">
+        <div class="btn-left"><span class="btn-icon">✅</span><span class="btn-title">Закрыть</span></div>
+      </button>
+    </div>`;
+  ov.addEventListener('click', e => { if (e.target === ov) ov.remove(); });
+  document.body.appendChild(ov);
 }
 
 // ---------- Telegram-уведомления получателю ----------
@@ -5867,7 +5911,6 @@ function _renderAccountMain() {
           </div>
         </div>
 
-        <div id="receivedGiftsBlock"></div>
         <button class="logout-btn" onclick="logout()">🚪 Выйти из аккаунта</button>
 
         <!-- Owl Background Picker -->
