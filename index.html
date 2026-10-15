@@ -5267,11 +5267,11 @@ function renderBonuses() {
   }
 
   const bonusDefs = [
-    { id:'xp500',  icon:'⚡', title:'200 ⚡ молний',        sub:'Мгновенный заряд!',         cost:'228 ' + diaIcon(14), color:'orange', action:()=>buyBonus('xp500',228)  },
-    { id:'xp2',    icon:'🔥', title:'Х2 опыт · 30 минут',  sub:'Двойной опыт за клики',     cost:'325 ' + diaIcon(14), color:'blue',   action:()=>buyBonus('xp2',325)    },
+    { id:'xp500',  icon:'⚡', title:'200 ⚡ молний',        sub:'Мгновенный заряд!',         cost:'228 ' + diaIcon(14), color:'orange', action:()=>buyBonus('xp500',550)  },
+    { id:'xp2',    icon:'🔥', title:'Х2 опыт · 30 минут',  sub:'Двойной опыт за клики',     cost:'325 ' + diaIcon(14), color:'blue',   action:()=>buyBonus('xp2',1055)    },
     { id:'xp15',   icon:'💫', title:'Х1.5 опыт · 15 минут',sub:'Полтора опыта за клики',    cost:'163 ' + diaIcon(14), color:'green',  action:()=>buyBonus('xp15',163)   },
     { id:'xp3_10', icon:'🚀', title:'Х3 опыт · 10 минут',  sub:'Тройной опыт на 10 мин',   cost:'195 ' + diaIcon(14), color:'blue',   action:()=>buyBonus('xp3_10',195) },
-    { id:'energy_refill', icon:'🔋', title:'Восстановить батарею', sub:'Полный запас батареи мгновенно', cost:'618 ' + diaIcon(14), color:'blue', action:()=>buyBonus('energy_refill',618) },
+    { id:'energy_refill', icon:'🔋', title:'Восстановить батарею', sub:'Полный запас батареи мгновенно', cost:'618 ' + diaIcon(14), color:'blue', action:()=>buyBonus('energy_refill',6100) },
     { id:'xp3_1h', icon:'🌟', title:'Х3 опыт · 1 час',     sub: canFreeXp3?'Бесплатно раз в 24ч':(`Доступно через ${freeXp3Cd}`), cost: canFreeXp3?'БЕСПЛАТНО':'⏳', color: canFreeXp3?'green':'gray', action:()=>buyBonus('xp3_1h',0) },
   ];
 
@@ -6846,7 +6846,7 @@ function renderExchangeTab() {
 }
 
 // ── GOLD TAB: 110 000 💎 → 15 ⭐ ──────────────────────────────────────────
-const GOLD_RATE_GEMS  = 110000;
+const GOLD_RATE_GEMS  = 955000;
 const GOLD_RATE_STARS = 15;
 
 function renderGoldTab() {
@@ -7676,8 +7676,8 @@ function renderShop() {
   const lvl  = Number(state.upgradeLevel) || 0;
 
   // Pct upgrade costs
-  const PCT_SMALL_COST = 1950; // 0.1% 🍂 -35% осенняя акция
-  const PCT_BIG_COST   = 3250; // 1%   🍂 -35% осенняя акция
+  const PCT_SMALL_COST = 5950; // 0.1% 🍂 -35% осенняя акция
+  const PCT_BIG_COST   = 12500; // 1%   🍂 -35% осенняя акция
 
   body.innerHTML = `
     <!-- Autumn sale banner -->
@@ -13070,7 +13070,7 @@ setTimeout(()=>{
 //  ROULETTE SYSTEM
 // ════════════════════════════════════════════════════════════
 
-const ROULETTE_SPIN_COST = 850; // ⚡ молнии
+const ROULETTE_SPIN_COST = 1000; // ⚡ молнии
 
 const ROULETTE_PRIZES = [
   { id:'xp200',   label:'200 ⚡',          baseLabel:'200 ⚡',          baseVal:200,   valType:'xp',   icon:'⚡',  color:'#ffaa00', glow:'rgba(255,170,0,0.7)',   chance:40,   weight:40   },
