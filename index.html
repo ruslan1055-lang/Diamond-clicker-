@@ -1124,7 +1124,16 @@ body.perf-glow .bd-tw{opacity:.85}
   box-shadow: 0 0 18px rgba(245,197,24,0.28), inset 0 1px 0 rgba(255,255,255,0.12);
   text-shadow: 0 0 10px rgba(245,197,24,0.7);
 }
-.wd-tabs .wd-tab-btn { padding: 10px 3px; font-size: 12px; white-space: nowrap; }
+.wd-tabs .wd-tab-btn { padding: 10px 3px; font-size: 12px; white-space: nowrap; position: relative; }
+.wd-tabs { margin-top: 10px; }
+.wd-maint-badge {
+  position: absolute; top: -9px; left: 50%; transform: translateX(-50%);
+  padding: 1px 5px; border-radius: 8px;
+  background: linear-gradient(135deg,#ffb347,#e07b00); color: #fff;
+  font-size: 7.5px; font-weight: 900; letter-spacing: 0.2px; line-height: 1.3;
+  white-space: nowrap; pointer-events: none;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.45);
+}
 
 .wd-tab-btn.wd-tab-active.wd-tab-cabs {
   background: linear-gradient(160deg, rgba(0,230,150,0.22), rgba(0,160,255,0.12));
@@ -4130,7 +4139,7 @@ function doLogin() {
 }
 
 function showBanScreen() {
-  clearTimeout(_dcSyncTimer);
+  clearTimeout(_dcSyncTimer); _dcSyncTimer = null;
   if (window._dcBanCheckInterval) { clearInterval(window._dcBanCheckInterval); window._dcBanCheckInterval = null; }
 
   try {
@@ -4180,7 +4189,7 @@ function dcBanLogoutClick() {
 function logout() {
   // Отменяем отложенную синхронизацию — иначе она может перезаписать
   // облачный прогресс пустым состоянием уже ПОСЛЕ выхода.
-  clearTimeout(_dcSyncTimer);
+  clearTimeout(_dcSyncTimer); _dcSyncTimer = null;
 
   dcAuth.signOut().catch(()=>{});
 
@@ -4212,19 +4221,60 @@ function dcStripStateForCloud(s) {
   return copy;
 }
 
+// Сохранение в облако: throttle 1.5с (раньше debounce 4с — при непрерывных
+// кликах таймер сбрасывался и сохранение откладывалось надолго).
+let _dcSyncPending = false;
+let _dcSyncRetry = null;
+const DC_SYNC_DELAY = 1500;
+
 function scheduleCloudSync() {
   if (!state.account || !state.account.uid) return;
-  clearTimeout(_dcSyncTimer);
-  _dcSyncTimer = setTimeout(pushStateToCloud, 4000);
+  _dcSyncPending = true;
+  dcSetSyncStatus('saving');
+  if (_dcSyncTimer) return;            // таймер уже запущен — не откладываем
+  _dcSyncTimer = setTimeout(() => { _dcSyncTimer = null; pushStateToCloud(); }, DC_SYNC_DELAY);
 }
 
 function pushStateToCloud() {
-  if (!state.account || !state.account.uid || _dcSyncInFlight) return;
+  if (!state.account || !state.account.uid) return;
+  if (_dcSyncInFlight) { _dcSyncPending = true; return; }
+  clearTimeout(_dcSyncTimer); _dcSyncTimer = null;
+  clearTimeout(_dcSyncRetry); _dcSyncRetry = null;
   _dcSyncInFlight = true;
+  _dcSyncPending = false;
+  dcSetSyncStatus('saving');
   const payload = dcStripStateForCloud(state);
   dcDb.collection('players').doc(state.account.uid).set(payload)
-    .catch(() => {})
-    .finally(() => { _dcSyncInFlight = false; });
+    .then(() => { if (!_dcSyncPending) dcSetSyncStatus('synced'); })
+    .catch(() => { _dcSyncPending = true; dcSetSyncStatus('error'); _dcSyncRetry = setTimeout(pushStateToCloud, 5000); })
+    .finally(() => {
+      _dcSyncInFlight = false;
+      if (_dcSyncPending && !_dcSyncRetry) pushStateToCloud(); // накопились изменения во время отправки
+    });
+}
+
+// Страховка: если что-то осталось несохранённым — отправляем каждые 10с
+setInterval(() => { if (_dcSyncPending && !_dcSyncInFlight && !_dcSyncTimer) pushStateToCloud(); }, 10000);
+
+// Мелкий индикатор синхронизации
+let _dcSyncHideT = null;
+function dcSetSyncStatus(st) {
+  let el = document.getElementById('dcSyncStatus');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'dcSyncStatus';
+    el.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 4px);z-index:99998;font:800 10px Nunito,sans-serif;color:rgba(255,255,255,0.55);background:rgba(0,0,0,0.35);padding:2px 8px;border-radius:8px;pointer-events:none;opacity:0;transition:opacity 0.3s;white-space:nowrap;';
+    document.body.appendChild(el);
+  }
+  clearTimeout(_dcSyncHideT);
+  if (st === 'synced') {
+    el.textContent = '✓ Всё синхронизировано'; el.style.color = 'rgba(93,255,192,0.85)'; el.style.opacity = '1';
+    _dcSyncHideT = setTimeout(() => { el.style.opacity = '0'; }, 2500);
+  } else if (st === 'error') {
+    el.textContent = '⚠ Нет связи, повторяем…'; el.style.color = 'rgba(255,190,80,0.9)'; el.style.opacity = '1';
+  } else {
+    el.textContent = '⟳ Синхронизация…'; el.style.color = 'rgba(255,255,255,0.55)'; el.style.opacity = '1';
+  }
 }
 
 // Срабатывает: при запуске страницы (восстановление сессии), сразу после
@@ -4309,10 +4359,14 @@ function _continueAuthFlow(user) {
   }
 }
 
+window.addEventListener('pagehide', () => {
+  if (state.account && state.account.uid && _dcSyncPending) pushStateToCloud();
+});
+
 // На случай закрытия вкладки/сворачивания — добиваем последнее сохранение.
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden' && state.account && state.account.uid) {
-    clearTimeout(_dcSyncTimer);
+    clearTimeout(_dcSyncTimer); _dcSyncTimer = null;
     pushStateToCloud();
   }
 });
@@ -6422,26 +6476,32 @@ const PRGRAM_RATE_OUT  = 10;    // PRGRAM
 const PRGRAM_MIN_GEMS  = 400;   // минимальная сумма обмена
 let wdActiveTab = 'withdraw';   // 'withdraw' | 'exchange' — какая вкладка открыта в окне «Вывод»
 
-function showCabsMaintenanceDialog() {
-  if (document.getElementById('cabsMaintOverlay')) return;
+const WD_MAINTENANCE = {
+  gold: 'GOLD exchange is temporarily unavailable due to maintenance. Please try again later.',
+  cabs: 'CABS withdrawals are temporarily unavailable due to maintenance. Please try again later.'
+};
+
+function showMaintenanceDialog(message) {
+  if (document.getElementById('maintOverlay')) return;
   const ov = document.createElement('div');
-  ov.id = 'cabsMaintOverlay';
+  ov.id = 'maintOverlay';
   ov.style.cssText = 'position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,0.78);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);';
   ov.innerHTML =
-    '<div role="alertdialog" aria-modal="true" aria-labelledby="cabsMaintTitle" style="width:100%;max-width:340px;box-sizing:border-box;padding:24px 20px 20px;border-radius:20px;text-align:center;background:linear-gradient(160deg,#1b2230,#10151f);border:1px solid rgba(0,230,150,0.35);box-shadow:0 12px 50px rgba(0,0,0,0.8);">' +
+    '<div role="alertdialog" aria-modal="true" aria-labelledby="maintTitle" style="width:100%;max-width:340px;box-sizing:border-box;padding:24px 20px 20px;border-radius:20px;text-align:center;background:linear-gradient(160deg,#1b2230,#10151f);border:1px solid rgba(255,170,0,0.4);box-shadow:0 12px 50px rgba(0,0,0,0.8);">' +
       '<div style="font-size:42px;line-height:1;margin-bottom:10px;">🛠️</div>' +
-      '<div id="cabsMaintTitle" style="font-size:18px;font-weight:900;color:#5dffc0;margin-bottom:8px;">Under Maintenance</div>' +
-      '<div style="font-size:14px;font-weight:700;color:rgba(255,255,255,0.75);line-height:1.45;margin-bottom:18px;">CABS withdrawals are temporarily unavailable due to maintenance. Please try again later.</div>' +
-      '<button id="cabsMaintOk" style="width:100%;padding:12px;border:none;border-radius:12px;background:linear-gradient(160deg,#00c985,#007a66);color:#fff;font-size:15px;font-weight:900;cursor:pointer;box-shadow:0 4px 0 #004a40;-webkit-tap-highlight-color:transparent;">OK</button>' +
+      '<div id="maintTitle" style="font-size:18px;font-weight:900;color:#ffb347;margin-bottom:8px;">Under Maintenance</div>' +
+      '<div style="font-size:14px;font-weight:700;color:rgba(255,255,255,0.75);line-height:1.45;margin-bottom:18px;">' + message + '</div>' +
+      '<button id="maintOk" style="width:100%;padding:12px;border:none;border-radius:12px;background:linear-gradient(160deg,#ffb347,#e07b00);color:#fff;font-size:15px;font-weight:900;cursor:pointer;box-shadow:0 4px 0 #8a4a00;-webkit-tap-highlight-color:transparent;">OK</button>' +
     '</div>';
   const close = () => ov.remove();
   ov.addEventListener('click', e => { if (e.target === ov) close(); });
   document.body.appendChild(ov);
-  document.getElementById('cabsMaintOk').addEventListener('click', close);
+  document.getElementById('maintOk').addEventListener('click', close);
 }
 
 function switchWithdrawTab(tab) {
-  if (tab === 'cabs') { showCabsMaintenanceDialog(); return; } // CABS: на профилактике
+  // GOLD и CABS на профилактике — вкладки не открываются
+  if (WD_MAINTENANCE[tab]) { showMaintenanceDialog(WD_MAINTENANCE[tab]); return; }
   wdActiveTab = tab;
   renderWithdrawal();
 }
@@ -6463,8 +6523,8 @@ function renderWithdrawal() {
     <div class="wd-tabs">
       <button class="wd-tab-btn wd-tab-withdraw ${wdActiveTab==='withdraw' ? 'wd-tab-active' : ''}" onclick="switchWithdrawTab('withdraw')">💸 Вывод</button>
       <button class="wd-tab-btn wd-tab-exchange ${wdActiveTab==='exchange' ? 'wd-tab-active' : ''}" onclick="switchWithdrawTab('exchange')">🔄 Обмен</button>
-      <button class="wd-tab-btn wd-tab-gold ${wdActiveTab==='gold' ? 'wd-tab-active' : ''}" onclick="switchWithdrawTab('gold')" style="font-weight:900;">🥇 GOLD</button>
-      <button class="wd-tab-btn wd-tab-cabs ${wdActiveTab==='cabs' ? 'wd-tab-active' : ''}" onclick="switchWithdrawTab('cabs')" style="font-weight:900;">🪙 CABS</button>
+      <button class="wd-tab-btn wd-tab-gold ${wdActiveTab==='gold' ? 'wd-tab-active' : ''}" onclick="switchWithdrawTab('gold')" style="font-weight:900;">🥇 GOLD<span class="wd-maint-badge">Профилактика</span></button>
+      <button class="wd-tab-btn wd-tab-cabs ${wdActiveTab==='cabs' ? 'wd-tab-active' : ''}" onclick="switchWithdrawTab('cabs')" style="font-weight:900;">🪙 CABS<span class="wd-maint-badge">Профилактика</span></button>
     </div>`;
 
   if (wdActiveTab === 'exchange') {
