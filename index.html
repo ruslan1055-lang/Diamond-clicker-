@@ -15733,9 +15733,9 @@ function buyAutumnLeaf() {
     $('chFl').innerHTML=(flip?fl.slice().reverse():fl).map(n=>'<span>'+n+'</span>').join('');
     const capBy={w:[],b:[]};H.forEach(h=>{if(h.cap){(isW(h.cap)?capBy.b:capBy.w).push(h.cap);}});
     const sortC=a=>a.slice().sort((x,y)=>VAL[y.toLowerCase()]-VAL[x.toLowerCase()]);
-    const mat=(()=>{let s=0;ST.b.forEach(p=>{if(p!=='.'&&p.toLowerCase()!=='k')s+=(isW(p)?1:-1)*VAL[p.toLowerCase()]/100;});return s;})();
+    const mat=(()=>{let s=0;ST.b.forEach(p=>{if(p!=='.'&&p.toLowerCase()!=='k')s+=(isW(p)?1:-1)*VAL[p.toLowerCase()];});return Math.round(s/10)/10;})();
     const line=c=>{const a=sortC(capBy[c]);const adv=c==='w'?mat:-mat;
-      return a.map(pcs).join('')+(adv>0?' <b>+'+adv+'</b>':'');};
+      return a.map(pcs).join('')+(adv>0?' <b>+'+(Math.round(adv*10)/10)+'</b>':'');};
     const opp=ME==='w'?'b':'w',a0=acct();
     $('chCapTop').innerHTML=(online?'🌐 '+esc(oppName()):'🤖')+' '+line(opp);
     $('chCapBot').innerHTML='👤 '+(online&&a0?esc(a0.login):'Вы')+' '+line(ME);
@@ -15797,7 +15797,7 @@ function buyAutumnLeaf() {
       return {uid:dcAuth.currentUser.uid,login:state.account.login};}catch(e){}
     return null;}
   const dbOk=()=>typeof dcDb!=='undefined'&&!!dcDb;
-  const errMsg=e=>e&&e.code==='permission-denied'?'Нет доступа: опубликуйте правила Firestore для chess_games':'Ошибка связи, попробуйте ещё раз';
+  const errMsg=e=>e&&e.code==='permission-denied'?'Firestore отклонил действие (permission-denied). Проверьте правила chess_games':'Ошибка связи, попробуйте ещё раз';
   function ups(obj){
     if(!OREF)return Promise.resolve();
     return OREF.update(Object.assign({updatedAt:ts()},obj)).catch(e=>{console.warn(e);toast(errMsg(e),'error');});}
