@@ -15371,57 +15371,81 @@ function buyAutumnLeaf() {
 })();
 </script>
 <style>
-#chOverlay{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;opacity:0;pointer-events:none;transition:opacity .25s;font-family:'Nunito',sans-serif;background:radial-gradient(ellipse at 50% 40%,#3a1466 0%,#1a0a33 65%,#0a0418 100%);overflow-y:auto;user-select:none;-webkit-user-select:none}
+#chOverlay{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;opacity:0;pointer-events:none;transition:opacity .25s;font-family:'Nunito',sans-serif;background:radial-gradient(ellipse at 50% 35%,#4a1a80 0%,#1a0a33 62%,#0a0418 100%);overflow-y:auto;user-select:none;-webkit-user-select:none}
 #chOverlay.active{opacity:1;pointer-events:all}
-.ch-in{width:100%;max-width:460px;padding:0 10px 18px;box-sizing:border-box;position:relative}
+.ch-in{width:100%;max-width:480px;padding:0 10px 22px;box-sizing:border-box;position:relative}
 .ch-top{display:flex;align-items:center;gap:6px;padding:10px 0;flex-wrap:wrap}
 .ch-ttl{font-size:22px;font-weight:900;color:#ffb15c;text-shadow:0 2px 0 #b34700;margin-right:auto}
 .ch-bx{padding:7px 11px;border-radius:12px;border:2px solid rgba(255,255,255,.55);background:rgba(0,0,0,.35);color:#fff;font-family:inherit;font-weight:900;font-size:12px;cursor:pointer}
 .ch-bx.on{background:#ff9a1a;color:#2a0a00;border-color:#fff}
+.ch-bx:disabled{opacity:.55;cursor:default}
+.ch-modes{display:flex;gap:8px;margin-bottom:10px}
+.ch-modes .ch-bx{flex:1;padding:10px;font-size:13px}
 .ch-row{display:flex;gap:6px;margin-bottom:8px;align-items:center;flex-wrap:wrap}
 .ch-row .lb{color:#e0b8ff;font-weight:800;font-size:12px}
-.ch-cap{display:flex;align-items:center;gap:2px;min-height:26px;color:#e0b8ff;font-weight:800;font-size:13px;padding:2px 4px}
-.ch-cap span{font-size:18px;line-height:1}.ch-cap b{color:#7bd30f;margin-left:4px}
-.ch-board{width:min(94vw,440px);aspect-ratio:1;display:grid;grid-template-columns:repeat(8,1fr);border:4px solid #2b0f45;border-radius:8px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.6),0 0 22px rgba(255,122,0,.25);margin:0 auto;font-size:calc(min(94vw,440px)/8*.8)}
-.ch-sq{position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;line-height:1}
-.ch-sq.lt{background:#f2d3a0}.ch-sq.dk{background:#8a4bd6}
-.ch-sq.lm{box-shadow:inset 0 0 0 100px rgba(255,210,63,.45)}
-.ch-sq.sel{box-shadow:inset 0 0 0 100px rgba(123,211,15,.55)}
-.ch-sq.chk{background:radial-gradient(circle,#ff3b3b 0%,#ff3b3b 35%,transparent 75%),var(--bgc,#f2d3a0)}
-.ch-sq.chk.lt{--bgc:#f2d3a0}.ch-sq.chk.dk{--bgc:#8a4bd6}
-.pc{font-family:"Segoe UI Symbol","Noto Sans Symbols 2","Noto Sans Symbols","DejaVu Sans","Apple Symbols",sans-serif}
-.pw{color:#fff;text-shadow:0 0 2px #000,0 0 2px #000,1px 1px 0 #000,-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000}
-.pb{color:#1a0f24;text-shadow:0 0 1px #fff,0 1px 0 rgba(255,255,255,.35)}
-.ch-sq .dot{position:absolute;width:30%;height:30%;border-radius:50%;background:rgba(40,160,40,.65)}
-.ch-sq .ring{position:absolute;inset:4%;border-radius:50%;border:4px solid rgba(220,40,40,.8);box-sizing:border-box}
-.ch-sq i{position:absolute;font-style:normal;font-size:10px;font-weight:900;opacity:.75;font-family:'Nunito',sans-serif}
-.ch-sq.lt i{color:#8a4bd6}.ch-sq.dk i{color:#f2d3a0}
-.ch-sq i.rk{left:2px;top:1px}.ch-sq i.fl{right:3px;bottom:0}
+.ch-cap{display:flex;align-items:center;gap:2px;min-height:28px;color:#e0b8ff;font-weight:800;font-size:13px;padding:2px 4px}
+.ch-cap svg{width:22px;height:22px;margin-right:-9px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.5))}.ch-cap b{color:#7bd30f;margin-left:12px}
+/* ---- доска ---- */
+.ch-frame{position:relative;width:min(96vw,464px);aspect-ratio:1;margin:4px auto;box-sizing:border-box;padding:5.4%;border-radius:16px;
+  background:repeating-linear-gradient(90deg,rgba(0,0,0,.1) 0 2px,transparent 2px 9px),repeating-linear-gradient(90deg,rgba(255,220,160,.05) 0 1px,transparent 1px 15px),linear-gradient(135deg,#6b3f1b 0%,#3c210b 48%,#79491f 100%);
+  box-shadow:0 16px 36px rgba(0,0,0,.7),0 0 0 2px #e8c36a,0 0 0 5px #4a2c0c,0 0 38px rgba(255,160,40,.3),inset 0 2px 3px rgba(255,225,160,.4),inset 0 -4px 8px rgba(0,0,0,.55)}
+.ch-frame::before{content:"";position:absolute;inset:4.5%;border:2px solid rgba(232,195,106,.9);border-radius:5px;pointer-events:none;box-shadow:0 0 9px rgba(232,195,106,.45),inset 0 0 6px rgba(0,0,0,.5)}
+.ch-rk{position:absolute;left:0;top:5.4%;bottom:5.4%;width:5.4%;display:flex;flex-direction:column}
+.ch-fl{position:absolute;bottom:0;left:5.4%;right:5.4%;height:5.4%;display:flex}
+.ch-rk span,.ch-fl span{flex:1;display:flex;align-items:center;justify-content:center;font-size:clamp(9px,2.7vw,13px);font-weight:900;color:#f0cd78;text-shadow:0 1px 0 #2a1604}
+.ch-board{position:relative;width:100%;height:100%;display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);border-radius:3px;overflow:hidden;box-shadow:0 0 0 1px rgba(0,0,0,.7),0 5px 16px rgba(0,0,0,.65)}
+.ch-sq{position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer;line-height:1;-webkit-tap-highlight-color:transparent}
+.ch-sq.lt{background:radial-gradient(circle at 28% 24%,rgba(255,255,255,.4),transparent 62%),repeating-linear-gradient(88deg,rgba(150,100,40,.08) 0 1px,transparent 1px 6px),linear-gradient(145deg,#f8e8c8,#e2c38c)}
+.ch-sq.dk{background:radial-gradient(circle at 28% 24%,rgba(255,205,150,.3),transparent 62%),repeating-linear-gradient(92deg,rgba(0,0,0,.09) 0 1px,transparent 1px 6px),linear-gradient(145deg,#ad7440,#78471f)}
+.ch-sq::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;transition:background .15s}
+.ch-sq.lm::after{background:rgba(255,214,64,.5)}
+.ch-sq.sel::after{background:rgba(110,230,90,.6);box-shadow:inset 0 0 0 3px rgba(255,255,255,.55)}
+.ch-sq.chk::before{content:"";position:absolute;inset:0;z-index:0;background:radial-gradient(circle,rgba(255,40,40,.95) 0%,rgba(255,40,40,.55) 42%,transparent 74%)}
+.chs-p{position:relative;z-index:1;width:90%;height:90%;display:block;filter:drop-shadow(0 2px 1.5px rgba(0,0,0,.6));transition:transform .18s;pointer-events:none}
+.chs-p.cb{filter:drop-shadow(0 0 1px rgba(255,255,255,.5)) drop-shadow(0 2px 1.5px rgba(0,0,0,.7))}
+.ch-sq.sel .chs-p{transform:translateY(-7%) scale(1.1)}
+.ch-sq.mvd .chs-p{animation:chDrop .3s ease-out}
+@keyframes chDrop{0%{transform:translateY(-16%) scale(1.14);opacity:.7}100%{transform:none;opacity:1}}
+.ch-sq .dot{position:absolute;z-index:2;width:30%;height:30%;border-radius:50%;background:radial-gradient(circle,rgba(30,125,55,.9),rgba(30,125,55,.55));box-shadow:0 0 7px rgba(70,210,100,.65)}
+.ch-sq .ring{position:absolute;z-index:2;inset:5%;border-radius:50%;border:4px solid rgba(230,50,50,.88);box-sizing:border-box;box-shadow:0 0 9px rgba(255,60,60,.65)}
 .ch-st{text-align:center;color:#ffe9a0;font-weight:900;font-size:15px;min-height:26px;padding:6px 0 2px}
-.ch-act{display:flex;gap:8px;justify-content:center;margin:4px 0 8px}
+.ch-act{display:flex;gap:8px;justify-content:center;margin:4px 0 8px;flex-wrap:wrap}
 .ch-moves{background:rgba(0,0,0,.35);border:2px solid #6a3aa6;border-radius:12px;padding:6px 10px;max-height:78px;overflow-y:auto;color:#ffd9a0;font-weight:800;font-size:13px;line-height:1.7}
 .ch-moves .n{color:#e0b8ff;margin:0 3px 0 8px}.ch-moves .m{margin-right:4px}
 .ch-ov{position:absolute;inset:0;background:rgba(0,0,0,.78);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:5;color:#fff;text-align:center;padding:20px}
 .ch-ov h2{margin:0;font-size:30px;font-weight:900;color:#ffd23f;text-shadow:0 0 18px #ff9a1a}.ch-ov p{margin:0;font-size:16px;font-weight:800}
 .ch-pr{display:flex;gap:10px}
-.ch-pr button{width:64px;height:64px;border-radius:14px;border:3px solid #ff9a3c;background:#f2d3a0;font-size:42px;cursor:pointer;line-height:1;padding:0}
+.ch-pr button{width:68px;height:68px;border-radius:14px;border:3px solid #e8c36a;background:linear-gradient(145deg,#f8e8c8,#d9b57c);cursor:pointer;line-height:1;padding:4px}
+.ch-pr button svg{width:100%;height:100%}
+/* ---- лобби ---- */
+.ch-panel{background:rgba(0,0,0,.38);border:2px solid #6a3aa6;border-radius:14px;padding:12px;margin-bottom:10px;color:#ffd9a0;font-weight:800;font-size:13px;line-height:1.4}
+.ch-panel h3{margin:0 0 8px;color:#e0b8ff;font-size:14px;font-weight:900}
+.ch-btns{display:flex;gap:6px;flex-wrap:wrap}.ch-btns .ch-bx{flex:1;padding:10px 6px}
+.ch-g{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid rgba(255,255,255,.1)}
+.ch-g:first-of-type{border-top:none}.ch-g .t{flex:1;min-width:0}.ch-g .s{font-size:11px;opacity:.7}
+.ch-code{font-size:36px;letter-spacing:7px;color:#ffd23f;font-weight:900;text-align:center;text-shadow:0 0 14px #ff9a1a;margin:6px 0}
+.ch-inp{flex:1;min-width:0;padding:9px;border-radius:10px;border:2px solid #6a3aa6;background:rgba(0,0,0,.4);color:#fff;font-weight:900;font-size:16px;text-transform:uppercase;letter-spacing:4px;text-align:center;font-family:inherit;user-select:text;-webkit-user-select:text}
 </style>
 <div id="chOverlay"><div class="ch-in">
   <div class="ch-top"><div class="ch-ttl">♞&#xFE0E; Шахматы</div>
-    <button class="ch-bx" onclick="chNew()">Новая</button><button class="ch-bx" onclick="closeChess()">✕</button></div>
-  <div class="ch-row"><span class="lb">Вы:</span><button class="ch-bx" id="chSw" onclick="chSide('w')">⚪ Белые</button><button class="ch-bx" id="chSb" onclick="chSide('b')">⚫ Чёрные</button>
-    <span class="lb" style="margin-left:6px">Уровень:</span><button class="ch-bx" id="chL1" onclick="chLevel(1)">Легко</button><button class="ch-bx" id="chL2" onclick="chLevel(2)">Средне</button><button class="ch-bx" id="chL3" onclick="chLevel(3)">Сложно</button></div>
-  <div class="ch-cap" id="chCapTop"></div>
-  <div class="ch-board" id="chBoard"></div>
-  <div class="ch-cap" id="chCapBot"></div>
-  <div class="ch-st" id="chSt"></div>
-  <div class="ch-act"><button class="ch-bx" onclick="chUndo()">↩ Отменить ход</button><button class="ch-bx" onclick="chResign()">🏳️ Сдаться</button></div>
-  <div class="ch-moves" id="chMoves"></div>
-  <div class="ch-ov" id="chPromo"><h2>Превращение пешки</h2><div class="ch-pr"><button onclick="chPromoPick('q')">&#9819;&#xFE0E;</button><button onclick="chPromoPick('r')">&#9820;&#xFE0E;</button><button onclick="chPromoPick('b')">&#9821;&#xFE0E;</button><button onclick="chPromoPick('n')">&#9822;&#xFE0E;</button></div></div>
+    <button class="ch-bx" id="chNewBtn" onclick="chNew()">Новая</button><button class="ch-bx" onclick="closeChess()">✕</button></div>
+  <div class="ch-modes"><button class="ch-bx on" id="chMbot" onclick="chMode('bot')">🤖 Против робота</button><button class="ch-bx" id="chMon" onclick="chMode('online')">🌐 Онлайн</button></div>
+  <div id="chLobby" style="display:none"></div>
+  <div id="chGame">
+    <div class="ch-row" id="chBotOpts"><span class="lb">Вы:</span><button class="ch-bx" id="chSw" onclick="chSide('w')">⚪ Белые</button><button class="ch-bx" id="chSb" onclick="chSide('b')">⚫ Чёрные</button>
+      <span class="lb" style="margin-left:6px">Уровень:</span><button class="ch-bx" id="chL1" onclick="chLevel(1)">Легко</button><button class="ch-bx" id="chL2" onclick="chLevel(2)">Средне</button><button class="ch-bx" id="chL3" onclick="chLevel(3)">Сложно</button></div>
+    <div class="ch-cap" id="chCapTop"></div>
+    <div class="ch-frame"><div class="ch-rk" id="chRk"></div><div class="ch-fl" id="chFl"></div><div class="ch-board" id="chBoard"></div></div>
+    <div class="ch-cap" id="chCapBot"></div>
+    <div class="ch-st" id="chSt"></div>
+    <div class="ch-act" id="chAct"></div>
+    <div class="ch-moves" id="chMoves"></div>
+  </div>
+  <div class="ch-ov" id="chPromo"><h2>Превращение пешки</h2><div class="ch-pr" id="chPromoBtns"></div></div>
   <div class="ch-ov" id="chEnd"></div>
 </div></div>
 <script>
-/* ===== ШАХМАТЫ (правила FIDE, против робота) ===== */
+/* ===== ШАХМАТЫ (правила FIDE: против робота и онлайн) ===== */
 (function(){
   /* ---- ENGINE ---- */
   const VAL={p:100,n:320,b:330,r:500,q:900,k:20000};
@@ -15552,12 +15576,47 @@ function buyAutumnLeaf() {
     return top[Math.floor(Math.random()*top.length)].m;}
   function perft(st,d){if(d===0)return 1;let n=0;for(const m of legal(st))n+=perft(make(st,m),d-1);return n;}
 
+  /* ---- ФИГУРЫ (SVG) ---- */
+  const BASE='<path d="M24 90V82Q24 77 29 77H71Q76 77 76 82V90Z"/>';
+  const SH={
+    p:'<circle cx="50" cy="27" r="12"/><path d="M38 46Q50 40 62 46L57 52Q66 62 68 77H32Q34 62 43 52Z"/>',
+    r:'<path d="M30 18H40V27H46V18H54V27H60V18H70V37H30Z"/><path d="M36 37H64L62 52L68 77H32L38 52Z"/>',
+    n:'<path d="M32 77Q32 62 40 52Q43 49 41 45Q35 47 29 51Q25 46 31 38L39 29L41 16L51 24Q62 23 69 33Q77 45 73 62Q71 70 72 77Z"/>',
+    b:'<circle cx="50" cy="13" r="5"/><path d="M50 19Q66 30 64 44Q63 50 57 52L60 58H40L43 52Q37 50 36 44Q34 30 50 19Z"/><path d="M41 60H59L66 77H34Z"/>',
+    q:'<path d="M26 34L36 62L42 30L50 60L58 30L64 62L74 34L70 77H30Z"/><circle cx="24" cy="31" r="5"/><circle cx="38" cy="22" r="5"/><circle cx="50" cy="18" r="5"/><circle cx="62" cy="22" r="5"/><circle cx="76" cy="31" r="5"/>',
+    k:'<path d="M46 6H54V14H62V21H54V29H46V21H38V14H46Z"/><path d="M50 33Q71 33 72 50Q73 60 66 66L70 77H30L34 66Q27 60 28 50Q29 33 50 33Z"/>'};
+  const DET=(t,c)=>{const s=c==='w'?'#7a5f2c':'#a9a9c4';
+    if(t==='n')return '<circle cx="55" cy="32" r="2.6" fill="'+s+'" stroke="none"/><path d="M44 36Q50 44 46 52" fill="none" stroke="'+s+'" stroke-width="1.8"/>';
+    if(t==='b')return '<path d="M52 27L58 39" fill="none" stroke="'+s+'" stroke-width="2.2"/>';
+    if(t==='r')return '<path d="M36 52H64" fill="none" stroke="'+s+'" stroke-width="1.8"/>';
+    if(t==='q')return '<path d="M33 66H67" fill="none" stroke="'+s+'" stroke-width="1.8"/>';
+    if(t==='k')return '<path d="M36 62H64" fill="none" stroke="'+s+'" stroke-width="1.8"/>';
+    return '<path d="M42 54Q50 50 58 54" fill="none" stroke="'+s+'" stroke-width="1.6"/>';};
+  function injectDefs(){
+    if(document.getElementById('chDefs'))return;
+    let s='<svg id="chDefs" width="0" height="0" style="position:absolute" aria-hidden="true"><defs>'
+     +'<linearGradient id="chGw" gradientUnits="userSpaceOnUse" x1="20" y1="6" x2="82" y2="92"><stop offset="0" stop-color="#fffdf4"/><stop offset=".55" stop-color="#ecdcb4"/><stop offset="1" stop-color="#b79d66"/></linearGradient>'
+     +'<linearGradient id="chGb" gradientUnits="userSpaceOnUse" x1="20" y1="6" x2="82" y2="92"><stop offset="0" stop-color="#8a8aa2"/><stop offset=".5" stop-color="#3a3a46"/><stop offset="1" stop-color="#0c0c12"/></linearGradient>';
+    ['w','b'].forEach(c=>{'pnbrqk'.split('').forEach(t=>{
+      s+='<symbol id="chp-'+c+t+'" viewBox="0 0 100 100"><g fill="url(#chG'+c+')" stroke="'+(c==='w'?'#3b2a0e':'#000')+'" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round">'+SH[t]+BASE+'</g>'+DET(t,c)+'</symbol>';});});
+    s+='</defs></svg>';
+    document.body.insertAdjacentHTML('beforeend',s);}
+  const pc=(p,extra)=>{const w=isW(p);
+    return '<svg class="chs-p'+(w?'':' cb')+'" viewBox="0 0 100 100"><use href="#chp-'+(w?'w':'b')+p.toLowerCase()+'"/></svg>';};
+  const pcs=p=>'<svg viewBox="0 0 100 100"><use href="#chp-'+(isW(p)?'w':'b')+p.toLowerCase()+'"/></svg>';
+
   /* ---- GAME ---- */
   const GL={k:'\u265A\uFE0E',q:'\u265B\uFE0E',r:'\u265C\uFE0E',b:'\u265D\uFE0E',n:'\u265E\uFE0E',p:'\u265F\uFE0E'};
-  let ST=null,H=[],KEYS=[],ME='w',LEVEL=2,OVER=false,SEL=-1,LM=null,BUSY=false,PROMO=null,TOKEN=0,RES='';
+  let ST=null,H=[],HM=[],KEYS=[],ME='w',LEVEL=2,OVER=false,SEL=-1,LM=null,BUSY=false,PROMO=null,TOKEN=0,RES='',DROP=-1,LASTEND=null;
+  let MODE='bot',OG=null,OREF=null,OUNSUB=null,OID='',OSYNC=false,BOT=null;
   const $=id=>document.getElementById(id);
+  const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const sqn=i=>'abcdefgh'[i&7]+(8-(i>>3));
   const keyOf=st=>st.b.join('')+st.t+st.c.K+st.c.Q+st.c.k+st.c.q+st.ep;
+  const enc=m=>m.f+'.'+m.t+(m.p||'');
+  function decMove(s){
+    const mm=/^(\d+)\.(\d+)([qrbn]?)$/.exec(String(s));if(!mm)return null;
+    return legal(ST).find(x=>x.f===+mm[1]&&x.t===+mm[2]&&(x.p||'')===mm[3])||null;}
   function insufficient(st){
     const ps=[];st.b.forEach((p,i)=>{if(p!=='.'&&p.toLowerCase()!=='k')ps.push([p.toLowerCase(),i]);});
     if(!ps.length)return true;
@@ -15590,27 +15649,37 @@ function buyAutumnLeaf() {
     if(ST.half>=100)return {end:true,winner:null,txt:'Ничья по правилу 50 ходов'};
     const k=keyOf(ST);if(KEYS.filter(x=>x===k).length>=3)return {end:true,winner:null,txt:'Ничья: трёхкратное повторение'};
     return {end:false};}
+  function resetBoard(){
+    TOKEN++;ST=startState();H=[];HM=[];KEYS=[keyOf(ST)];OVER=false;SEL=-1;LM=null;BUSY=false;PROMO=null;RES='';LASTEND=null;DROP=-1;
+    $('chEnd').style.display='none';$('chPromo').style.display='none';}
   function newGame(){
-    TOKEN++;ST=startState();H=[];KEYS=[keyOf(ST)];OVER=false;SEL=-1;LM=null;BUSY=false;PROMO=null;RES='';
-    $('chEnd').style.display='none';$('chPromo').style.display='none';
-    render();
-    if(ST.t!==ME)botTurn();}
-  function doMove(m){
+    resetBoard();view();render();
+    if(MODE==='bot'&&ST.t!==ME)botTurn();}
+  const oppName=()=>{const a=acct();if(!OG||!a)return 'соперник';return OG.hostUid===a.uid?OG.guestLogin:OG.hostLogin;};
+  function doMove(m,remote){
     const before=ST,after=make(before,m);
     const cap=m.ep?(before.t==='w'?'p':'P'):before.b[m.t];
-    H.push({st:before,m:m,san:san(before,m,after),cap:cap==='.'?null:cap});
-    ST=after;KEYS.push(keyOf(ST));LM=[m.f,m.t];SEL=-1;
+    H.push({st:before,m:m,san:san(before,m,after),cap:cap==='.'?null:cap});HM.push(enc(m));
+    ST=after;KEYS.push(keyOf(ST));LM=[m.f,m.t];SEL=-1;DROP=m.t;LASTEND=null;
     const s=status();
     if(s.end){OVER=true;
-      let h,p=s.txt;
-      if(s.winner){const meWin=s.winner===ME;h=meWin?'🏆 Мат! Вы победили':'😵 Мат. Победил робот';p=meWin?'Отличная партия!':'Попробуйте ещё раз';}
-      else h='🤝 '+s.txt;
-      RES={h:h,p:s.winner?p:''};
+      const online=MODE==='online',meWin=s.winner===ME;let h,p='';
+      if(s.winner){
+        h=meWin?'🏆 Мат! Вы победили':(online?'😵 Мат. Победил '+oppName():'😵 Мат. Победил робот');
+        p=online?'':(meWin?'Отличная партия!':'Попробуйте ещё раз');
+      }else h='🤝 '+s.txt;
+      RES={h:h,p:p};LASTEND={result:s.winner||'d',reason:s.winner?'mate':'draw'};
     }
+    if(MODE==='online'&&!remote)sendMove(m);
     render();
     if(OVER){showEnd();return;}
-    if(ST.t!==ME)botTurn();}
-  function showEnd(){const e=$('chEnd');e.innerHTML='<h2>'+RES.h+'</h2>'+(RES.p?'<p>'+RES.p+'</p>':'')+'<button class="ch-bx" style="padding:12px 26px;font-size:16px" onclick="chNew()">Новая партия</button><button class="ch-bx" onclick="chHideEnd()">Посмотреть доску</button>';e.style.display='flex';}
+    if(MODE==='bot'&&ST.t!==ME)botTurn();}
+  function showEnd(){
+    const e=$('chEnd'),on=MODE==='online';
+    e.innerHTML='<h2>'+RES.h+'</h2>'+(RES.p?'<p>'+RES.p+'</p>':'')
+      +'<div style="display:flex;gap:10px"><button class="ch-bx" style="padding:12px 22px;font-size:16px" onclick="'+(on?'chLeave()':'chNew()')+'">'+(on?'В лобби':'Новая партия')+'</button>'
+      +'<button class="ch-bx" style="padding:12px 18px;font-size:16px" onclick="chHideEnd()">Доска</button></div>';
+    e.style.display='flex';}
   function botTurn(){
     BUSY=true;const tk=TOKEN;render();
     setTimeout(()=>{
@@ -15619,11 +15688,29 @@ function buyAutumnLeaf() {
       BUSY=false;
       if(!m){render();return;}
       doMove(m);},380);}
+  function renderActs(){
+    const a=$('chAct');
+    if(MODE==='bot'){a.innerHTML='<button class="ch-bx" onclick="chUndo()">↩ Отменить ход</button><button class="ch-bx" onclick="chResign()">🏳️ Сдаться</button>';return;}
+    const opp=ME==='w'?'b':'w';let h='';
+    if(OG&&OG.status==='playing'&&!OVER){
+      h+='<button class="ch-bx" onclick="chResign()">🏳️ Сдаться</button>';
+      if(OG.drawOffer===opp)h+='<button class="ch-bx on" onclick="chDraw()">🤝 Принять ничью</button><button class="ch-bx" onclick="chDrawNo()">Отклонить</button>';
+      else if(OG.drawOffer===ME)h+='<button class="ch-bx" disabled>🤝 Ничья предложена</button>';
+      else h+='<button class="ch-bx" onclick="chDraw()">🤝 Предложить ничью</button>';}
+    h+='<button class="ch-bx" onclick="chLeave()">⬅ В лобби</button>';
+    a.innerHTML=h;}
+  function view(){
+    const online=MODE==='online',inG=online&&!!OG&&OG.status!=='waiting'&&OSYNC;
+    $('chMbot').classList.toggle('on',!online);$('chMon').classList.toggle('on',online);
+    $('chLobby').style.display=(online&&!inG)?'block':'none';
+    $('chGame').style.display=(!online||inG)?'block':'none';
+    $('chBotOpts').style.display=online?'none':'flex';
+    $('chNewBtn').style.display=online?'none':'';}
   function render(){
     if(!ST)return;
     ['w','b'].forEach(c=>{$('chS'+c).classList.toggle('on',ME===c);});
     [1,2,3].forEach(l=>{$('chL'+l).classList.toggle('on',LEVEL===l);});
-    // board
+    const online=MODE==='online';
     const flip=ME==='b',legalAll=legal(ST);
     const sel=SEL>=0?legalAll.filter(m=>m.f===SEL):[];
     const tos={};sel.forEach(m=>{tos[m.t]=1;});
@@ -15633,66 +15720,233 @@ function buyAutumnLeaf() {
       const rr=flip?7-r:r,cc=flip?7-c:c,i=rr*8+cc,p=ST.b[i];
       let cls='ch-sq '+(((rr+cc)&1)?'dk':'lt');
       if(LM&&(LM[0]===i||LM[1]===i))cls+=' lm';
+      if(LM&&DROP===i)cls+=' mvd';
       if(i===SEL)cls+=' sel';
       if(i===chk)cls+=' chk';
       let inner='';
-      if(p!=='.')inner+='<span class="pc '+(isW(p)?'pw':'pb')+'">'+GL[p.toLowerCase()]+'</span>';
+      if(p!=='.')inner+=pc(p);
       if(tos[i])inner+='<span class="'+(p!=='.'||(ST.b[SEL]&&ST.b[SEL].toLowerCase()==='p'&&(SEL&7)!==(i&7))?'ring':'dot')+'"></span>';
-      if(c===0)inner+='<i class="rk">'+(8-rr)+'</i>';
-      if(r===7)inner+='<i class="fl">'+'abcdefgh'[cc]+'</i>';
       html+='<div class="'+cls+'" onclick="chSq('+i+')">'+inner+'</div>';}
     $('chBoard').innerHTML=html;
-    // captured
+    const nums=[8,7,6,5,4,3,2,1],fl='abcdefgh'.split('');
+    $('chRk').innerHTML=(flip?nums.slice().reverse():nums).map(n=>'<span>'+n+'</span>').join('');
+    $('chFl').innerHTML=(flip?fl.slice().reverse():fl).map(n=>'<span>'+n+'</span>').join('');
     const capBy={w:[],b:[]};H.forEach(h=>{if(h.cap){(isW(h.cap)?capBy.b:capBy.w).push(h.cap);}});
-    const v=a=>a.reduce((n,p)=>n+VAL[p.toLowerCase()]/100,0);
     const sortC=a=>a.slice().sort((x,y)=>VAL[y.toLowerCase()]-VAL[x.toLowerCase()]);
     const mat=(()=>{let s=0;ST.b.forEach(p=>{if(p!=='.'&&p.toLowerCase()!=='k')s+=(isW(p)?1:-1)*VAL[p.toLowerCase()]/100;});return s;})();
     const line=c=>{const a=sortC(capBy[c]);const adv=c==='w'?mat:-mat;
-      return a.map(p=>'<span class="'+(isW(p)?'pw':'pb')+'">'+GL[p.toLowerCase()]+'</span>').join('')+(adv>0?' <b>+'+adv+'</b>':'');};
-    const opp=ME==='w'?'b':'w';
-    $('chCapTop').innerHTML='🤖 '+line(opp);
-    $('chCapBot').innerHTML='👤 '+line(ME);
-    // moves
+      return a.map(pcs).join('')+(adv>0?' <b>+'+adv+'</b>':'');};
+    const opp=ME==='w'?'b':'w',a0=acct();
+    $('chCapTop').innerHTML=(online?'🌐 '+esc(oppName()):'🤖')+' '+line(opp);
+    $('chCapBot').innerHTML='👤 '+(online&&a0?esc(a0.login):'Вы')+' '+line(ME);
     let mv='';
     H.forEach((h,i)=>{if(i%2===0)mv+='<span class="n">'+(i/2+1)+'.</span>';mv+='<span class="m">'+h.san+'</span>';});
     const ml=$('chMoves');ml.innerHTML=mv||'<span style="opacity:.5">Ходов пока нет</span>';ml.scrollTop=ml.scrollHeight;
-    // status
     let st='';
     if(OVER)st=RES.h;
+    else if(online){
+      st=(ST.t===ME?'Ваш ход':'Ход соперника ('+esc(oppName())+')')+(inCheck(ST,ST.t)?' — ШАХ!':'');
+      if(OG&&OG.drawOffer===opp)st='🤝 Соперник предлагает ничью';}
     else if(BUSY)st='Робот думает… 🤔';
     else st=(ST.t===ME?'Ваш ход':'Ход робота')+(inCheck(ST,ST.t)?' — ШАХ!':'');
-    $('chSt').textContent=st;}
+    $('chSt').innerHTML=st;
+    renderActs();}
+  function showPromo(){
+    $('chPromoBtns').innerHTML=['q','r','b','n'].map(t=>'<button onclick="chPromoPick(\''+t+'\')">'+pcs(ME==='w'?t.toUpperCase():t)+'</button>').join('');
+    $('chPromo').style.display='flex';}
   window.chSq=function(i){
     if(!ST||OVER||BUSY||PROMO||ST.t!==ME)return;
+    if(MODE==='online'&&!(OG&&OG.status==='playing'))return;
     const p=ST.b[i];
     const ms=legal(ST).filter(m=>m.f===SEL&&m.t===i);
     if(SEL>=0&&ms.length){
-      if(ms[0].p){PROMO=ms;$('chPromo').style.display='flex';return;}
+      if(ms[0].p){PROMO=ms;showPromo();return;}
       doMove(ms[0]);return;}
     if(p!=='.'&&colOf(p)===ME&&legal(ST).some(m=>m.f===i)){SEL=i;}else SEL=-1;
     render();};
   window.chPromoPick=function(t){
     if(!PROMO)return;const m=PROMO.find(x=>x.p===t);PROMO=null;$('chPromo').style.display='none';if(m)doMove(m);};
-  window.chNew=function(){newGame();};
+  window.chNew=function(){if(MODE!=='bot')return;newGame();};
   window.chHideEnd=function(){$('chEnd').style.display='none';};
-  window.chSide=function(c){ME=c;newGame();};
+  window.chSide=function(c){if(MODE!=='bot')return;ME=c;newGame();};
   window.chLevel=function(l){LEVEL=l;render();};
   window.chUndo=function(){
+    if(MODE!=='bot')return;
     if(!H.length||BUSY&&!OVER)return;
     TOKEN++;BUSY=false;
-    let e=H.pop();ST=e.st;
-    if(ST.t!==ME&&H.length){e=H.pop();ST=e.st;}
+    let e=H.pop();HM.pop();ST=e.st;
+    if(ST.t!==ME&&H.length){e=H.pop();HM.pop();ST=e.st;}
     KEYS=[];H.forEach(h=>KEYS.push(keyOf(h.st)));KEYS.push(keyOf(ST));
-    OVER=false;SEL=-1;LM=H.length?[H[H.length-1].m.f,H[H.length-1].m.t]:null;PROMO=null;
+    OVER=false;SEL=-1;LM=H.length?[H[H.length-1].m.f,H[H.length-1].m.t]:null;DROP=-1;PROMO=null;
     $('chEnd').style.display='none';render();
     if(ST.t!==ME)botTurn();};
   window.chResign=function(){
-    if(!ST||OVER||!H.length)return;
+    if(!ST||OVER)return;
+    if(MODE==='online'){
+      if(!OREF||!OG||OG.status!=='playing')return;
+      if(!confirm('Сдаться?'))return;
+      ups({status:'finished',result:ME==='w'?'b':'w',reason:'resign'});return;}
+    if(!H.length)return;
     if(!confirm('Сдаться?'))return;
     OVER=true;RES={h:'🏳️ Вы сдались',p:'Победил робот'};render();showEnd();};
+
+  /* ============ ОНЛАЙН (Firestore: коллекция chess_games) ============ */
+  const ts=()=>firebase.firestore.FieldValue.serverTimestamp();
+  function acct(){
+    try{if(typeof state!=='undefined'&&state.account&&state.account.login&&typeof dcAuth!=='undefined'&&dcAuth&&dcAuth.currentUser)
+      return {uid:dcAuth.currentUser.uid,login:state.account.login};}catch(e){}
+    return null;}
+  const dbOk=()=>typeof dcDb!=='undefined'&&!!dcDb;
+  const errMsg=e=>e&&e.code==='permission-denied'?'Нет доступа: опубликуйте правила Firestore для chess_games':'Ошибка связи, попробуйте ещё раз';
+  function ups(obj){
+    if(!OREF)return Promise.resolve();
+    return OREF.update(Object.assign({updatedAt:ts()},obj)).catch(e=>{console.warn(e);toast(errMsg(e),'error');});}
+  function rollbackTo(n){
+    while(H.length>n){const e=H.pop();ST=e.st;}
+    HM.length=n;KEYS=[];H.forEach(h=>KEYS.push(keyOf(h.st)));KEYS.push(keyOf(ST));
+    OVER=false;RES='';LASTEND=null;DROP=-1;LM=H.length?[H[H.length-1].m.f,H[H.length-1].m.t]:null;
+    $('chEnd').style.display='none';render();}
+  function sendMove(m){
+    const ref=OREF,code=enc(m),idx=H.length-1,end=(OVER&&LASTEND)?LASTEND:null;
+    dcDb.runTransaction(async tx=>{
+      const d=await tx.get(ref),g=d.data();
+      if(!g||g.status!=='playing')throw new Error('closed');
+      const mv=g.moves||[];
+      if(mv.length!==idx)throw new Error('desync');
+      const upd={moves:mv.concat([code]),drawOffer:'',updatedAt:ts()};
+      if(end){upd.status='finished';upd.result=end.result;upd.reason=end.reason;}
+      tx.update(ref,upd);
+    }).catch(e=>{console.warn(e);toast('Ход не отправлен. '+errMsg(e),'error');if(H.length>idx)rollbackTo(idx);});}
+  function syncMoves(g){
+    const mv=g.moves||[];
+    if(!(mv.length>=HM.length&&HM.every((x,i)=>x===mv[i])))resetBoard();
+    for(let i=HM.length;i<mv.length;i++){
+      const m=decMove(mv[i]);
+      if(!m){OVER=true;RES={h:'⚠️ Недопустимый ход соперника',p:'Партия остановлена'};render();showEnd();return;}
+      doMove(m,true);}}
+  function endRemote(g){
+    OVER=true;const r=g.result;let h,p='';
+    if(g.reason==='resign'){h=r===ME?'🏆 Соперник сдался':'🏳️ Вы сдались';p=r===ME?'Победа!':'Победил '+oppName();}
+    else if(r==='d')h='🤝 Ничья по соглашению';
+    else h=r===ME?'🏆 Вы победили':'😵 Победил '+oppName();
+    RES={h:h,p:p};render();showEnd();}
+  function onGame(snap){
+    if(MODE!=='online')return;
+    const a=acct();
+    if(!snap.exists){detach();toast('Партия удалена','info');view();renderLobby();return;}
+    const g=snap.data();OG=g;
+    if(g.status==='waiting'){view();renderLobby();return;}
+    if(!a||(g.hostUid!==a.uid&&g.guestUid!==a.uid)){detach();toast('Вы не участник этой партии','error');view();renderLobby();return;}
+    ME=g.hostUid===a.uid?g.hostColor:(g.hostColor==='w'?'b':'w');
+    if(!OSYNC){resetBoard();OSYNC=true;}
+    syncMoves(g);
+    if(g.status==='finished'&&!OVER)endRemote(g);
+    view();render();}
+  function attach(id){
+    detach();OID=id;OREF=dcDb.collection('chess_games').doc(id);OG=null;OSYNC=false;
+    OUNSUB=OREF.onSnapshot(onGame,e=>{console.warn(e);toast(errMsg(e),'error');});
+    view();renderLobby();}
+  function detach(){
+    if(OUNSUB){try{OUNSUB();}catch(e){}}
+    OUNSUB=null;OREF=null;OID='';OG=null;OSYNC=false;}
+  const CODE_CH='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const genCode=()=>Array.from({length:6},()=>CODE_CH[Math.floor(Math.random()*CODE_CH.length)]).join('');
+  window.chCreate=async function(side){
+    const a=acct();if(!a||!dbOk()){toast('Войдите в аккаунт для онлайн-игры','error');return;}
+    const col=side==='r'?(Math.random()<.5?'w':'b'):side;let lastErr=null;
+    for(let k=0;k<5;k++){
+      const code=genCode();
+      try{
+        await dcDb.collection('chess_games').doc(code).set({hostUid:a.uid,hostLogin:a.login,hostColor:col,guestUid:null,guestLogin:null,
+          status:'waiting',moves:[],result:'',reason:'',drawOffer:'',createdAt:ts(),updatedAt:ts()});
+        attach(code);return;
+      }catch(e){lastErr=e;if(e&&e.code==='permission-denied'&&k>=1)break;}}
+    toast(errMsg(lastErr),'error');};
+  window.chJoinCode=function(){
+    const v=(($('chCodeIn')||{}).value||'').trim().toUpperCase();
+    if(v.length!==6){toast('Введите код из 6 символов','error');return;}
+    chJoin(v);};
+  window.chJoin=async function(id){
+    const a=acct();if(!a||!dbOk()){toast('Войдите в аккаунт для онлайн-игры','error');return;}
+    const ref=dcDb.collection('chess_games').doc(id);
+    try{
+      await dcDb.runTransaction(async tx=>{
+        const d=await tx.get(ref);if(!d.exists)throw new Error('nf');
+        const g=d.data();
+        if(g.hostUid===a.uid||g.guestUid===a.uid)return;
+        if(g.status==='waiting'&&!g.guestUid){tx.update(ref,{guestUid:a.uid,guestLogin:a.login,status:'playing',updatedAt:ts()});return;}
+        throw new Error('busy');});
+    }catch(e){
+      console.warn(e);
+      toast(e&&e.message==='nf'?'Партия не найдена':e&&e.message==='busy'?'К этой партии уже подключился другой игрок':errMsg(e),'error');
+      return;}
+    attach(id);};
+  window.chOpenGame=function(id){
+    if(!acct()||!dbOk())return;attach(id);};
+  window.chCopyCode=function(){
+    if(!OID)return;
+    try{navigator.clipboard.writeText(OID);toast('Код скопирован','success');}catch(e){toast('Код: '+OID,'info');}};
+  window.chLeave=async function(){
+    const ref=OREF,g=OG,a=acct();
+    if(ref&&g&&g.status==='waiting'&&a&&g.hostUid===a.uid){try{await ref.delete();}catch(e){}}
+    detach();resetBoard();view();renderLobby();};
+  window.chDraw=function(){
+    if(!OG||OG.status!=='playing'||OVER)return;
+    const opp=ME==='w'?'b':'w';
+    if(OG.drawOffer===opp)ups({status:'finished',result:'d',reason:'draw-agreed',drawOffer:''});
+    else ups({drawOffer:ME});};
+  window.chDrawNo=function(){ups({drawOffer:''});};
+  window.chLbRefresh=function(){loadLobby();};
+  function renderLobby(){
+    const L=$('chLobby');if(!L||MODE!=='online')return;
+    const a=acct();
+    if(!a||!dbOk()){L.innerHTML='<div class="ch-panel"><h3>🌐 Онлайн-игра</h3>Чтобы играть с другими игроками, войдите в аккаунт.</div>';return;}
+    if(OG&&OG.status==='waiting'){
+      L.innerHTML='<div class="ch-panel"><h3>⏳ Ждём соперника…</h3>Отправьте этот код другу — или он найдёт вашу партию в списке открытых.<div class="ch-code">'+esc(OID)+'</div>'
+        +'<div style="text-align:center;margin-bottom:10px">Вы играете '+(OG.hostColor==='w'?'⚪ белыми':'⚫ чёрными')+'</div>'
+        +'<div class="ch-btns"><button class="ch-bx on" onclick="chCopyCode()">📋 Скопировать код</button><button class="ch-bx" onclick="chLeave()">✕ Отменить</button></div></div>';
+      return;}
+    L.innerHTML='<div class="ch-panel"><h3>➕ Создать партию</h3><div class="ch-btns"><button class="ch-bx" onclick="chCreate(\'w\')">⚪ Белыми</button><button class="ch-bx" onclick="chCreate(\'b\')">⚫ Чёрными</button><button class="ch-bx on" onclick="chCreate(\'r\')">🎲 Случайно</button></div></div>'
+      +'<div class="ch-panel"><h3>🔑 Войти по коду</h3><div class="ch-row" style="margin:0"><input class="ch-inp" id="chCodeIn" maxlength="6" placeholder="КОД" autocomplete="off"><button class="ch-bx on" style="padding:10px 16px" onclick="chJoinCode()">Играть</button></div></div>'
+      +'<div class="ch-panel"><h3>▶ Мои партии</h3><div id="chLbMine" style="opacity:.7">Загрузка…</div></div>'
+      +'<div class="ch-panel"><h3>🟢 Открытые партии <button class="ch-bx" style="float:right;padding:3px 9px" onclick="chLbRefresh()">🔄</button></h3><div id="chLbOpen" style="opacity:.7">Загрузка…</div></div>';
+    loadLobby();}
+  async function loadLobby(){
+    const a=acct();if(!a||!dbOk())return;
+    const col=dcDb.collection('chess_games');
+    try{
+      const [h,g,o]=await Promise.all([col.where('hostUid','==',a.uid).limit(10).get(),col.where('guestUid','==',a.uid).limit(10).get(),col.where('status','==','waiting').limit(25).get()]);
+      const mine=[];h.forEach(d=>mine.push({id:d.id,g:d.data()}));g.forEach(d=>mine.push({id:d.id,g:d.data()}));
+      const act=mine.filter(x=>x.g.status==='playing'||x.g.status==='waiting');
+      const now=Date.now(),open=[];
+      o.forEach(d=>{const v=d.data();if(v.hostUid===a.uid)return;
+        const t=v.createdAt&&v.createdAt.toMillis?v.createdAt.toMillis():now;if(now-t>3600000)return;open.push({id:d.id,g:v});});
+      const em=$('chLbMine'),eo=$('chLbOpen');
+      if(em){em.style.opacity=1;em.innerHTML=act.length?act.map(x=>{const v=x.g,host=v.hostUid===a.uid;
+        const my=host?v.hostColor:(v.hostColor==='w'?'b':'w');
+        const t=v.status==='waiting'?'Ждёт соперника · код '+esc(x.id):((my==='w'?'⚪':'⚫')+' против '+esc(host?v.guestLogin:v.hostLogin));
+        return '<div class="ch-g"><div class="t">'+t+'</div><button class="ch-bx on" onclick="chOpenGame(\''+esc(x.id)+'\')">'+(v.status==='waiting'?'Открыть':'Продолжить')+'</button></div>';}).join(''):'Активных партий нет';}
+      if(eo){eo.style.opacity=1;eo.innerHTML=open.length?open.map(x=>{const v=x.g;
+        return '<div class="ch-g"><div class="t">'+esc(v.hostLogin)+'<div class="s">играет '+(v.hostColor==='w'?'⚪ белыми — вы будете ⚫':'⚫ чёрными — вы будете ⚪')+'</div></div><button class="ch-bx on" onclick="chJoin(\''+esc(x.id)+'\')">Играть</button></div>';}).join(''):'Открытых партий пока нет — создайте свою!';}
+    }catch(e){console.warn(e);
+      const m=errMsg(e);['chLbMine','chLbOpen'].forEach(id=>{const el=$(id);if(el){el.style.opacity=1;el.textContent=m;}});}}
+  window.chMode=function(m){
+    if(m===MODE)return;
+    if(m==='online'){
+      BOT={ST:ST,H:H,HM:HM,KEYS:KEYS,ME:ME,OVER:OVER,LM:LM,RES:RES};
+      TOKEN++;BUSY=false;MODE='online';ME='w';ST=null;OSYNC=false;
+      view();
+      if(OID)attach(OID);else renderLobby();
+      return;}
+    detach();MODE='bot';
+    if(BOT&&BOT.ST){ST=BOT.ST;H=BOT.H;HM=BOT.HM;KEYS=BOT.KEYS;ME=BOT.ME;OVER=BOT.OVER;LM=BOT.LM;RES=BOT.RES;SEL=-1;BUSY=false;PROMO=null;DROP=-1;
+      $('chEnd').style.display='none';view();render();if(!OVER&&ST.t!==ME)botTurn();}
+    else newGame();};
   window.openChess=function(){
     document.querySelectorAll('.modal-overlay.active').forEach(m=>{if(typeof _animateClose==='function')_animateClose(m);});
-    if(!ST)newGame();else render();
+    injectDefs();
+    if(MODE==='bot'){if(!ST)newGame();else{view();render();}}
+    else{view();if(!OREF)renderLobby();else if(OSYNC)render();}
     $('chOverlay').classList.add('active');};
   window.closeChess=function(){$('chOverlay').classList.remove('active');};
   window._chG=()=>({ST,OVER,H});
