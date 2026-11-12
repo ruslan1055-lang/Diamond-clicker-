@@ -3094,6 +3094,23 @@ body[class*="free-theme-"] #bonusTab1 {
 @media (max-width:360px){ .us-slide-banner{ font-size:46px; } .us-slide-title{ font-size:17px; } }
 
 </style>
+<style id="maxPerkCss">
+.maxpc-wrap{margin-bottom:6px}
+.maxpc{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;border-radius:22px;overscroll-behavior-x:contain}
+.maxpc::-webkit-scrollbar{display:none}
+.maxpc-slide{flex:0 0 100%;scroll-snap-align:center;scroll-snap-stop:always;box-sizing:border-box;padding:0 2px}
+.maxpc-card{position:relative;overflow:hidden;min-height:230px;border-radius:22px;padding:26px 20px 20px;text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:linear-gradient(160deg,rgba(0,12,28,.98),rgba(0,5,18,.98));border:1.5px solid color-mix(in srgb,var(--c) 55%,transparent);box-shadow:0 0 26px color-mix(in srgb,var(--c) 22%,transparent),inset 0 0 30px color-mix(in srgb,var(--c) 6%,transparent);-webkit-tap-highlight-color:transparent;user-select:none}
+.maxpc-glow{position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:220px;height:120px;background:radial-gradient(ellipse,color-mix(in srgb,var(--c) 40%,transparent),transparent 70%);filter:blur(10px);pointer-events:none}
+.maxpc-ico{position:relative;font-size:70px;line-height:1;margin-bottom:12px;filter:drop-shadow(0 0 16px var(--c)) drop-shadow(0 0 32px color-mix(in srgb,var(--c) 55%,transparent));animation:maxIconPulse 2.5s ease-in-out infinite}
+.maxpc-title{position:relative;font-size:19px;font-weight:900;color:var(--c);text-shadow:0 0 18px color-mix(in srgb,var(--c) 55%,transparent);margin-bottom:7px;line-height:1.2}
+.maxpc-desc{position:relative;font-size:13px;color:rgba(255,255,255,.6);line-height:1.5;max-width:270px}
+.maxpc-more{position:relative;margin-top:14px;font-size:11px;font-weight:900;color:var(--c);opacity:.75;letter-spacing:.5px}
+.maxpc-dots{display:flex;justify-content:center;align-items:center;gap:6px;margin:12px 0 4px;flex-wrap:wrap}
+.maxpc-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.22);cursor:pointer;transition:all .25s}
+.maxpc-dot.on{width:20px;border-radius:6px}
+.maxpc-hint{text-align:center;font-size:10px;font-weight:800;color:rgba(0,255,200,.4);letter-spacing:.5px;margin-bottom:4px}
+</style>
 </head>
 <body>
 
@@ -3721,18 +3738,6 @@ body[class*="free-theme-"] #bonusTab1 {
   </div>
 </div>
 
-<!-- DIAMOND MAGNATE MODAL -->
-<div class="modal-overlay" id="modal-dm">
-  <div class="modal" style="border-top-color:rgba(0,200,255,0.45);box-shadow:0 -10px 50px rgba(0,0,0,0.8),0 -2px 0 rgba(0,200,255,0.25),0 -4px 40px rgba(120,80,255,0.12);">
-    <div class="modal-handle" style="background:rgba(0,200,255,0.3);"></div>
-    <div class="modal-header" style="border-bottom-color:rgba(0,200,255,0.12);">
-      <span class="modal-title" style="background:linear-gradient(135deg,#00c8ff 0%,#7df9ff 50%,#a855f7 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:flex;align-items:center;gap:6px;"><img src="data:image/webp;base64,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" alt="💎" style="width:20px;height:20px;display:inline-block;">Diamond Magnate</span>
-      <button class="modal-close" onclick="closeModal('dm')" style="border-color:rgba(0,200,255,0.2);color:rgba(0,200,255,0.5);">✕</button>
-    </div>
-    <div class="modal-body" id="dmBody"></div>
-  </div>
-</div>
-
 <!-- FIRE DUOLINGO MODAL -->
 <div class="modal-overlay" id="modal-fd">
   <div class="modal" style="border-top-color:rgba(255,140,0,0.45);box-shadow:0 -10px 50px rgba(0,0,0,0.8),0 -2px 0 rgba(255,140,0,0.25),0 -4px 40px rgba(255,80,0,0.12);">
@@ -3742,18 +3747,6 @@ body[class*="free-theme-"] #bonusTab1 {
       <button class="modal-close" onclick="closeModal('fd')" style="border-color:rgba(255,140,0,0.2);color:rgba(255,140,0,0.5);">✕</button>
     </div>
     <div class="modal-body" id="fdBody"></div>
-  </div>
-</div>
-
-<!-- ULTRA MODAL -->
-<div class="modal-overlay" id="modal-ultra">
-  <div class="modal" style="border-top-color:rgba(255,210,77,0.5);box-shadow:0 -10px 50px rgba(0,0,0,0.8),0 -2px 0 rgba(255,210,77,0.28),0 -4px 40px rgba(255,79,216,0.14);">
-    <div class="modal-handle" style="background:rgba(255,210,77,0.35);"></div>
-    <div class="modal-header" style="border-bottom-color:rgba(255,210,77,0.15);">
-      <span class="modal-title" style="background:linear-gradient(135deg,#ffd24d 0%,#ff4fd8 55%,#8b5cf6 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">🏵️ ULTRA</span>
-      <button class="modal-close" onclick="closeModal('ultra')" style="border-color:rgba(255,210,77,0.25);color:rgba(255,210,77,0.6);">✕</button>
-    </div>
-    <div class="modal-body" id="ultraBody"></div>
   </div>
 </div>
 
@@ -3806,7 +3799,7 @@ const STORAGE_KEY = 'duo_clicker_v2';
 
 // ============================================================
 //  DIAMOND ICON (PNG texture, used instead of 💎 emoji in UI
-//  counters / bonuses / Diamond Magnate subscription).
+//  counters / bonuses).
 //  NOTE: does NOT affect the main clickable diamond — that one
 //  stays as the hand-drawn SVG inside #diamondBtn.
 // ============================================================
@@ -3964,14 +3957,8 @@ function defaultState() {
     vip: null,          // { end: timestamp } — VIP subscription
     vipTheme: 0,        // selected theme index (0 = default)
     themeOwned: [],     // purchased special themes (cls names)
-    diamondMagnate: {   // Diamond magnate subscription
-      end: null,            // timestamp окончания подписки
-      dayIndex: 0,          // сколько дней цикла (0-30) уже забрано
-      lastClaimDate: null,  // 'YYYY-MM-DD' последнего забора
-      claimed: [],          // забранные дни (номера 1-30)
-    },
     fireDuo: null,      // { end: timestamp } — Fire Duolingo subscription
-    ultra: null,        // { end, last, earned } — ULTRA subscription (🏵️)
+    vipMine: null,      // { last, earned } — ⛏️ шахта алмазов (авто-сборщик для MAX)
     dailyRewards: {
       lastClaimDate: null,  // 'YYYY-MM-DD' of last claim
       streak: 0,            // current streak day (1-7)
@@ -4054,18 +4041,13 @@ function sanitizeState(merged, parsed) {
       if (typeof merged.event.orbs !== 'number') merged.event.orbs = 0;
       if (!Array.isArray(merged.event.claimed)) merged.event.claimed = [];
       if (!Array.isArray(merged.event.claimedMax)) merged.event.claimedMax = [];
-      if (!merged.diamondMagnate || typeof merged.diamondMagnate !== 'object') {
-        merged.diamondMagnate = { end: null, dayIndex: 0, lastClaimDate: null, claimed: [] };
-      }
-      if (typeof merged.diamondMagnate.dayIndex !== 'number') merged.diamondMagnate.dayIndex = 0;
-      if (!Array.isArray(merged.diamondMagnate.claimed)) merged.diamondMagnate.claimed = [];
-      if (merged.diamondMagnate.end === undefined) merged.diamondMagnate.end = null;
-      if (merged.diamondMagnate.lastClaimDate === undefined) merged.diamondMagnate.lastClaimDate = null;
+      delete merged.diamondMagnate; // подписка Diamond Magnate удалена
       if (merged.fireDuo === undefined) merged.fireDuo = null;
-      if (!merged.ultra || typeof merged.ultra !== 'object' || typeof merged.ultra.end !== 'number') merged.ultra = null;
-      if (merged.ultra) {
-        if (typeof merged.ultra.last !== 'number' || !isFinite(merged.ultra.last)) merged.ultra.last = Date.now();
-        if (typeof merged.ultra.earned !== 'number') merged.ultra.earned = 0;
+      delete merged.ultra; // подписка ULTRA удалена
+      if (!merged.vipMine || typeof merged.vipMine !== 'object') merged.vipMine = null;
+      if (merged.vipMine) {
+        if (typeof merged.vipMine.last !== 'number' || !isFinite(merged.vipMine.last)) merged.vipMine.last = Date.now();
+        if (typeof merged.vipMine.earned !== 'number') merged.vipMine.earned = 0;
       }
       if (!Array.isArray(merged.collectedCards)) merged.collectedCards = [];
       if (typeof merged.cashbackPool !== 'number') merged.cashbackPool = 0;
@@ -4574,173 +4556,92 @@ function isVipActive() {
 }
 
 // ============================================================
-//  DIAMOND MAGNATE
+//  ⛏️ ШАХТА АЛМАЗОВ — авто-сборщик для подписчиков MAX
+//  • +500 💎 в час, пока MAX активна
+//  • копится по меткам времени, в том числе когда игра закрыта
 // ============================================================
-const DM_TOTAL_DAYS = 30;
-const DM_COST = 295750; // ⚡ за месяц 🍂 -35% осенняя акция
+const MINE_PER_HOUR = 500;             // 💎 в час
+const MAX_WITHDRAW_LIMIT = 150;        // выводов в день с MAX
 
-function dmRewardForDay(day) {
-  return (day % 7 === 0) ? 16000 : 1000; // 26*1000 + 4*16000 = 90000 за 30 дней
-}
-
-function isDmActive() {
-  return !!(state.diamondMagnate && state.diamondMagnate.end && state.diamondMagnate.end > Date.now());
-}
-
-function canClaimDmReward() {
-  if (!isDmActive()) return false;
-  const dm = state.diamondMagnate;
-  if (dm.dayIndex >= DM_TOTAL_DAYS) return false;
-  return dm.lastClaimDate !== getTodayStr();
-}
-
-function claimDmReward() {
-  if (!isDmActive()) { toast('Подписка Diamond magnate не активна!', 'error'); return; }
-  if (!canClaimDmReward()) {
-    if (state.diamondMagnate.dayIndex >= DM_TOTAL_DAYS) {
-      toast('Все 30 наград этого цикла уже получены!', 'error');
-    } else {
-      toast('Награда уже получена сегодня!', 'error');
-    }
-    return;
+function mineCollect() {
+  const now = Date.now();
+  let m = state.vipMine;
+  if (!m) {
+    if (!isVipActive()) return 0;
+    state.vipMine = { last: now, earned: 0 };
+    return 0;
   }
-  const dm = state.diamondMagnate;
-  const day = dm.dayIndex + 1;
-  const reward = dmRewardForDay(day);
-
-  state.gems += reward;
-  state.totalGems = parseFloat((state.totalGems + reward).toFixed(4));
-
-  dm.dayIndex = day;
-  dm.lastClaimDate = getTodayStr();
-  if (!dm.claimed.includes(day)) dm.claimed.push(day);
-
-  updateUI();
-  saveState();
-  renderDiamondMagnate();
-  toast(`💎 Diamond magnate — День ${day}: +${reward.toLocaleString('ru-RU')} 💎`, 'success');
+  if (typeof m.last !== 'number' || !isFinite(m.last) || m.last <= 0) m.last = now;
+  const end = (state.vip && state.vip.end) || 0;
+  const upTo = Math.min(now, end);
+  let gain = 0;
+  if (upTo > m.last) {
+    const whole = Math.floor((upTo - m.last) / 3600000 * MINE_PER_HOUR);
+    if (whole >= 1) {
+      m.last += whole / MINE_PER_HOUR * 3600000; // остаток дробной части не теряется
+      m.earned = (m.earned || 0) + whole;
+      state.gems += whole;
+      if (typeof state.totalGems === 'number') state.totalGems += whole;
+      gain = whole;
+    }
+  }
+  if (!isVipActive()) m.last = now; // время без MAX в шахту не засчитывается
+  return gain;
 }
 
-function buyDiamondMagnate() {
-  if (state.xp < DM_COST) { toast('Недостаточно ⚡!', 'error'); return; }
-  state.xp = parseFloat((state.xp - DM_COST).toFixed(4));
-
-  const now = Date.now();
-  const dm = state.diamondMagnate || { end: null, dayIndex: 0, lastClaimDate: null, claimed: [] };
-  const active = isDmActive();
-  const base = (active && dm.end > now) ? dm.end : now;
-  const resetCycle = !active || dm.dayIndex >= DM_TOTAL_DAYS;
-
-  state.diamondMagnate = {
-    end: base + 30 * 24 * 3600 * 1000,
-    dayIndex: resetCycle ? 0 : dm.dayIndex,
-    lastClaimDate: resetCycle ? null : dm.lastClaimDate,
-    claimed: resetCycle ? [] : dm.claimed,
-  };
-
-  state.totalPurchases = (state.totalPurchases || 0) + 1;
-  updateUI();
-  saveState();
-  updateEnergyBar();
-  tgSend(
-    '━━━━━━━━━━━━━━━━━━━━\n' +
-    '💎✨ <b>DIAMOND MAGNATE</b> ✨💎\n' +
-    '━━━━━━━━━━━━━━━━━━━━\n\n' +
-    '👑 Новый подписчик!\n\n' +
-    '👤 Игрок: <b>' + (state.account ? state.account.login : 'Гость') + '</b>\n' +
-    '📅 Активна до: <b>' + new Date(state.diamondMagnate.end).toLocaleDateString('ru-RU') + '</b>\n' +
-    '⚡ Опыт: <b>' + Math.floor(state.xp).toLocaleString('ru-RU') + '</b>\n' +
-    '💎 Алмазов: <b>' + Math.floor(state.gems).toLocaleString('ru-RU') + '</b>\n\n' +
-    '━━━━━━━━━━━━━━━━━━━━\n' +
-    '🏆 <i>Diamond Clicker</i>'
-  );
-  toast('💎 Diamond magnate активирован на 30 дней!', 'success');
-  renderDiamondMagnate();
-}
-
-// ============================================================
-//  🏵️ ULTRA — подписка на 30 дней (оплата алмазами 💎)
-//  • Зомби шутер без ограничений  • Вывод без комиссии
-//  • 150 выводов в день           • Пассивный доход 15 000 💎/час
-//    (копится по времени, в том числе когда игра закрыта)
-// ============================================================
-const ULTRA_COST = 1100000;            // 💎 за 30 дней
-const ULTRA_DAYS = 30;
-const ULTRA_PASSIVE_PER_HOUR = 15000;  // 💎 в час
-const ULTRA_WITHDRAW_LIMIT = 150;      // выводов в день
-
-function isUltraActive() {
-  return !!(state.ultra && state.ultra.end > Date.now());
-}
-
-// Начисляет пассивный доход за время с последнего начисления (не дальше конца подписки).
-// Считает по меткам времени, поэтому работает и после закрытия игры.
-function ultraCollect() {
-  const u = state.ultra;
-  if (!u || !u.end) return 0;
-  const now = Date.now();
-  const upTo = Math.min(now, u.end);
-  if (typeof u.last !== 'number' || !isFinite(u.last) || u.last <= 0) u.last = upTo;
-  if (upTo <= u.last) return 0;
-  const whole = Math.floor((upTo - u.last) / 3600000 * ULTRA_PASSIVE_PER_HOUR);
-  if (whole < 1) return 0;
-  u.last += whole / ULTRA_PASSIVE_PER_HOUR * 3600000; // остаток дробной части не теряется
-  u.earned = (u.earned || 0) + whole;
-  state.gems += whole;
-  return whole;
-}
-
-let _ultraLastSave = 0;
-function ultraTick() {
+let _mineLastSave = 0;
+function mineTick() {
   try {
-    const u = state && state.ultra;
-    if (!u || !u.end) return;
-    const gapMs = Date.now() - (u.last || Date.now());
-    const gain = ultraCollect();
+    const m = state && state.vipMine;
+    if (!m && !(state && isVipActive())) return;
+    const gapMs = Date.now() - ((m && m.last) || Date.now());
+    const gain = mineCollect();
     if (gain > 0) {
       const el = document.getElementById('gemCount');
       if (el) el.textContent = Math.floor(state.gems);
       if (gapMs > 90000 && typeof toast === 'function') {
-        toast('🏵️ ULTRA собрала ' + gain.toLocaleString('ru-RU') + ' 💎 пока тебя не было', 'success');
+        toast('⛏️ Шахта собрала ' + gain.toLocaleString('ru-RU') + ' 💎 пока тебя не было', 'success');
       }
-      if (Date.now() - _ultraLastSave > 15000) { _ultraLastSave = Date.now(); saveState(); }
+      if (Date.now() - _mineLastSave > 15000) { _mineLastSave = Date.now(); saveState(); }
     }
+    const ev = document.getElementById('mineEarnedVal');
+    if (ev) ev.textContent = Math.floor((state.vipMine && state.vipMine.earned) || 0).toLocaleString('ru-RU');
   } catch (e) {}
 }
-setInterval(ultraTick, 1000);
-document.addEventListener('visibilitychange', () => { if (!document.hidden) ultraTick(); });
+setInterval(mineTick, 1000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) mineTick(); });
 window.addEventListener('pagehide', () => {
-  try { if (state.ultra && state.ultra.end) { ultraCollect(); saveState(); } } catch (e) {}
+  try { if (state.vipMine) { mineCollect(); saveState(); } } catch (e) {}
 });
 
-function buyUltra() {
-  if (state.gems < ULTRA_COST) { toast('Недостаточно 💎!', 'error'); return; }
-  ultraCollect(); // при продлении не теряем уже накопленное
-  state.gems -= ULTRA_COST; addCashback(ULTRA_COST);
-  const now = Date.now();
-  const prev = state.ultra;
-  const extend = isUltraActive();
-  const base = extend ? prev.end : now;
-  state.ultra = {
-    end: base + ULTRA_DAYS * 24 * 3600 * 1000,
-    last: extend ? (prev.last || now) : now,
-    earned: (prev && prev.earned) || 0,
-  };
-  updateUI(); saveState();
-  tgSend(
-    '━━━━━━━━━━━━━━━━━━━━\n' +
-    '🏵️💎 <b>ПОДПИСКА ULTRA</b> 💎🏵️\n' +
-    '━━━━━━━━━━━━━━━━━━━━\n\n' +
-    '🎊 Новый ULTRA подписчик!\n\n' +
-    '👤 Игрок: <b>' + (state.account ? state.account.login : 'Гость') + '</b>\n' +
-    '💳 Оплата: <b>' + ULTRA_COST.toLocaleString('ru-RU') + ' 💎 алмазами</b>\n' +
-    '📅 Активна до: <b>' + new Date(state.ultra.end).toLocaleDateString('ru-RU') + '</b>\n' +
-    '💎 Алмазов осталось: <b>' + Math.floor(state.gems).toLocaleString('ru-RU') + '</b>\n\n' +
-    '━━━━━━━━━━━━━━━━━━━━\n' +
-    '🏆 <i>Diamond Clicker</i>'
-  );
-  toast('🏵️ ULTRA активирована на 30 дней!', 'success');
-  renderUltra();
+// Карточка шахты внутри окна MAX (показывается только при активной подписке)
+function mineCardHtml() {
+  const earned = Math.floor((state.vipMine && state.vipMine.earned) || 0).toLocaleString('ru-RU');
+  const n = v => v.toLocaleString('ru-RU');
+  return `
+    <div style="margin-bottom:16px;border-radius:20px;padding:16px;position:relative;overflow:hidden;background:linear-gradient(160deg,rgba(0,40,40,0.95),rgba(0,12,30,0.97));border:1.5px solid rgba(0,255,200,0.5);box-shadow:0 0 24px rgba(0,255,200,0.15),inset 0 0 24px rgba(0,255,200,0.04);">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="font-size:36px;filter:drop-shadow(0 0 12px rgba(0,255,200,0.8));animation:maxIconPulse 2.5s ease-in-out infinite;">⛏️</span>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:14px;font-weight:900;color:#00ffe8;text-shadow:0 0 14px rgba(0,255,200,0.6);">Шахта алмазов</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px;line-height:1.4;">Авто-сборщик работает сам — даже когда игра закрыта</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-size:16px;font-weight:900;color:#7df9ff;text-shadow:0 0 12px rgba(125,249,255,0.6);">+${n(MINE_PER_HOUR)} 💎</div>
+          <div style="font-size:10px;color:rgba(125,249,255,0.6);font-weight:800;">в час</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <div style="flex:1;background:rgba(255,255,255,0.05);border-radius:12px;padding:9px 6px;text-align:center;">
+          <div style="font-size:13px;font-weight:900;color:#fff;">${n(MINE_PER_HOUR * 24)}</div>
+          <div style="font-size:9px;color:rgba(255,255,255,0.4);font-weight:800;letter-spacing:.5px;">💎 В СУТКИ</div>
+        </div>
+        <div style="flex:1;background:rgba(0,255,200,0.08);border:1px solid rgba(0,255,200,0.3);border-radius:12px;padding:9px 6px;text-align:center;">
+          <div style="font-size:13px;font-weight:900;color:#00ffe8;" id="mineEarnedVal">${earned}</div>
+          <div style="font-size:9px;color:rgba(0,255,200,0.6);font-weight:800;letter-spacing:.5px;">💎 ДОБЫТО ВСЕГО</div>
+        </div>
+      </div>
+    </div>`;
 }
 
 // ============================================================
@@ -6481,8 +6382,8 @@ setInterval(checkPodgonyDot, 60000);
 function getCommissionRate(amt) {
   // Если одобрена оплата ⭐ — комиссия 0% (на 30 дней)
   if ((state.noCommissionUntil || 0) > Date.now()) return 0;
-  // 🏵️ ULTRA — комиссии на вывод нет совсем
-  if (isUltraActive()) return 0;
+  // 👑 MAX — комиссии на вывод нет совсем
+  if (isVipActive()) return 0;
 
   // Dynamic commission: 5% for small, up to 15% for large amounts
   let rate;
@@ -6491,12 +6392,10 @@ function getCommissionRate(amt) {
   else if (amt < 3000)  rate = 0.10;   // 10%
   else if (amt < 7000)  rate = 0.12;   // 12%
   else                  rate = 0.15;   // 15%
-  // VIP halves all commissions
-  if (isVipActive()) rate = rate / 2;
   return rate;
 }
 
-// Доступ к выводу: дневной лимит (20 бесплатно / 40 с MAX) — без отдельного
+// Доступ к выводу: дневной лимит (20 бесплатно / 150 с MAX) — без отдельного
 // ограничения на "первый бесплатный вывод".
 function hasWithdrawAccess() {
   return true;
@@ -6507,8 +6406,7 @@ function getTodayStr() {
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
 function getDailyWithdrawLimit() {
-  if (isUltraActive()) return ULTRA_WITHDRAW_LIMIT;
-  return isVipActive() ? 40 : 20;
+  return isVipActive() ? MAX_WITHDRAW_LIMIT : 20;
 }
 function getDailyWithdrawUsed() {
   const today = getTodayStr();
@@ -6601,11 +6499,8 @@ function renderWithdrawal() {
   const dlBorder= isLocked ? 'rgba(196,0,255,0.45)' : dailyLeft <= 5 ? 'rgba(255,140,0,0.35)' : 'rgba(0,200,80,0.3)';
 
   // Commission tiers
-  const ultra = isUltraActive();
-  const tiers = ultra
+  const tiers = vip
     ? [[100,299,'0%'],[300,999,'0%'],[1000,2999,'0%'],[3000,6999,'0%'],[7000,10000,'0%']]
-    : vip
-    ? [[100,299,'2.5%'],[300,999,'4%'],[1000,2999,'5%'],[3000,6999,'6%'],[7000,10000,'7.5%']]
     : [[100,299,'5%'],[300,999,'8%'],[1000,2999,'10%'],[3000,6999,'12%'],[7000,10000,'15%']];
 
   const currentAmt = parseInt(document.getElementById('withdrawAmount')?.value || '0') || 0;
@@ -6641,17 +6536,17 @@ function renderWithdrawal() {
     <!-- Commission table -->
     <div class="wd-commission">
       <div class="wd-commission-title">
-        <span style="font-size:14px;">${ultra ? '🏵️' : vip ? '⭐' : '💱'}</span>
-        ${ultra ? 'Комиссия ULTRA — без комиссии' : vip ? 'Комиссия VIP (вдвое меньше)' : 'Комиссия системы'}
+        <span style="font-size:14px;">${vip ? '👑' : '💱'}</span>
+        ${vip ? 'Комиссия MAX — без комиссии' : 'Комиссия системы'}
       </div>
       ${tiers.map(([from, to, pct]) => {
         const isActive = activeTier && activeTier[0] === from;
         return `<div class="wd-tier-row ${isActive ? 'active-tier' : ''}">
           <span class="wd-tier-range">${from.toLocaleString('ru-RU')} – ${to.toLocaleString('ru-RU')} 💎</span>
-          <span class="wd-tier-pct" style="color:${isActive ? '#00e676' : (vip || ultra) ? 'rgba(0,230,120,0.5)' : 'rgba(180,100,255,0.6)'};">${pct}</span>
+          <span class="wd-tier-pct" style="color:${isActive ? '#00e676' : vip ? 'rgba(0,230,120,0.5)' : 'rgba(180,100,255,0.6)'};">${pct}</span>
         </div>`;
       }).join('')}
-      ${(vip || ultra) ? '' : `<div style="margin-top:8px;font-size:11px;color:rgba(0,255,200,0.7);font-weight:800;border-top:1px solid rgba(0,255,200,0.1);padding-top:8px;">⚡ С MAX — все комиссии вдвое меньше</div>`}
+      ${vip ? '' : `<div style="margin-top:8px;font-size:11px;color:rgba(0,255,200,0.7);font-weight:800;border-top:1px solid rgba(0,255,200,0.1);padding-top:8px;">⚡ С MAX — вывод без комиссии</div>`}
     </div>
 
     ${!hasAccount ? `
@@ -6731,7 +6626,7 @@ function renderWithdrawal() {
           <span class="withdraw-lock-badge" style="background:linear-gradient(135deg,rgba(0,255,200,0.15),rgba(0,200,255,0.08));border-color:rgba(0,255,200,0.5);color:#00ffe8;text-shadow:0 0 8px rgba(0,255,200,0.7);">⚡ MAX → 40/день</span>
         </div>
       </button>
-      <div class="wd-vip-upsell">🔓 С MAX лимит <strong style="color:#00ffe8;text-shadow:0 0 10px rgba(0,255,200,0.6);">40 выводов в день</strong></div>
+      <div class="wd-vip-upsell">🔓 С MAX лимит <strong style="color:#00ffe8;text-shadow:0 0 10px rgba(0,255,200,0.6);">150 выводов в день</strong></div>
     ` : `
       <button class="wd-btn ${hasAccount ? 'wd-btn-green' : 'wd-btn-gray'}" onclick="${hasAccount ? 'doWithdraw()' : ''}" ${!hasAccount ? 'disabled' : ''}>
         <div class="wd-btn-inner">
@@ -6803,10 +6698,8 @@ function previewWithdraw(val) {
   }
   // Re-render to highlight active tier
   const body = document.getElementById('withdrawalBody');
-  const tiers = isUltraActive()
+  const tiers = isVipActive()
     ? [[100,299,0],[300,999,0],[1000,2999,0],[3000,6999,0],[7000,10000,0]]
-    : isVipActive()
-    ? [[100,299,0.025],[300,999,0.04],[1000,2999,0.05],[3000,6999,0.06],[7000,10000,0.075]]
     : [[100,299,0.05],[300,999,0.08],[1000,2999,0.10],[3000,6999,0.12],[7000,10000,0.15]];
   const tier = tiers.find(t => amt >= t[0] && amt <= t[1]) || tiers[0];
   const rate = tier[2];
@@ -6821,7 +6714,7 @@ function previewWithdraw(val) {
     const isActive = t && amt >= t[0] && amt <= t[1];
     row.classList.toggle('active-tier', isActive);
     const pctEl = row.querySelector('.wd-tier-pct');
-    if (pctEl) pctEl.style.color = isActive ? '#00e676' : (isVipActive() || isUltraActive()) ? 'rgba(0,230,120,0.5)' : 'rgba(180,100,255,0.6)';
+    if (pctEl) pctEl.style.color = isActive ? '#00e676' : isVipActive() ? 'rgba(0,230,120,0.5)' : 'rgba(180,100,255,0.6)';
   });
 
   box.style.display = 'block';
@@ -7698,7 +7591,7 @@ function renderWithdrawOffer() {
         <span style="font-size:12px;font-weight:900;color:#00ffe8;text-transform:uppercase;letter-spacing:1px;">Вариант 2 — Подписка MAX</span>
       </div>
       <div style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.7;">
-        Приобрети подписку <strong style="color:#00ffe8;">MAX</strong> и выводи дальше — комиссии вдвое меньше, дневной лимит выводов увеличен и куча других бонусов.
+        Приобрети подписку <strong style="color:#00ffe8;">MAX</strong> и выводи дальше — вывод без комиссии, дневной лимит выводов увеличен и куча других бонусов.
       </div>
     </div>
 
@@ -7881,26 +7774,6 @@ function renderShop() {
     </button>
     ${!isVipActive() && xp < 269750 ? `<div style="text-align:center;font-size:11px;color:var(--text3);margin-top:4px;">Нужно ещё ${(269750 - xp).toLocaleString('ru-RU')} ⚡</div>` : ''}
 
-    <!-- Diamond Magnate in shop -->
-    <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(0,200,255,0.4),rgba(168,85,247,0.3),transparent);margin:14px 0 12px;"></div>
-    <div style="font-size:12px;font-weight:900;background:linear-gradient(135deg,#00c8ff,#7df9ff,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;display:flex;align-items:center;gap:5px;">${diaIcon(14)}Diamond Magnate</div>
-    <button class="duo-btn ${xp >= DM_COST ? 'blue' : 'gray'}" onclick="closeModal('shop');setTimeout(()=>openModal('dm'),220);" style="${xp >= DM_COST ? `
-      background: linear-gradient(160deg, #001428 0%, #0a0020 100%);
-      border: 1.5px solid rgba(0,200,255,0.7) !important;
-      box-shadow: 0 4px 0 #001020, 0 0 20px rgba(0,200,255,0.35), 0 0 50px rgba(168,85,247,0.15), inset 0 0 20px rgba(0,200,255,0.04);
-      color: #7df9ff;
-    ` : ''}">
-      <div class="btn-left">
-        <span class="btn-icon" style="${xp >= DM_COST ? 'filter:drop-shadow(0 0 14px rgba(0,200,255,0.9));color:#7df9ff;' : ''}">${diaIcon(22)}</span>
-        <div class="btn-label">
-          <span class="btn-title" style="${xp >= DM_COST ? 'color:#7df9ff;text-shadow:0 0 14px rgba(0,200,255,0.7);' : ''}">Купить подписку Diamond magnate ${diaIcon(14)}</span>
-          <span class="btn-sub" style="${xp >= DM_COST ? 'color:rgba(125,249,255,0.5);' : ''}">30 000 ${diaIcon(12)} в месяц · по 500${diaIcon(12)}/день</span>
-        </div>
-      </div>
-      <span class="btn-cost" style="${xp >= DM_COST && !isDmActive() ? 'background:rgba(0,200,255,0.1);border-color:rgba(0,200,255,0.3);color:#7df9ff;' : ''}">${isDmActive() ? '✅ Активна' : DM_COST.toLocaleString('ru-RU') + ' ⚡'}</span>
-    </button>
-    ${!isDmActive() && xp < DM_COST ? `<div style="text-align:center;font-size:11px;color:var(--text3);margin-top:4px;">Нужно ещё ${(DM_COST - xp).toLocaleString('ru-RU')} ⚡</div>` : ''}
-
     <!-- Fire Duolingo in shop -->
     <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(255,140,0,0.4),rgba(255,204,0,0.3),transparent);margin:14px 0 12px;"></div>
     <div style="font-size:12px;font-weight:900;background:linear-gradient(135deg,#ff9800,#ff5722,#ffcc00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;">🔥 Fire Duolingo</div>
@@ -7920,26 +7793,6 @@ function renderShop() {
       <span class="btn-cost" style="${xp >= FD_COST && !isFireDuoActive() ? 'background:rgba(255,140,0,0.1);border-color:rgba(255,140,0,0.3);color:#ffb74d;' : ''}">${isFireDuoActive() ? '✅ Активна' : FD_COST.toLocaleString('ru-RU') + ' ⚡'}</span>
     </button>
     ${!isFireDuoActive() && xp < FD_COST ? `<div style="text-align:center;font-size:11px;color:var(--text3);margin-top:4px;">Нужно ещё ${(FD_COST - xp).toLocaleString('ru-RU')} ⚡</div>` : ''}
-
-    <!-- ULTRA in shop -->
-    <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(255,210,77,0.5),rgba(255,79,216,0.4),transparent);margin:14px 0 12px;"></div>
-    <div style="font-size:12px;font-weight:900;background:linear-gradient(135deg,#ffd24d,#ff4fd8,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;">🏵️ ULTRA</div>
-    <button class="duo-btn ${state.gems >= ULTRA_COST ? 'orange' : 'gray'}" onclick="closeModal('shop');setTimeout(()=>openModal('ultra'),220);" style="${state.gems >= ULTRA_COST ? `
-      background: linear-gradient(160deg, #241600 0%, #1a0626 100%);
-      border: 1.5px solid rgba(255,210,77,0.75) !important;
-      box-shadow: 0 4px 0 #120a00, 0 0 20px rgba(255,210,77,0.4), 0 0 50px rgba(255,79,216,0.2), inset 0 0 20px rgba(255,210,77,0.05);
-      color: #ffd24d;
-    ` : ''}">
-      <div class="btn-left">
-        <span class="btn-icon" style="${state.gems >= ULTRA_COST ? 'filter:drop-shadow(0 0 14px rgba(255,210,77,0.9));' : ''}">🏵️</span>
-        <div class="btn-label">
-          <span class="btn-title" style="${state.gems >= ULTRA_COST ? 'color:#ffd24d;text-shadow:0 0 14px rgba(255,210,77,0.7);' : ''}">Купить подписку ULTRA 🏵️</span>
-          <span class="btn-sub" style="${state.gems >= ULTRA_COST ? 'color:rgba(255,210,77,0.55);' : ''}">Зомби · 0% комиссия · +15 000 💎/час · 30 дней</span>
-        </div>
-      </div>
-      <span class="btn-cost" style="${state.gems >= ULTRA_COST && !isUltraActive() ? 'background:rgba(255,210,77,0.1);border-color:rgba(255,210,77,0.35);color:#ffd24d;' : ''}">${isUltraActive() ? '✅ Активна' : ULTRA_COST.toLocaleString('ru-RU') + ' 💎'}</span>
-    </button>
-    ${!isUltraActive() && state.gems < ULTRA_COST ? `<div style="text-align:center;font-size:11px;color:var(--text3);margin-top:4px;">Нужно ещё ${Math.ceil(ULTRA_COST - state.gems).toLocaleString('ru-RU')} 💎</div>` : ''}
 
     <!-- Chests moved to separate tab -->
     <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(255,200,0,0.5),rgba(255,140,0,0.4),transparent);margin:14px 0 12px;"></div>
@@ -8911,20 +8764,20 @@ function renderVip() {
       `
     },
     {
-      icon:'💸', title:'Комиссия вывода ÷2', desc:'Все комиссии на вывод снижены в 2 раза', color:'#ff9c00',
+      icon:'💸', title:'Вывод без комиссии', desc:'0% комиссии на любой вывод', color:'#ff9c00',
       detailIcon:'💸',
-      detailTitle:'Комиссия вывода вдвое меньше',
+      detailTitle:'Вывод без комиссии',
       detailBody:`
         <div style="margin-bottom:12px;font-size:13px;color:rgba(255,255,255,0.7);line-height:1.7;">
-          При выводе алмазов взимается комиссия. MAX подписка <strong style="color:#ff9c00;">делит все комиссии пополам</strong> — ты получаешь больше.
+          Обычно при выводе алмазов взимается комиссия. С MAX ты выводишь <strong style="color:#ff9c00;">без комиссии вообще</strong> — получаешь всю сумму.
         </div>
         <div style="background:rgba(255,156,0,0.07);border:1px solid rgba(255,156,0,0.25);border-radius:14px;padding:14px 16px;margin-bottom:10px;">
           <div style="font-size:11px;color:rgba(255,156,0,0.6);text-transform:uppercase;letter-spacing:1.5px;font-weight:900;margin-bottom:10px;">Таблица комиссий</div>
-          ${[['до 1 000 💎','15%','7.5%'],['1 000 – 5 000 💎','10%','5%'],['5 000 – 20 000 💎','7%','3.5%'],['20 000+ 💎','5%','2.5%']].map(([r,b,m])=>`
+          ${[['100 – 299 💎','5%'],['300 – 999 💎','8%'],['1 000 – 2 999 💎','10%'],['3 000 – 6 999 💎','12%'],['7 000 – 10 000 💎','15%']].map(([r,b])=>`
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;font-size:11px;">
             <span style="color:rgba(255,255,255,0.45);flex:1;">${r}</span>
             <span style="color:rgba(255,255,255,0.35);width:38px;text-align:center;">${b}</span>
-            <span style="color:#ff9c00;font-weight:900;width:44px;text-align:right;text-shadow:0 0 8px rgba(255,156,0,0.5);">${m} ✓</span>
+            <span style="color:#ff9c00;font-weight:900;width:44px;text-align:right;text-shadow:0 0 8px rgba(255,156,0,0.5);">0% ✓</span>
           </div>`).join('')}
           <div style="display:flex;justify-content:flex-end;gap:14px;margin-top:6px;font-size:10px;color:rgba(255,255,255,0.3);">
             <span>без MAX</span><span style="color:rgba(255,156,0,0.7);">с MAX</span>
@@ -8955,12 +8808,12 @@ function renderVip() {
       `
     },
     {
-      icon:'🔓', title:'×2 лимиты выводов', desc:'40 выводов в день вместо 20', color:'#00e5ff',
+      icon:'🔓', title:'150 выводов в день', desc:'Лимит выводов 150 вместо 20', color:'#00e5ff',
       detailIcon:'🔓',
-      detailTitle:'Двойной лимит выводов',
+      detailTitle:'Лимит выводов 150 в день',
       detailBody:`
         <div style="margin-bottom:12px;font-size:13px;color:rgba(255,255,255,0.7);line-height:1.7;">
-          Без MAX — максимум <strong style="color:rgba(255,255,255,0.6);">20 выводов в день</strong>. С MAX лимит удваивается до <strong style="color:#00e5ff;">40 выводов ежедневно</strong>.
+          Без MAX — максимум <strong style="color:rgba(255,255,255,0.6);">20 выводов в день</strong>. С MAX лимит поднимается до <strong style="color:#00e5ff;">150 выводов ежедневно</strong>.
         </div>
         <div style="background:rgba(0,229,255,0.07);border:1px solid rgba(0,229,255,0.25);border-radius:14px;padding:14px 16px;margin-bottom:10px;">
           <div style="display:flex;gap:10px;">
@@ -8971,7 +8824,7 @@ function renderVip() {
             </div>
             <div style="display:flex;align-items:center;font-size:20px;color:rgba(0,229,255,0.5);">→</div>
             <div style="flex:1;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.3);border-radius:12px;padding:12px;text-align:center;">
-              <div style="font-size:28px;font-weight:900;color:#00e5ff;text-shadow:0 0 16px rgba(0,229,255,0.7);">40</div>
+              <div style="font-size:28px;font-weight:900;color:#00e5ff;text-shadow:0 0 16px rgba(0,229,255,0.7);">150</div>
               <div style="font-size:10px;color:rgba(0,229,255,0.7);margin-top:4px;font-weight:800;">С MAX ⚡</div>
               <div style="font-size:10px;color:rgba(0,229,255,0.5);margin-top:2px;">выводов / день</div>
             </div>
@@ -9024,6 +8877,36 @@ function renderVip() {
         </div>
 
         <div style="font-size:11px;color:rgba(255,255,255,0.35);line-height:1.6;">Вводи промокоды через кнопку <strong style="color:#ff6680;">🎟️ Промокоды</strong> в нижнем меню. Каждый код — один раз!</div>
+      `
+    },
+    {
+      icon:'⛏️', title:'Шахта алмазов', desc:'Авто-сборщик: +500 💎 каждый час', color:'#00ffe8',
+      detailIcon:'⛏️',
+      detailTitle:'Шахта алмазов',
+      detailBody:`
+        <div style="margin-bottom:12px;font-size:13px;color:rgba(255,255,255,0.7);line-height:1.7;">
+          С подпиской MAX у тебя открывается <strong style="color:#00ffe8;">шахта алмазов</strong> — авто-сборщик, который сам добывает <strong style="color:#00ffe8;">500 💎 каждый час</strong>. Работает, даже когда игра закрыта.
+        </div>
+        <div style="background:rgba(0,255,200,0.07);border:1px solid rgba(0,255,200,0.25);border-radius:14px;padding:14px 16px;margin-bottom:10px;">
+          <div style="font-size:11px;color:rgba(0,255,200,0.6);text-transform:uppercase;letter-spacing:1.5px;font-weight:900;margin-bottom:10px;">Сколько приносит шахта</div>
+          ${[['За час','+500'],['За сутки','+12 000'],['За 30 дней','+360 000']].map(([a,b])=>`
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;font-size:12px;">
+            <span style="color:rgba(255,255,255,0.5);">${a}</span>
+            <span style="color:#00ffe8;font-weight:900;text-shadow:0 0 8px rgba(0,255,200,0.5);">${b} 💎</span>
+          </div>`).join('')}
+        </div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.35);line-height:1.6;">Алмазы зачисляются автоматически на баланс, пока MAX активна. Если игра была закрыта — шахта доначислит всё при входе.</div>
+      `
+    },
+    {
+      icon:'🧟', title:'Зомби шутер без ограничений', desc:'Полный доступ к игре без лимита по времени', color:'#9be15d',
+      detailIcon:'🧟',
+      detailTitle:'Зомби шутер без ограничений',
+      detailBody:`
+        <div style="margin-bottom:12px;font-size:13px;color:rgba(255,255,255,0.7);line-height:1.7;">
+          С подпиской <strong style="color:#9be15d;">MAX</strong> игра <strong style="color:#9be15d;">Зомби шутер</strong> доступна тебе <strong style="color:#9be15d;">без ограничений по времени</strong> — играй сколько хочешь.
+        </div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.35);line-height:1.6;">Открой раздел мини-игр и запускай 🧟 Зомби шутер — подписка MAX даёт полный доступ.</div>
       `
     }  ];
 
@@ -9083,43 +8966,31 @@ function renderVip() {
         <div style="margin-top:12px;font-size:11px;color:rgba(0,200,255,0.5);letter-spacing:1px;font-weight:800;position:relative;z-index:1;">▶ РАЗБЛОКИРУЙ МАХ-ПРИВИЛЕГИИ</div>`}
     </div>
 
+    ${vipActive ? mineCardHtml() : ''}
+
     <!-- Perks — neon MAX style -->
     <div style="font-size:10px;font-weight:900;color:rgba(0,255,200,0.5);text-transform:uppercase;letter-spacing:2px;margin-bottom:11px;display:flex;align-items:center;gap:8px;">
       <span style="color:rgba(0,255,200,0.7);">⚡</span> Что входит
       <span style="flex:1;height:1px;background:linear-gradient(90deg,rgba(0,255,200,0.25),transparent);display:block;"></span>
     </div>
-    ${perks.map((p, i) => `
-    <div onclick="showPerkDetail(${i})" style="
-      background: linear-gradient(135deg, rgba(0,10,25,0.95) 0%, rgba(0,5,18,0.95) 100%);
-      border: 1px solid rgba(0,255,200,0.2);
-      border-radius: 16px;
-      padding: 13px 15px;
-      margin-bottom: 9px;
-      display: flex;
-      gap: 13px;
-      align-items: center;
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 0 12px rgba(0,255,200,0.05), inset 0 0 20px rgba(0,255,200,0.02);
-      cursor: pointer;
-      transition: border-color 0.2s, box-shadow 0.2s, transform 0.1s;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-    " ontouchstart="this.style.transform='scale(0.97)';this.style.borderColor='rgba(0,255,200,0.45)'" ontouchend="this.style.transform='';this.style.borderColor='rgba(0,255,200,0.2)'">
-      <!-- shine sweep -->
-      <div style="position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(90deg,transparent,rgba(0,255,200,0.06),transparent);pointer-events:none;border-radius:inherit;animation:maxPerkShine 4s ease-in-out infinite;animation-delay:${(i * 0.6).toFixed(1)}s;"></div>
-      <!-- left neon line -->
-      <div style="position:absolute;left:0;top:20%;bottom:20%;width:2px;background:linear-gradient(180deg,transparent,${p.color},transparent);border-radius:2px;box-shadow:0 0 8px ${p.color};"></div>
-      <span style="font-size:30px;flex-shrink:0;filter:drop-shadow(0 0 10px ${p.color}) drop-shadow(0 0 20px ${p.color}88);margin-left:4px;">${p.icon}</span>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:13px;font-weight:900;color:${p.color};text-shadow:0 0 16px ${p.color}88,0 0 30px ${p.color}44;">${p.title}</div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:3px;line-height:1.4;">${p.desc}</div>
+    <div class="maxpc-wrap">
+      <div class="maxpc" id="maxPerkCarousel" onscroll="maxPerkScroll(this)">
+        ${perks.map((p, i) => `
+        <div class="maxpc-slide">
+          <div class="maxpc-card" style="--c:${p.color};" onclick="showPerkDetail(${i})">
+            <div class="maxpc-glow"></div>
+            <div class="maxpc-ico">${p.icon}</div>
+            <div class="maxpc-title">${p.title}</div>
+            <div class="maxpc-desc">${p.desc}</div>
+            <div class="maxpc-more">Подробнее ›</div>
+          </div>
+        </div>`).join('')}
       </div>
-      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-        <div style="width:6px;height:6px;border-radius:50%;background:${p.color};box-shadow:0 0 8px ${p.color},0 0 16px ${p.color};"></div>
-        <div style="font-size:14px;color:${p.color};opacity:0.6;font-weight:900;">›</div>
+      <div class="maxpc-dots" id="maxPerkDots">
+        ${perks.map((p, i) => `<span class="maxpc-dot${i === 0 ? ' on' : ''}" data-c="${p.color}" onclick="maxPerkGo(${i})" style="${i === 0 ? 'background:' + p.color + ';box-shadow:0 0 8px ' + p.color + ';' : ''}"></span>`).join('')}
       </div>
-    </div>`).join('')}
+      <div class="maxpc-hint">← листай, чтобы увидеть все привилегии →</div>
+    </div>
 
     <!-- Buy / renew button -->
     ${!vipActive ? `
@@ -9261,12 +9132,30 @@ function renderVip() {
   }
 
   html += sectionLinksHtml([
-    { icon: '💎', label: 'Что такое Diamond Magnate?', sub: 'Полное описание привилегий подписки', action: "window.open('https://t.me/Kepler_assistant','_blank')" },
     { icon: '📊', label: 'Сколько можно заработать?', sub: 'Калькулятор дохода с подпиской', action: "window.open('https://t.me/Kepler_assistant','_blank')" },
-    { icon: '🏆', label: 'Турнир Diamond Magnate', sub: 'Еженедельный рейтинг лучших игроков', action: "window.open('https://t.me/Kepler_assistant','_blank')" },
   ]);
 
   body.innerHTML = html;
+}
+
+
+// ===== MAX: карусель привилегий (как в Telegram Premium) =====
+function maxPerkScroll(el) {
+  try {
+    const w = el.clientWidth || 1;
+    const idx = Math.max(0, Math.min(el.children.length - 1, Math.round(el.scrollLeft / w)));
+    const dots = document.querySelectorAll('#maxPerkDots .maxpc-dot');
+    dots.forEach((d, i) => {
+      const on = i === idx;
+      d.classList.toggle('on', on);
+      d.style.background = on ? d.dataset.c : '';
+      d.style.boxShadow = on ? '0 0 8px ' + d.dataset.c : '';
+    });
+  } catch (e) {}
+}
+function maxPerkGo(i) {
+  const el = document.getElementById('maxPerkCarousel');
+  if (el) el.scrollTo({ left: i * el.clientWidth, behavior: 'smooth' });
 }
 
 // ============================================================
@@ -9476,327 +9365,6 @@ function setVipTheme(idx) {
 }
 
 // ============================================================
-//  DIAMOND MAGNATE — render
-// ============================================================
-function renderDiamondMagnate() {
-  const body = document.getElementById('dmBody');
-  if (!body) return;
-
-  const xp = Math.floor(state.xp);
-  const canBuy = xp >= DM_COST;
-  const dm = state.diamondMagnate || { end: null, dayIndex: 0, lastClaimDate: null, claimed: [] };
-  const active = isDmActive();
-  const daysLeft = active ? Math.ceil((dm.end - Date.now()) / 86400000) : 0;
-  const hoursLeft = active ? Math.ceil((dm.end - Date.now()) / 3600000) : 0;
-  const today = getTodayStr();
-  const claimedToday = dm.lastClaimDate === today;
-  const cycleDone = dm.dayIndex >= DM_TOTAL_DAYS;
-  const nextDay = Math.min(dm.dayIndex + 1, DM_TOTAL_DAYS);
-  const canClaim = canClaimDmReward();
-
-  const perks = [
-    {
-      icon: diaIcon(16), title:'90 000 ' + diaIcon(13) + ' в месяц', desc:'Суммарная награда за 30 дней подписки', color:'#7df9ff',
-      detailIcon: diaIcon(16),
-      detailTitle:'90 000 ' + diaIcon(13) + ' за цикл подписки',
-      badgeLabel: diaIcon(13) + ' Diamond Magnate Привилегия',
-      detailBody:`
-        <div style="margin-bottom:12px;font-size:13px;color:rgba(255,255,255,0.7);line-height:1.7;">
-          Подписка <strong style="color:#7df9ff;">Diamond Magnate</strong> гарантирует <strong style="color:#7df9ff;">90 000 💎</strong> суммарно за полные 30 дней — все эти алмазы складываются из ежедневных наград.
-        </div>
-        <div style="background:rgba(125,249,255,0.07);border:1px solid rgba(125,249,255,0.25);border-radius:14px;padding:14px 16px;margin-bottom:10px;">
-          <div style="font-size:11px;color:rgba(125,249,255,0.6);text-transform:uppercase;letter-spacing:1.5px;font-weight:900;margin-bottom:10px;">Из чего складывается сумма</div>
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-            <span style="font-size:12px;color:rgba(255,255,255,0.5);">26 обычных дней × 1 000 💎</span>
-            <span style="font-size:13px;font-weight:900;color:rgba(255,255,255,0.7);">26 000 💎</span>
-          </div>
-          <div style="height:1px;background:rgba(255,255,255,0.07);margin-bottom:8px;"></div>
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-            <span style="font-size:12px;color:rgba(255,204,0,0.8);">4 супер-дня × 16 000 💎</span>
-            <span style="font-size:13px;font-weight:900;color:#ffcc00;">64 000 💎</span>
-          </div>
-          <div style="height:1px;background:rgba(255,255,255,0.07);margin-bottom:8px;"></div>
-          <div style="display:flex;align-items:center;justify-content:space-between;">
-            <span style="font-size:12px;color:rgba(125,249,255,0.8);">Итого за 30 дней</span>
-            <span style="font-size:16px;font-weight:900;color:#7df9ff;text-shadow:0 0 12px rgba(125,249,255,0.6);">90 000 💎</span>
-          </div>
-        </div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.35);line-height:1.6;">Чтобы забрать всю сумму без потерь, заходи в игру каждый день и нажимай кнопку получения награды.</div>
-      `
-    },
-    {
-      icon:'🎁', title:'500 💎 каждый день', desc:'Заходи в игру и забирай ежедневный бонус', color:'#00c8ff',
-      detailIcon:'🎁',
-      detailTitle:'Ежедневная награда 500 💎',
-      badgeLabel: diaIcon(13) + ' Diamond Magnate Привилегия',
-      detailBody:`
-        <div style="margin-bottom:12px;font-size:13px;color:rgba(255,255,255,0.7);line-height:1.7;">
-          Каждый день, пока подписка активна, в окне <strong style="color:#00c8ff;">Diamond Magnate</strong> доступна кнопка <strong style="color:#00c8ff;">«Забрать награду»</strong> — она даёт <strong style="color:#00c8ff;">500 💎</strong> прямо на твой баланс.
-        </div>
-        <div style="background:rgba(0,200,255,0.07);border:1px solid rgba(0,200,255,0.25);border-radius:14px;padding:14px 16px;margin-bottom:10px;">
-          <div style="font-size:11px;color:rgba(0,200,255,0.6);text-transform:uppercase;letter-spacing:1.5px;font-weight:900;margin-bottom:10px;">Как это работает</div>
-          ${['Открой окно Diamond Magnate', 'Нажми «Забрать награду»', '+500 💎 на баланс', 'Возвращайся через 24 часа'].map((s,i)=>`
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:7px;">
-            <span style="width:20px;height:20px;border-radius:50%;background:rgba(0,200,255,0.12);border:1px solid rgba(0,200,255,0.35);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:#00c8ff;flex-shrink:0;">${i+1}</span>
-            <span style="font-size:12px;color:rgba(255,255,255,0.6);">${s}</span>
-          </div>`).join('')}
-        </div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.35);line-height:1.6;">Награду можно получить только один раз в сутки. Если пропустить день — этот день останется незабранным до конца цикла.</div>
-      `
-    },
-    {
-      icon:'🌟', title:'Бонус на 7-й день', desc:'Каждый 7-й день из 30 — награда 4 250 💎', color:'#ffcc00',
-      detailIcon:'🌟',
-      detailTitle:'Бонусные дни ×8.5',
-      badgeLabel: diaIcon(13) + ' Diamond Magnate Привилегия',
-      detailBody:`
-        <div style="margin-bottom:12px;font-size:13px;color:rgba(255,255,255,0.7);line-height:1.7;">
-          В дни <strong style="color:#ffcc00;">7, 14, 21 и 28</strong> цикла награда увеличивается с обычных 500 💎 до <strong style="color:#ffcc00;">4 250 💎</strong> — это в 8.5 раза больше!
-        </div>
-        <div style="background:rgba(255,204,0,0.07);border:1px solid rgba(255,204,0,0.25);border-radius:14px;padding:14px 16px;margin-bottom:10px;">
-          <div style="font-size:11px;color:rgba(255,204,0,0.6);text-transform:uppercase;letter-spacing:1.5px;font-weight:900;margin-bottom:10px;">Пример сравнения</div>
-          <div style="display:flex;gap:10px;">
-            <div style="flex:1;background:rgba(255,255,255,0.04);border-radius:12px;padding:12px;text-align:center;">
-              <div style="font-size:22px;">📅</div>
-              <div style="font-size:13px;font-weight:900;color:rgba(255,255,255,0.55);margin-top:6px;">500 💎</div>
-              <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:4px;font-weight:800;">ОБЫЧНЫЙ ДЕНЬ</div>
-            </div>
-            <div style="display:flex;align-items:center;font-size:18px;color:rgba(255,204,0,0.5);">→</div>
-            <div style="flex:1;background:rgba(255,204,0,0.08);border:1px solid rgba(255,204,0,0.3);border-radius:12px;padding:12px;text-align:center;">
-              <div style="font-size:22px;filter:drop-shadow(0 0 8px rgba(255,204,0,0.7));">⭐</div>
-              <div style="font-size:13px;font-weight:900;color:#ffcc00;text-shadow:0 0 10px rgba(255,204,0,0.6);margin-top:6px;">4 250 💎</div>
-              <div style="font-size:10px;color:rgba(255,204,0,0.7);margin-top:4px;font-weight:800;">ДЕНЬ 7/14/21/28</div>
-            </div>
-          </div>
-        </div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.35);line-height:1.6;">Такие дни отмечены значком ⭐ в календаре наград — не пропусти их!</div>
-      `
-    },
-    {
-      icon:'🗓️', title:'Календарь на 30 дней', desc:'Видно, сколько 💎 принесёт каждый день', color:'#a855f7',
-      detailIcon:'🗓️',
-      detailTitle:'Календарь наград на 30 дней',
-      badgeLabel: diaIcon(13) + ' Diamond Magnate Привилегия',
-      detailBody:`
-        <div style="margin-bottom:12px;font-size:13px;color:rgba(255,255,255,0.7);line-height:1.7;">
-          В окне подписки есть сетка из <strong style="color:#a855f7;">30 ячеек</strong> — по одной на каждый день цикла. На каждой ячейке написано, сколько 💎 ты получишь в этот день.
-        </div>
-        <div style="background:rgba(168,85,247,0.07);border:1px solid rgba(168,85,247,0.25);border-radius:14px;padding:14px 16px;margin-bottom:10px;">
-          <div style="font-size:11px;color:rgba(168,85,247,0.6);text-transform:uppercase;letter-spacing:1.5px;font-weight:900;margin-bottom:10px;">Обозначения в календаре</div>
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:7px;">
-            <span style="font-size:16px;">✅</span>
-            <span style="font-size:12px;color:rgba(255,255,255,0.6);">День уже забран</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:7px;">
-            <span style="font-size:16px;">⭐</span>
-            <span style="font-size:12px;color:rgba(255,255,255,0.6);">Бонусный день (4 250 💎)</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:10px;">
-            <span style="font-size:16px;">💎</span>
-            <span style="font-size:12px;color:rgba(255,255,255,0.6);">Сумма награды за этот день</span>
-          </div>
-        </div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.35);line-height:1.6;">Календарь помогает планировать — ты всегда знаешь, сколько алмазов получишь сегодня и сколько осталось до конца цикла.</div>
-      `
-    },
-  ];
-
-  window._dmPerksData = perks;
-
-
-  let html = `
-    <!-- Diamond Magnate banner -->
-    <div style="
-      background: linear-gradient(160deg, rgba(0,15,30,0.98) 0%, rgba(8,0,20,0.98) 100%);
-      border: 1.5px solid rgba(0,200,255,0.5);
-      border-radius: 24px;
-      padding: 24px 16px 20px;
-      margin-bottom: 16px;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 0 30px rgba(0,200,255,0.15), 0 0 60px rgba(168,85,247,0.08), inset 0 0 40px rgba(0,200,255,0.03);
-      animation: maxBorderPulse 3s ease-in-out infinite;
-    ">
-      <div style="position:absolute;inset:0;background:
-        linear-gradient(rgba(0,200,255,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,200,255,0.03) 1px, transparent 1px);
-        background-size:28px 28px;pointer-events:none;border-radius:inherit;"></div>
-      <div style="position:absolute;top:-30px;left:50%;transform:translateX(-50%);width:180px;height:80px;
-        background:radial-gradient(ellipse,rgba(0,200,255,0.22),transparent 70%);pointer-events:none;filter:blur(8px);"></div>
-      <div style="position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(0,200,255,0.6),rgba(168,85,247,0.6),transparent);
-        animation:maxScanLine 3s linear infinite;pointer-events:none;opacity:0.6;box-shadow:0 0 12px rgba(0,200,255,0.5);"></div>
-      <div style="position:absolute;top:10px;left:10px;width:14px;height:14px;border-top:2px solid rgba(0,200,255,0.7);border-left:2px solid rgba(0,200,255,0.7);border-radius:2px 0 0 0;"></div>
-      <div style="position:absolute;top:10px;right:10px;width:14px;height:14px;border-top:2px solid rgba(0,200,255,0.7);border-right:2px solid rgba(0,200,255,0.7);border-radius:0 2px 0 0;"></div>
-      <div style="position:absolute;bottom:10px;left:10px;width:14px;height:14px;border-bottom:2px solid rgba(0,200,255,0.7);border-left:2px solid rgba(0,200,255,0.7);border-radius:0 0 0 2px;"></div>
-      <div style="position:absolute;bottom:10px;right:10px;width:14px;height:14px;border-bottom:2px solid rgba(0,200,255,0.7);border-right:2px solid rgba(0,200,255,0.7);border-radius:0 0 2px 0;"></div>
-
-      <div style="margin-bottom:8px;animation:maxIconPulse 2.5s ease-in-out infinite;line-height:1;position:relative;z-index:1;">${diaIcon(54)}</div>
-      <div style="
-        font-size:24px;font-weight:900;letter-spacing:2px;
-        background: linear-gradient(135deg, #00c8ff 0%, #7df9ff 40%, #a855f7 70%, #00c8ff 100%);
-        background-size: 200% auto;
-        -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-        animation: maxShimmer 2.5s linear infinite;
-        position:relative;z-index:1;
-      ">DIAMOND MAGNATE</div>
-      <div style="font-size:12px;color:rgba(0,200,255,0.6);margin-top:3px;letter-spacing:2px;font-weight:800;text-transform:uppercase;position:relative;z-index:1;">Подписка · 30 дней</div>
-
-      ${active ? `
-        <div style="margin-top:14px;background:rgba(0,200,255,0.07);border:1px solid rgba(0,200,255,0.4);border-radius:14px;padding:11px 16px;display:flex;align-items:center;justify-content:center;gap:10px;position:relative;z-index:1;box-shadow:0 0 18px rgba(0,200,255,0.12),inset 0 0 10px rgba(0,200,255,0.04);">
-          <span style="font-size:18px;filter:drop-shadow(0 0 8px rgba(0,200,255,0.8));">✅</span>
-          <div>
-            <div style="font-size:13px;font-weight:900;color:#7df9ff;text-shadow:0 0 14px rgba(0,200,255,0.7);">Подписка активна</div>
-            <div style="font-size:10px;color:rgba(0,200,255,0.55);margin-top:2px;letter-spacing:0.5px;">Осталось ${daysLeft > 1 ? daysLeft + ' дн.' : hoursLeft + ' ч.'}</div>
-          </div>
-        </div>` : `
-        <div style="margin-top:12px;font-size:11px;color:rgba(0,200,255,0.5);letter-spacing:1px;font-weight:800;position:relative;z-index:1;">▶ РАЗБЛОКИРУЙ 30 000 ${diaIcon(11)} В МЕСЯЦ</div>`}
-    </div>
-
-    <!-- Perks -->
-    <div style="font-size:10px;font-weight:900;color:rgba(0,200,255,0.5);text-transform:uppercase;letter-spacing:2px;margin-bottom:11px;display:flex;align-items:center;gap:8px;">
-      <span style="color:rgba(0,200,255,0.7);">${diaIcon(13)}</span> Привилегии
-      <span style="flex:1;height:1px;background:linear-gradient(90deg,rgba(0,200,255,0.25),transparent);display:block;"></span>
-    </div>
-    ${perks.map((p, i) => `
-    <div onclick="showPerkDetail(${i}, '_dmPerksData')" style="
-      background: linear-gradient(135deg, rgba(0,15,30,0.95) 0%, rgba(8,0,20,0.95) 100%);
-      border: 1px solid rgba(0,200,255,0.2);
-      border-radius: 16px;
-      padding: 13px 15px;
-      margin-bottom: 9px;
-      display: flex;
-      gap: 13px;
-      align-items: center;
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 0 12px rgba(0,200,255,0.05), inset 0 0 20px rgba(0,200,255,0.02);
-      cursor: pointer;
-      transition: border-color 0.2s, box-shadow 0.2s, transform 0.1s;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-    " ontouchstart="this.style.transform='scale(0.97)';this.style.borderColor='rgba(0,200,255,0.45)'" ontouchend="this.style.transform='';this.style.borderColor='rgba(0,200,255,0.2)'">
-      <div style="position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(90deg,transparent,rgba(0,200,255,0.06),transparent);pointer-events:none;border-radius:inherit;animation:maxPerkShine 4s ease-in-out infinite;animation-delay:${(i * 0.6).toFixed(1)}s;"></div>
-      <div style="position:absolute;left:0;top:20%;bottom:20%;width:2px;background:linear-gradient(180deg,transparent,${p.color},transparent);border-radius:2px;box-shadow:0 0 8px ${p.color};"></div>
-      <span style="font-size:28px;flex-shrink:0;filter:drop-shadow(0 0 10px ${p.color}) drop-shadow(0 0 20px ${p.color}88);margin-left:4px;">${p.icon}</span>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:13px;font-weight:900;color:${p.color};text-shadow:0 0 16px ${p.color}88,0 0 30px ${p.color}44;">${p.title}</div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:3px;line-height:1.4;">${p.desc}</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-        <div style="width:6px;height:6px;border-radius:50%;background:${p.color};box-shadow:0 0 8px ${p.color},0 0 16px ${p.color};"></div>
-        <div style="font-size:14px;color:${p.color};opacity:0.6;font-weight:900;">›</div>
-      </div>
-    </div>`).join('')}
-  `;
-
-  // --- Active: daily claim + 30-day calendar ---
-  if (active) {
-    html += `
-    <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(0,200,255,0.4),rgba(168,85,247,0.3),transparent);margin:16px 0 14px;"></div>
-
-    <div style="font-size:10px;font-weight:900;color:rgba(0,200,255,0.5);text-transform:uppercase;letter-spacing:2px;margin-bottom:11px;display:flex;align-items:center;gap:8px;">
-      <span style="color:rgba(0,200,255,0.7);">🗓️</span> Календарь наград (30 дней)
-      <span style="flex:1;height:1px;background:linear-gradient(90deg,rgba(0,200,255,0.25),transparent);display:block;"></span>
-    </div>
-
-    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-bottom:14px;">
-      ${Array.from({length: DM_TOTAL_DAYS}, (_, i) => {
-        const dayNum = i + 1;
-        const reward = dmRewardForDay(dayNum);
-        const isBonus = dayNum % 7 === 0;
-        const isClaimed = dm.claimed.includes(dayNum);
-        const isNext = dayNum === nextDay && !cycleDone && !claimedToday;
-
-        let cardBg, cardBorder, opacity = '1', labelColor = 'rgba(255,255,255,0.35)';
-        if (isClaimed) {
-          cardBg = 'linear-gradient(160deg, rgba(0,200,100,0.18), rgba(0,160,80,0.08))';
-          cardBorder = 'rgba(0,230,120,0.5)';
-          labelColor = '#00e676';
-        } else if (isNext) {
-          cardBg = isBonus
-            ? 'linear-gradient(160deg, rgba(255,204,0,0.22), rgba(0,0,0,0.1))'
-            : 'linear-gradient(160deg, rgba(0,200,255,0.18), rgba(0,0,0,0.1))';
-          cardBorder = isBonus ? '#ffcc00' : '#00c8ff';
-          labelColor = isBonus ? '#ffcc00' : '#7df9ff';
-        } else {
-          cardBg = isBonus ? 'rgba(255,204,0,0.06)' : 'rgba(255,255,255,0.03)';
-          cardBorder = isBonus ? 'rgba(255,204,0,0.25)' : 'rgba(255,255,255,0.07)';
-          opacity = '0.6';
-          labelColor = isBonus ? 'rgba(255,204,0,0.6)' : 'rgba(255,255,255,0.3)';
-        }
-
-        return `
-        <div style="
-          background:${cardBg};
-          border:1.5px solid ${cardBorder};
-          border-radius:10px;
-          padding:6px 2px 5px;
-          text-align:center;
-          opacity:${opacity};
-          position:relative;
-          ${isNext ? `box-shadow:0 0 10px ${isBonus ? 'rgba(255,204,0,0.3)' : 'rgba(0,200,255,0.3)'};` : ''}
-        ">
-          ${isClaimed ? `<div style="position:absolute;top:1px;right:2px;font-size:8px;">✅</div>` : ''}
-          ${isBonus && !isClaimed ? `<div style="position:absolute;top:1px;right:2px;font-size:8px;">⭐</div>` : ''}
-          <div style="font-size:9px;font-weight:900;color:${labelColor};">Д${dayNum}</div>
-          <div style="font-size:${isBonus ? '10px' : '9px'};font-weight:900;color:${labelColor};margin-top:2px;white-space:nowrap;">${reward.toLocaleString('ru-RU')}💎</div>
-        </div>`;
-      }).join('')}
-    </div>
-
-    <!-- Claim button -->
-    <button onclick="${canClaim ? 'claimDmReward()' : ''}" ${canClaim ? '' : 'disabled'} style="
-      width:100%;padding:13px 16px;border-radius:16px;
-      ${canClaim
-        ? `background:linear-gradient(160deg,#00c8ff,#7df9ffbb);border:1.5px solid rgba(255,255,255,0.2);cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,0.35),0 8px 24px rgba(0,200,255,0.35);`
-        : 'background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.08);cursor:default;opacity:0.6;'}
-      font-family:'Nunito',sans-serif;font-weight:900;font-size:14px;color:${canClaim ? '#000' : 'rgba(255,255,255,0.4)'};
-      display:flex;align-items:center;justify-content:center;gap:8px;
-      -webkit-tap-highlight-color:transparent;
-    ">
-      <span style="font-size:18px;">${cycleDone ? '🏁' : (claimedToday ? '✅' : '🎁')}</span>
-      <span>${cycleDone ? 'Цикл завершён — продли подписку' : (claimedToday ? 'Возвращайся завтра' : `Забрать День ${nextDay}: ${dmRewardForDay(nextDay).toLocaleString('ru-RU')} 💎`)}</span>
-    </button>
-    `;
-  }
-
-  // --- Buy / renew ---
-  html += `
-    <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(0,200,255,0.4),rgba(168,85,247,0.3),transparent);margin:16px 0 14px;"></div>
-
-    <button class="duo-btn ${canBuy?'blue':'gray'}" onclick="buyDiamondMagnate()" ${!canBuy?'disabled':''} style="${canBuy?`
-      background: linear-gradient(160deg, #001428 0%, #0a0020 100%);
-      border: 1.5px solid rgba(0,200,255,0.7) !important;
-      box-shadow: 0 4px 0 #001020, 0 0 20px rgba(0,200,255,0.35), 0 0 50px rgba(168,85,247,0.15), inset 0 0 20px rgba(0,200,255,0.04);
-      color: #7df9ff;
-      animation: maxBorderPulse 2.5s ease-in-out infinite;
-    `:''}">
-      <div class="btn-left">
-        <span class="btn-icon" style="${canBuy?'filter:drop-shadow(0 0 14px rgba(0,200,255,0.9)) drop-shadow(0 0 28px rgba(168,85,247,0.6));color:#7df9ff;':''}">${active ? '🔄' : diaIcon(22)}</span>
-        <div class="btn-label">
-          <span class="btn-title" style="${canBuy?'color:#7df9ff;text-shadow:0 0 14px rgba(0,200,255,0.7);':''}">${active ? 'Продлить Diamond Magnate' : 'Активировать Diamond Magnate'}</span>
-          <span class="btn-sub" style="${canBuy?'color:rgba(0,200,255,0.5);':''}">30 дней · 30 000 ${diaIcon(12)} · раз в месяц</span>
-        </div>
-      </div>
-      <span class="btn-cost" style="${canBuy?'background:rgba(0,200,255,0.1);border-color:rgba(0,200,255,0.3);color:#7df9ff;':''}">${DM_COST.toLocaleString('ru-RU')} ⚡</span>
-    </button>
-    ${!canBuy ?
-      `<div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.3);margin-top:5px;">Нужно ещё <strong style="color:#7df9ff;text-shadow:0 0 10px rgba(0,200,255,0.7);">${(DM_COST - xp).toLocaleString('ru-RU')} ⚡</strong></div>` :
-      `<div style="text-align:center;font-size:11px;color:rgba(0,200,255,0.65);margin-top:5px;text-shadow:0 0 10px rgba(0,200,255,0.4);">✅ У тебя достаточно молний!</div>`
-    }
-
-    ${sectionLinksHtml([
-      { icon: '⭐', label: 'Что даёт MAX подписка?', sub: 'Полный список привилегий и бонусов', action: "window.open('https://t.me/Kepler_assistant','_blank')" },
-      { icon: '🎨', label: 'Галерея тем оформления', sub: 'Посмотри все 16 эксклюзивных тем', action: "window.open('https://t.me/Kepler_assistant','_blank')" },
-      { icon: '👑', label: 'Топ VIP-игроков', sub: 'Рейтинг лучших подписчиков', action: "window.open('https://t.me/Kepler_assistant','_blank')" },
-    ])}
-  `;
-
-  body.innerHTML = html;
-}
-
-// ============================================================
 //  FIRE DUOLINGO — render
 // ============================================================
 function renderFireDuo() {
@@ -10001,172 +9569,6 @@ function renderFireDuo() {
   `;
 
   body.innerHTML = html;
-}
-
-
-// ============================================================
-//  🏵️ ULTRA — render
-// ============================================================
-function renderUltra() {
-  const body = document.getElementById('ultraBody');
-  if (!body) return;
-
-  ultraCollect();
-  const gems = Math.floor(state.gems);
-  const canBuy = state.gems >= ULTRA_COST;
-  const active = isUltraActive();
-  const msLeft = active ? state.ultra.end - Date.now() : 0;
-  const daysLeft = Math.ceil(msLeft / 86400000);
-  const hoursLeft = Math.ceil(msLeft / 3600000);
-  const earned = Math.floor((state.ultra && state.ultra.earned) || 0);
-  const GOLD = '#ffd24d', PINK = '#ff4fd8', VIOLET = '#8b5cf6';
-  const fmt = n => n.toLocaleString('ru-RU');
-  const per = ULTRA_PASSIVE_PER_HOUR;
-
-  const dot = (c) => `<span style="width:6px;height:6px;border-radius:50%;background:${c};box-shadow:0 0 8px ${c};flex-shrink:0;display:inline-block;"></span>`;
-  const box = (c) => `background:${c}12;border:1px solid ${c}40;border-radius:14px;padding:14px 16px;margin-bottom:10px;`;
-  const boxTitle = (c, t) => `<div style="font-size:11px;color:${c}99;text-transform:uppercase;letter-spacing:1.5px;font-weight:900;margin-bottom:10px;">${t}</div>`;
-  const intro = (t) => `<div style="margin-bottom:12px;font-size:13px;color:rgba(255,255,255,0.7);line-height:1.7;">${t}</div>`;
-  const note = (t) => `<div style="font-size:11px;color:rgba(255,255,255,0.35);line-height:1.6;">${t}</div>`;
-  const BADGE = '🏵️ ULTRA Привилегия';
-
-  const perks = [
-    {
-      icon:'🧟', title:'Зомби шутер без ограничений', desc:'Играй сколько хочешь и в любых режимах', color:'#9be15d',
-      detailIcon:'🧟', detailTitle:'Зомби шутер — безлимит', badgeLabel:BADGE,
-      detailBody: intro(`С подпиской <strong style="color:#9be15d;">ULTRA</strong> игра <strong style="color:#9be15d;">Зомби шутер</strong> доступна тебе <strong style="color:#9be15d;">без ограничений по времени и по режимам</strong>.`) +
-        `<div style="${box('#9be15d')}">${boxTitle('#9be15d','Что открыто')}` +
-        ['Неограниченное время игры','Все режимы и все волны','Доступ в любой момент, пока активна подписка'].map(t => `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">${dot('#9be15d')}<span style="font-size:12px;color:rgba(255,255,255,0.6);">${t}</span></div>`).join('') +
-        `</div>` + note('Открой раздел мини-игр и запускай 🧟 Зомби шутер — подписка ULTRA даёт полный доступ.')
-    },
-    {
-      icon:'💸', title:'Вывод без комиссии', desc:'Комиссия на все выводы — 0%', color:GOLD,
-      detailIcon:'💸', detailTitle:'Комиссия на вывод — 0%', badgeLabel:BADGE,
-      detailBody: intro(`При выводе алмазов обычно взимается комиссия. С <strong style="color:${GOLD};">ULTRA</strong> ты выводишь <strong style="color:${GOLD};">без комиссии вообще</strong> — получаешь всю сумму целиком.`) +
-        `<div style="${box(GOLD)}">${boxTitle(GOLD,'Таблица комиссий')}` +
-        `<div style="display:flex;justify-content:flex-end;gap:12px;margin-bottom:7px;font-size:10px;color:rgba(255,255,255,0.3);"><span style="width:38px;text-align:center;">обычно</span><span style="width:38px;text-align:center;">MAX</span><span style="width:44px;text-align:right;color:${GOLD}bb;">ULTRA</span></div>` +
-        [['100 – 299 💎','5%','2.5%'],['300 – 999 💎','8%','4%'],['1 000 – 2 999 💎','10%','5%'],['3 000 – 6 999 💎','12%','6%'],['7 000 – 10 000 💎','15%','7.5%']].map(([r,a,b]) =>
-          `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;font-size:11px;"><span style="color:rgba(255,255,255,0.45);flex:1;">${r}</span><span style="color:rgba(255,255,255,0.3);width:38px;text-align:center;">${a}</span><span style="color:rgba(255,255,255,0.3);width:38px;text-align:center;">${b}</span><span style="color:${GOLD};font-weight:900;width:44px;text-align:right;text-shadow:0 0 8px ${GOLD}80;">0% ✓</span></div>`).join('') +
-        `</div>` + note('Чем больше сумма вывода, тем больше экономия.')
-    },
-    {
-      icon:'🔓', title:'150+ выводов в день', desc:'Вместо 20 обычных и 40 с MAX', color:'#00e5ff',
-      detailIcon:'🔓', detailTitle:'Огромный лимит выводов', badgeLabel:BADGE,
-      detailBody: intro(`Обычный лимит — <strong style="color:rgba(255,255,255,0.6);">20 выводов в день</strong>, с MAX — 40. С <strong style="color:#00e5ff;">ULTRA</strong> лимит поднимается до <strong style="color:#00e5ff;">${ULTRA_WITHDRAW_LIMIT} выводов ежедневно</strong>.`) +
-        `<div style="${box('#00e5ff')}">${boxTitle('#00e5ff','Лимит в день')}` +
-        [['Без подписки','20',0.13],['MAX','40',0.27],['ULTRA',String(ULTRA_WITHDRAW_LIMIT),1]].map(([n,v,w]) =>
-          `<div style="margin-bottom:9px;"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span style="color:${n==='ULTRA'?'#00e5ff':'rgba(255,255,255,0.5)'};font-weight:${n==='ULTRA'?900:700};">${n}</span><span style="color:${n==='ULTRA'?'#00e5ff':'rgba(255,255,255,0.5)'};font-weight:900;">${v}</span></div><div style="height:6px;border-radius:4px;background:rgba(255,255,255,0.06);"><div style="height:6px;width:${(w*100).toFixed(0)}%;border-radius:4px;background:${n==='ULTRA'?'linear-gradient(90deg,#00e5ff,#8b5cf6)':'rgba(255,255,255,0.25)'};${n==='ULTRA'?'box-shadow:0 0 10px #00e5ff;':''}"></div></div></div>`).join('') +
-        `</div>` + note('Лимит обновляется каждый день в полночь.')
-    },
-    {
-      icon:'⏱️', title:`Пассивный доход: ${fmt(per)} 💎/час`, desc:'Алмазы копятся сами — даже когда тебя нет в игре', color:PINK,
-      detailIcon:'⏱️', detailTitle:'Пассивный доход ULTRA', badgeLabel:BADGE,
-      detailBody: intro(`<strong style="color:${PINK};">ULTRA</strong> сама собирает для тебя алмазы: <strong style="color:${PINK};">${fmt(per)} 💎 каждый час</strong>. Это работает <strong style="color:${PINK};">и когда ты не в игре</strong> — всё накопленное зачисляется автоматически.`) +
-        `<div style="${box(PINK)}">${boxTitle(PINK,'Сколько это')}` +
-        [['За час','+'+fmt(per)],['За сутки','+'+fmt(per*24)],['За 30 дней','+'+fmt(per*24*ULTRA_DAYS)]].map(([a,b]) =>
-          `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;"><span style="font-size:12px;color:rgba(255,255,255,0.5);">${a}</span><span style="font-size:15px;font-weight:900;color:${PINK};text-shadow:0 0 12px ${PINK}80;">${b} 💎</span></div>`).join('') +
-        `</div>` +
-        (active ? `<div style="${box(GOLD)}"><div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:12px;color:rgba(255,255,255,0.55);">Уже собрано пассивно</span><span style="font-size:15px;font-weight:900;color:${GOLD};">${fmt(earned)} 💎</span></div></div>` : '') +
-        note('Доход считается по времени до конца подписки: закрой игру, вернись позже — алмазы уже будут на балансе.')
-    },
-  ];
-  window._ultraPerksData = perks;
-
-  body.innerHTML = `
-    <!-- ULTRA banner -->
-    <div style="
-      background:linear-gradient(160deg,rgba(32,20,0,0.98) 0%,rgba(24,6,34,0.98) 100%);
-      border:1.5px solid rgba(255,210,77,0.55);border-radius:24px;padding:26px 14px 22px;margin-bottom:16px;
-      text-align:center;position:relative;overflow:hidden;
-      box-shadow:0 0 34px rgba(255,210,77,0.18),0 0 70px rgba(255,79,216,0.1),inset 0 0 40px rgba(255,210,77,0.04);
-      animation:maxBorderPulse 3s ease-in-out infinite;">
-      <div style="position:absolute;inset:0;background:
-        linear-gradient(rgba(255,210,77,0.035) 1px,transparent 1px),
-        linear-gradient(90deg,rgba(255,210,77,0.035) 1px,transparent 1px);
-        background-size:28px 28px;pointer-events:none;border-radius:inherit;"></div>
-      <div style="position:absolute;top:-34px;left:50%;transform:translateX(-50%);width:240px;height:100px;
-        background:radial-gradient(ellipse,rgba(255,79,216,0.28),transparent 70%);pointer-events:none;filter:blur(10px);"></div>
-      <div style="position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(255,210,77,0.7),rgba(255,79,216,0.7),transparent);
-        animation:maxScanLine 3s linear infinite;pointer-events:none;opacity:0.6;box-shadow:0 0 12px rgba(255,210,77,0.5);"></div>
-      <div style="position:absolute;top:10px;left:10px;width:14px;height:14px;border-top:2px solid rgba(255,210,77,0.75);border-left:2px solid rgba(255,210,77,0.75);border-radius:2px 0 0 0;"></div>
-      <div style="position:absolute;top:10px;right:10px;width:14px;height:14px;border-top:2px solid rgba(255,210,77,0.75);border-right:2px solid rgba(255,210,77,0.75);border-radius:0 2px 0 0;"></div>
-      <div style="position:absolute;bottom:10px;left:10px;width:14px;height:14px;border-bottom:2px solid rgba(255,210,77,0.75);border-left:2px solid rgba(255,210,77,0.75);border-radius:0 0 0 2px;"></div>
-      <div style="position:absolute;bottom:10px;right:10px;width:14px;height:14px;border-bottom:2px solid rgba(255,210,77,0.75);border-right:2px solid rgba(255,210,77,0.75);border-radius:0 0 2px 0;"></div>
-
-      <div style="font-size:60px;margin-bottom:4px;animation:maxIconPulse 2.5s ease-in-out infinite;line-height:1;position:relative;z-index:1;filter:drop-shadow(0 0 16px rgba(255,210,77,0.7));">🏵️</div>
-      <div style="position:relative;z-index:1;filter:drop-shadow(0 0 16px rgba(255,79,216,0.55));">
-        <div style="
-          font-size:clamp(52px,17vw,76px);font-weight:900;letter-spacing:clamp(3px,1.6vw,8px);line-height:1.05;
-          background:linear-gradient(135deg,#ffd24d 0%,#fff1a8 22%,#ff4fd8 50%,#8b5cf6 75%,#ffd24d 100%);
-          background-size:220% auto;
-          -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-          animation:maxShimmer 2.5s linear infinite;
-          padding-left:clamp(3px,1.6vw,8px);
-        ">ULTRA</div>
-      </div>
-      <div style="font-size:12px;color:rgba(255,210,77,0.65);margin-top:6px;letter-spacing:2px;font-weight:800;text-transform:uppercase;position:relative;z-index:1;">Подписка · 30 дней</div>
-
-      ${active ? `
-        <div style="margin-top:14px;background:rgba(255,210,77,0.07);border:1px solid rgba(255,210,77,0.4);border-radius:14px;padding:11px 16px;display:flex;align-items:center;justify-content:center;gap:10px;position:relative;z-index:1;box-shadow:0 0 18px rgba(255,210,77,0.12),inset 0 0 10px rgba(255,210,77,0.04);">
-          <span style="font-size:18px;filter:drop-shadow(0 0 8px rgba(255,210,77,0.8));">✅</span>
-          <div>
-            <div style="font-size:13px;font-weight:900;color:${GOLD};text-shadow:0 0 14px rgba(255,210,77,0.7);">Подписка активна</div>
-            <div style="font-size:10px;color:rgba(255,210,77,0.6);margin-top:2px;letter-spacing:0.5px;">Осталось ${daysLeft > 1 ? daysLeft + ' дн.' : hoursLeft + ' ч.'} · собрано ${fmt(earned)} 💎</div>
-          </div>
-        </div>` : `
-        <div style="margin-top:12px;font-size:11px;color:rgba(255,210,77,0.55);letter-spacing:1px;font-weight:800;position:relative;z-index:1;">▶ САМАЯ МОЩНАЯ ПОДПИСКА</div>`}
-    </div>
-
-    <!-- Perks -->
-    <div style="font-size:10px;font-weight:900;color:rgba(255,210,77,0.55);text-transform:uppercase;letter-spacing:2px;margin-bottom:11px;display:flex;align-items:center;gap:8px;">
-      <span style="color:rgba(255,210,77,0.8);">🏵️</span> Возможности
-      <span style="flex:1;height:1px;background:linear-gradient(90deg,rgba(255,210,77,0.28),transparent);display:block;"></span>
-    </div>
-    ${perks.map((p, i) => `
-    <div onclick="showPerkDetail(${i}, '_ultraPerksData')" style="
-      background:linear-gradient(135deg,rgba(30,18,0,0.95) 0%,rgba(20,5,28,0.95) 100%);
-      border:1px solid rgba(255,210,77,0.2);border-radius:16px;padding:13px 15px;margin-bottom:9px;
-      display:flex;gap:13px;align-items:center;position:relative;overflow:hidden;
-      box-shadow:0 0 12px rgba(255,210,77,0.05),inset 0 0 20px rgba(255,210,77,0.02);
-      cursor:pointer;transition:border-color 0.2s,box-shadow 0.2s,transform 0.1s;
-      -webkit-tap-highlight-color:transparent;user-select:none;"
-      ontouchstart="this.style.transform='scale(0.97)';this.style.borderColor='rgba(255,210,77,0.45)'" ontouchend="this.style.transform='';this.style.borderColor='rgba(255,210,77,0.2)'">
-      <div style="position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,210,77,0.07),transparent);pointer-events:none;border-radius:inherit;animation:maxPerkShine 4s ease-in-out infinite;animation-delay:${(i * 0.6).toFixed(1)}s;"></div>
-      <div style="position:absolute;left:0;top:20%;bottom:20%;width:2px;background:linear-gradient(180deg,transparent,${p.color},transparent);border-radius:2px;box-shadow:0 0 8px ${p.color};"></div>
-      <span style="font-size:28px;flex-shrink:0;filter:drop-shadow(0 0 10px ${p.color}) drop-shadow(0 0 20px ${p.color}88);margin-left:4px;">${p.icon}</span>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:13px;font-weight:900;color:${p.color};text-shadow:0 0 16px ${p.color}88,0 0 30px ${p.color}44;">${p.title}</div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:3px;line-height:1.4;">${p.desc}</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-        <div style="width:6px;height:6px;border-radius:50%;background:${p.color};box-shadow:0 0 8px ${p.color},0 0 16px ${p.color};"></div>
-        <div style="font-size:14px;color:${p.color};opacity:0.6;font-weight:900;">›</div>
-      </div>
-    </div>`).join('')}
-
-    <!-- Buy / renew -->
-    <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(255,210,77,0.45),rgba(255,79,216,0.35),transparent);margin:16px 0 14px;"></div>
-
-    <button class="duo-btn ${canBuy ? 'orange' : 'gray'}" onclick="buyUltra()" ${!canBuy ? 'disabled' : ''} style="${canBuy ? `
-      background:linear-gradient(160deg,#241600 0%,#1a0626 100%);
-      border:1.5px solid rgba(255,210,77,0.75) !important;
-      box-shadow:0 4px 0 #120a00,0 0 20px rgba(255,210,77,0.4),0 0 50px rgba(255,79,216,0.2),inset 0 0 20px rgba(255,210,77,0.05);
-      color:${GOLD};
-      animation:maxBorderPulse 2.5s ease-in-out infinite;
-    ` : ''}">
-      <div class="btn-left">
-        <span class="btn-icon" style="${canBuy ? 'filter:drop-shadow(0 0 14px rgba(255,210,77,0.9)) drop-shadow(0 0 28px rgba(255,79,216,0.6));' : ''}">${active ? '🔄' : '🏵️'}</span>
-        <div class="btn-label">
-          <span class="btn-title" style="${canBuy ? 'color:' + GOLD + ';text-shadow:0 0 14px rgba(255,210,77,0.7);' : ''}">${active ? 'Продлить ULTRA' : 'Активировать ULTRA'}</span>
-          <span class="btn-sub" style="${canBuy ? 'color:rgba(255,210,77,0.55);' : ''}">30 дней · оплата алмазами</span>
-        </div>
-      </div>
-      <span class="btn-cost" style="${canBuy ? 'background:rgba(255,210,77,0.1);border-color:rgba(255,210,77,0.35);color:' + GOLD + ';' : ''}">${fmt(ULTRA_COST)} 💎</span>
-    </button>
-    ${!canBuy
-      ? `<div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.3);margin-top:5px;">Нужно ещё <strong style="color:${GOLD};text-shadow:0 0 10px rgba(255,210,77,0.7);">${fmt(Math.ceil(ULTRA_COST - state.gems))} 💎</strong></div>`
-      : `<div style="text-align:center;font-size:11px;color:rgba(255,210,77,0.7);margin-top:5px;text-shadow:0 0 10px rgba(255,210,77,0.4);">✅ У тебя достаточно алмазов! (${fmt(gems)} 💎)</div>`}
-  `;
 }
 
 
@@ -10836,9 +10238,7 @@ function openModal(id) {
   if (id === 'shop')       { _shopCurrentTab = 'upgrades'; renderShop(); }
   if (id === 'settings')   renderSettings();
   if (id === 'vip')        renderVip();
-  if (id === 'dm')         renderDiamondMagnate();
   if (id === 'fd')         renderFireDuo();
-  if (id === 'ultra')      renderUltra();
   if (id === 'withdraw-offer') renderWithdrawOffer();
   if (id === 'transfer')      renderTransfer();
   if (id === 'podgony')       renderPodgony();
@@ -11064,7 +10464,7 @@ function flashPromoError(inp, msg) {
 // ============================================================
 const QUEST_FREE_BONUS  = 100;
 const QUEST_COOLDOWN_MS = 24*60*60*1000;
-const CHEST_PRICES = {common:40,rare:240,epic:650,epic_chest:1300,legend:2275,storm:488,medium_storm:943,ultra_storm:1625}; // 🍂 -35% осенняя акция
+const CHEST_PRICES = {common:30,rare:240,epic:650,epic_chest:1300,legend:2275,storm:488,medium_storm:943,ultra_storm:1625}; // 🍂 -35% осенняя акция
 const CHEST_NAMES  = {common:'Обычный',rare:'Редкий',epic:'Сверхредкий',epic_chest:'Эпический',legend:'Легендарный',cashback:'Кэшбек',storm:'Standart Storm',medium_storm:'Medium Storm',ultra_storm:'Ultra Storm'};
 let _questFreeTimer = null;
 
@@ -12219,7 +11619,7 @@ function claimCashbackChest() {
         <span class="chest-card-badge">Обычный</span>
         <img class="chest-card-img" src="data:image/webp;base64,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">
         <div class="chest-card-name">Обычный</div>
-        <div class="chest-card-price">40 💎</div>
+        <div class="chest-card-price">30 💎</div>
       </div>
       <div class="chest-card rare" onclick="buyChest('rare')">
         <span class="chest-card-badge">Редкий</span>
@@ -16187,6 +15587,8 @@ try{var _ri=document.getElementById('rubyIcon');if(_ri)_ri.innerHTML=window.ruby
           <div class="sw-hub">🎃</div>
         </div>
         <button class="mq-btn" id="swBtn" onclick="spinSummerWheel()">🎡 Крутить за 500 ⚡</button>
+        <button class="mq-btn" id="swQuickBtn" onclick="quickSummerWheel()" style="margin-top:10px;background:linear-gradient(160deg,#b84dff,#6a1fb0);box-shadow:0 5px 0 #2b0a55,0 8px 20px rgba(184,77,255,.45)">⚡ Быстрая игра</button>
+        <div id="swQuickNote" style="margin-top:6px;font-size:11px;font-weight:800;color:#ffd9a0;opacity:.8"></div>
         <div class="mq-sub" id="swSub">Стоимость прокрута: 500 ⚡</div>
         <div class="sw-odds"><h4>Шансы выигрыша</h4><div class="g" id="swOdds"></div></div>
       </div>
@@ -16244,7 +15646,7 @@ try{var _ri=document.getElementById('rubyIcon');if(_ri)_ri.innerHTML=window.ruby
         <div class="mq-game play" onclick="openCrossy()"><span>🦆</span>Crossy Road<em>Играть</em></div>
         <div class="mq-game play" onclick="openMineMan()" style="background:linear-gradient(160deg,#9a6b3f,#4b8f2e)"><span>⛏️</span>Mine-man<em>3D</em></div>
         <div class="mq-game play" onclick="openDrive()" style="background:linear-gradient(160deg,#ff5e3a,#7a1fa2)"><span>🏎️</span>Drive, drive faster<em>3D</em></div>
-        <div class="mq-game play" onclick="openZombie()" style="background:linear-gradient(160deg,#2f4f2f,#6b1a1a)"><span>🧟</span>Зомби шутер<em>👑 MAX · 🏵️ ULTRA</em></div>
+        <div class="mq-game play" onclick="openZombie()" style="background:linear-gradient(160deg,#2f4f2f,#6b1a1a)"><span>🧟</span>Зомби шутер<em>👑 MAX</em></div>
         <div class="mq-game play" onclick="openTappy()" style="background:linear-gradient(160deg,#4fc3f7,#0277bd)"><span>🐤</span>Tappy Bird<em>Играть</em></div>
         <div class="mq-game play" onclick="openDunk()" style="background:linear-gradient(160deg,#ff9a4c,#d9480f)"><span>🏀</span>Tappy Dunk<em>Играть</em></div>
         <div class="mq-game"><span>🏐</span>Пляжный волейбол<em>Скоро</em></div>
@@ -16418,6 +15820,7 @@ try{var _ri=document.getElementById('rubyIcon');if(_ri)_ri.innerHTML=window.ruby
     b.disabled=spinning||xp<COST;
     b.style.opacity=b.disabled&&!spinning?.6:1;
     b.textContent=spinning?'🎡 Крутится...':'🎡 Крутить за '+COST+' ⚡';
+    updateQuick();
     sub.innerHTML='Ваш баланс: <b>'+xp.toLocaleString('ru-RU')+' ⚡</b>'+(xp<COST?' — не хватает '+(COST-xp).toLocaleString('ru-RU')+' ⚡':'');
   }
   const _sw=window.switchMelonTab;
@@ -16447,6 +15850,35 @@ try{var _ri=document.getElementById('rubyIcon');if(_ri)_ri.innerHTML=window.ruby
       refreshMelons(); const c=document.querySelector('.mq-cur'); if(c){c.classList.remove('pop');void c.offsetWidth;c.classList.add('pop');}
       spinning=false; render();
     },5400);
+  };
+  // ===== БЫСТРАЯ ИГРА: мгновенный прокрут без анимации (нужно >= 30 открытых этажей) =====
+  const QUICK_MIN_FLOORS=30;
+  function updateQuick(){
+    const q=$('swQuickBtn'),n=$('swQuickNote'); if(!q) return;
+    const fl=state.melonFloor||0, ok=fl>=QUICK_MIN_FLOORS, xp=Math.floor(state.xp||0);
+    if(!ok){
+      q.disabled=true; q.style.opacity=.55; q.textContent='🔒 Быстрая игра';
+      if(n) n.innerHTML='Откройте '+QUICK_MIN_FLOORS+' этажей в «Наградах» · сейчас: <b>'+fl+'</b>';
+    }else{
+      q.disabled=spinning||xp<COST; q.style.opacity=q.disabled&&!spinning?.6:1;
+      q.textContent=spinning?'⚡ Подождите...':'⚡ Быстрая игра · '+COST+' ⚡';
+      if(n) n.textContent='Награда сразу, без вращения — шансы те же';
+    }
+  }
+  window.quickSummerWheel=function(){
+    if(spinning) return;
+    if((state.melonFloor||0)<QUICK_MIN_FLOORS){ toast('🔒 Быстрая игра доступна с '+QUICK_MIN_FLOORS+' этажа','error'); return; }
+    if((state.xp||0)<COST){ toast('Нужно '+COST+' ⚡ для прокрута!','error'); return; }
+    const k=pick();
+    const mult=bumpStreak();
+    const prize=Math.round(SEG[k].v*mult);
+    state.xp=parseFloat(((state.xp||0)-COST).toFixed(4));
+    state.melons=(state.melons||0)+prize;
+    try{saveState();}catch(e){}
+    try{updateUI();}catch(e){}
+    const r=$('mqReward'); r.textContent='+'+prize+' 🎃'+(mult>1?' (×'+fm(mult)+')':''); r.classList.remove('show'); void r.offsetWidth; r.classList.add('show');
+    refreshMelons(); const c=document.querySelector('.mq-cur'); if(c){c.classList.remove('pop');void c.offsetWidth;c.classList.add('pop');}
+    render();
   };
   build();
 })();
@@ -18672,9 +18104,9 @@ function applyLoc(){if(!ready||!scene)return;const L=LOC();
 window.zsLoc=function(id){if(!LOCS.some(l=>l.id===id))return;curLoc=id;try{localStorage.setItem('zsLoc',id)}catch(e){}renderLocs();if(ready){applyLoc();ren.render(scene,cam)}};
 window.zsSkip=function(){if(run&&prep>0)prep=.001};
 function load(cb){if(window.THREE)return cb();const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';s.onload=cb;s.onerror=()=>alert('Не удалось загрузить 3D');document.head.appendChild(s)}
-window.zsAllowed=function(){try{return (typeof isVipActive==='function'&&isVipActive())||(typeof isUltraActive==='function'&&isUltraActive())}catch(e){return false}};
+window.zsAllowed=function(){try{return (typeof isVipActive==='function'&&isVipActive())}catch(e){return false}};
 window.openZombie=function(){if(TOUCH)zsFS(true);renderLocs();const tx='⚙️ Графика: '+['Низкая','Средняя','Высокая'][Q];$('zsQ').textContent=tx;$('zsQ2').textContent=tx;
- if(!zsAllowed()){try{openModal('vip')}catch(e){alert('Зомби шутер доступен только с подпиской MAX 👑 или ULTRA 🏵️')}return}
+ if(!zsAllowed()){try{openModal('vip')}catch(e){alert('Зомби шутер доступен только с подпиской MAX 👑')}return}
  $('zsOv').classList.add('on');$('zsMenu').style.display='flex';load(()=>{T=window.THREE;if(!ready){build();ready=true}applyLoc();resize();ren.render(scene,cam)})};
 window.closeZombie=function(){zsFS(false);run=false;cancelAnimationFrame(raf);$('zsOv').classList.remove('on');try{document.exitPointerLock()}catch(e){}};
 window.zsStart=function(){
